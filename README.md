@@ -9,5 +9,5 @@ The project will use REACTJS, HTML, and CSS for the frontend, Java for the backe
 - Kevin Lai
 - Lance Wakamatsu
 - Caleb Ashby
-- Caleb Lewis hello
+- Caleb Lewis frontend
 - Moises Robledo
