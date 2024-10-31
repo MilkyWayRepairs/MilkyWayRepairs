@@ -3,7 +3,7 @@ MilkyWayRepairs is a fictitious car repair company that has one large location a
 The project will use REACTJS, HTML, and CSS for the frontend, Java for the backend, and MySQL for the database.
 
 Authors: 
-- Alex Giovannini
+- Alex Giovannini, Alright I will take the team lead role.
 - Jason Prakash
 - Bahrahn Temesgen
 - Kevin Lai
