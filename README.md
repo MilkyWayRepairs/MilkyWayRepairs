@@ -5,7 +5,7 @@ The project will use REACTJS, HTML, and CSS for the frontend, Java for the backe
 Authors: 
 - Alex Giovannini
 - Jason Prakash
-- Bahrahn Temesgen
+- Bahran Temesgen
 - Kevin Lai
 - Lance Wakamatsu
 - Caleb Ashby
