@@ -8,6 +8,7 @@ The project will use REACTJS, HTML, and CSS for the frontend, Java for the backe
 - Bahrahn Temesgen
 - Kevin Lai
 - Lance Wakamatsu
-- Caleb Ashby
+- Caleb Ashby - Certified Galaxy Mechanic
 - Caleb Lewis frontend
 - Moises Robledo
+
