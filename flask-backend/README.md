@@ -14,6 +14,7 @@ $ .venv\Scripts\activate
 3) Install Flask
  ```
 $ pip install Flask
+$ pip install flask-mysql
  ```
 
 ## MacOS / Linux
@@ -31,6 +32,7 @@ $ .venv/bin/activate
 3) Install Flask
  ```
 $ pip install Flask
+$ pip install flask-mysql
  ```
 
 - jason
