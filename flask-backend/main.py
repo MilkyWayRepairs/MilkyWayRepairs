@@ -1,7 +1,12 @@
 from flask import Flask 
 from flaskext.mysql import MySQL
+mysql = MySQL()
 
 app = Flask(__name__)
+mysql.init_app(app)
+
+
+cursor = mysql.get_db().cursor()
 
 # Members API Route
 
