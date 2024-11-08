@@ -8,7 +8,10 @@ $ py -3 -m venv .venv
  ```
 2) Activate the environment
  ```
+$ if not using bash:
 $ .venv\Scripts\activate
+$ if using bash:
+$ .venv/Scripts/activate
  ```
 
 3) Install Flask
