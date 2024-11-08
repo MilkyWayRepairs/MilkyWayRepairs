@@ -10,6 +10,6 @@ The project will use REACTJS, HTML, and CSS for the frontend, Java for the backe
 - Bahran Temesgen - Absolutley Goated 
 - Kevin Lai - frontend / database
 - Lance Wakamatsu - is trying his best :)
-- Caleb Ashby - Certified Galaxy Mechanic
+- Caleb Ashby - Certified Galaxy Mechanic (Trying this on my Windows machine)
 - Caleb Lewis - frontend
 - Moises Robledo - Backend
