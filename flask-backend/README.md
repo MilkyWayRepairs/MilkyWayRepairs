@@ -1,4 +1,4 @@
-#Flask Setup
+# Flask Setup
 
 ## Windows
 1) Create an environment
@@ -14,7 +14,7 @@ $ if using bash:
 $ .venv/Scripts/activate
  ```
 
-# Note : Python must be installed onto your computer, and Python MUST be added to PATH 
+### Note : Python must be installed onto your computer, and Python MUST be added to PATH 
 3) Install Flask
  ```
 $ pip install Flask flask_sqlalchemy pymysql
@@ -32,7 +32,7 @@ $ python3 -m venv .venv
 $ .venv/bin/activate
  ```
 
-# Note : Python must be installed onto your computer, and Python MUST be added to PATH 
+### Note : Python must be installed onto your computer, and Python MUST be added to PATH 
 3) Install Flask
  ```
 $ pip install Flask flask_sqlalchemy pymysql
