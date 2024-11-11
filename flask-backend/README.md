@@ -1,4 +1,4 @@
-#Flask Setup
+# Flask Setup
 
 ## Windows
 1) Create an environment
@@ -14,10 +14,10 @@ $ if using bash:
 $ .venv/Scripts/activate
  ```
 
+### Note : Python must be installed onto your computer, and Python MUST be added to PATH 
 3) Install Flask
  ```
-$ pip install Flask
-$ pip install flask-mysql
+$ pip install Flask flask_sqlalchemy pymysql dotenv
  ```
 
 ## MacOS / Linux
@@ -32,10 +32,17 @@ $ python3 -m venv .venv
 $ .venv/bin/activate
  ```
 
+### Note : Python must be installed onto your computer, and Python MUST be added to PATH 
 3) Install Flask
  ```
-$ pip install Flask
-$ pip install flask-mysql
+$ pip install Flask flask_sqlalchemy pymysql dotenv
  ```
 
-- jason
+
+## Set Up .env File
+
+ 1) create .env file under flask-backend
+ 2) Create environment variable as shown below, but sqlusername and password are our own database access accounts
+ ```
+ PERSONAL_URI='mysql+pymysql://sqlusername:sqlpassword@ipaddress:3306/milkywayrepairs'
+ ```
