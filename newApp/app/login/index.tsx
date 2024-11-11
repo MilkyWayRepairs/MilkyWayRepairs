@@ -35,7 +35,7 @@ const Login = () => {
       {/* Register Button */}
       <TouchableOpacity style={styles.button}>
         <Link href="..">
-          <Text style={styles.buttonText}>Register</Text>
+          <Text style={styles.buttonText}>Login</Text>
         </Link>
       </TouchableOpacity>
 
