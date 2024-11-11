@@ -13,12 +13,16 @@ const LoginOrRegister = () => {
 
       {/* Login Button */}
       <TouchableOpacity style={styles.button}>
-        <Link href="/login"><Text style={styles.buttonText}>Login</Text></Link>
+        <Link href="/login">
+          <Text style={styles.buttonText}>Login</Text>
+        </Link>
       </TouchableOpacity>
 
       {/* Register Button */}
       <TouchableOpacity style={styles.button}>
-        <Link href="/register"><Text style={styles.buttonText}>Register</Text></Link>
+        <Link href="/register">
+          <Text style={styles.buttonText}>Register</Text>
+        </Link>
       </TouchableOpacity>
     </View>
   );
