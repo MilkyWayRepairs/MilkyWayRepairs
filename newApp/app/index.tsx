@@ -2,7 +2,6 @@ import { Text, View, Image, TouchableOpacity, StyleSheet } from "react-native";
 import { Link, } from "expo-router"
 import React from 'react';
 
-
 const LoginOrRegister = () => {
   return (
     <View style={styles.container}>
