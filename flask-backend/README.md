@@ -14,10 +14,10 @@ $ if using bash:
 $ .venv/Scripts/activate
  ```
 
+# Note : Python must be installed onto your computer, and Python MUST be added to PATH 
 3) Install Flask
  ```
-$ pip install Flask
-$ pip install flask-mysql
+$ pip install Flask flask_sqlalchemy pymysql
  ```
 
 ## MacOS / Linux
@@ -32,10 +32,10 @@ $ python3 -m venv .venv
 $ .venv/bin/activate
  ```
 
+# Note : Python must be installed onto your computer, and Python MUST be added to PATH 
 3) Install Flask
  ```
-$ pip install Flask
-$ pip install flask-mysql
+$ pip install Flask flask_sqlalchemy pymysql
  ```
 
 - jason
