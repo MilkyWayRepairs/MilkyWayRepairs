@@ -1,57 +1,64 @@
-import { Text, View } from "react-native";
-import { ColorProperties } from "react-native-reanimated/lib/typescript/reanimated2/Colors";
-
+import { Text, View, Image, TouchableOpacity, StyleSheet } from "react-native";
+import { Link, } from "expo-router"
 import React from 'react';
-import { processFontFamily } from "expo-font";
 
 
-const HomeScreen = () => {
+const LoginOrRegister = () => {
   return (
-    <div style = {styles.container}>
+    <View style={styles.container}>
       {/* Logo */}
-      <img 
-        src="..\assets\images\MilkyWayRepair.png" 
-        alt="Milky Way Logo" 
+      <Image 
+        source={require('../assets/images/MilkyWayRepair.png')} 
         style={styles.logo}
       />
 
       {/* Login Button */}
-      <button style={styles.button}>Login</button>
+      <TouchableOpacity style={styles.button}>
+        <Link href="/login"><Text style={styles.buttonText}>Login</Text></Link>
+      </TouchableOpacity>
 
       {/* Register Button */}
-      <button style={styles.button}>Register</button>
-    </div>
+      <TouchableOpacity style={styles.button}>
+        <Link href="/register"><Text style={styles.buttonText}>Register</Text></Link>
+      </TouchableOpacity>
+    </View>
   );
 };
 
 // Styling
-const styles = {
+const styles = StyleSheet.create({
   container: {
-    display: 'flex',
+    flex: 1,
     flexDirection: 'column',
     alignItems: 'center',
     justifyContent: 'center',
-    height: '100vh',
+    height: 100,
     backgroundColor: '#fff',
   },
   logo: {
-    width: '500px',
-    marginBottom: '40px',
-  },
+    width: 500,
+    marginBottom: 40,
+    marginLeft: 40,
+  } as const,
   button: {
-    width: '150px',
-    padding: '10px',
-    margin: '10px 0',
+    width: 150,
+    padding: 10,
+    marginVertical: 10,
     backgroundColor: '#6B4F9B', // Purple color
-    color: '#fff',
-    border: '1px solid #333',
-    borderRadius: '20px',
+    borderColor: '#333',
+    borderWidth: 1,
+    borderRadius: 20,
     fontFamily: 'Calibri',
-    fontSize: '23px',
+    fontSize: 23,
     //fontWeight: 'bold',
     cursor: 'pointer',
-    
+    },
+    buttonText: {
+      color: '#fff',
+      fontFamily: 'Calibri',
+      fontSize: 23,
+      textAlign: 'center',
   },
-};
+});
 
-export default HomeScreen;
+export default LoginOrRegister;
