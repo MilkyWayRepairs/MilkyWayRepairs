@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, FlatList, TouchableOpacity, Image } from 'react-native';
-import { useNavigation } from '@react-navigation/native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { firestore } from './firebaseConfig';  // Import Firestore instance
+import { Link } from "expo-router";  // Import Link from expo-router
 
 interface Message {
   id: string;
@@ -14,7 +14,6 @@ interface Message {
 
 const MessagesScreen: React.FC = () => {
   const [messages, setMessages] = useState<Message[]>([]);
-  const navigation = useNavigation();
 
   useEffect(() => {
     const unsubscribe = firestore.collection('messages')
@@ -31,18 +30,20 @@ const MessagesScreen: React.FC = () => {
   }, []);
 
   const renderItem = ({ item }: { item: Message }) => (
-    <TouchableOpacity style={styles.messageContainer}>
+    <Link href={{ pathname: `/Messages/messages`, params: { id: item.id } }} style={styles.messageContainer}>
+    <View style={styles.messageContainer}>
       <Image source={{ uri: item.avatar }} style={styles.avatar} />
       <View style={styles.textContainer}>
         <Text style={styles.nameText}>{item.name} ({item.role})</Text>
         <Text style={styles.timeText}>{item.time}</Text>
       </View>
-    </TouchableOpacity>
+    </View>
+    </Link>
   );
 
   return (
     <View style={styles.container}>
-      <Text style={styles.header}>Message</Text>
+      <Text style={styles.header}>Messages</Text>
       <FlatList
         data={messages}
         renderItem={renderItem}
