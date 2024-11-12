@@ -1,8 +1,46 @@
-import { Text, View, Image, TouchableOpacity, StyleSheet, TextInput } from "react-native";
+import { Text, View, Image, TouchableOpacity, StyleSheet, TextInput, Alert } from "react-native";
 import { Link, } from "expo-router"
-import React from 'react';
+import React, {useState} from 'react';
+import bcrypt from 'bcryptjs';
 
 const Register = () => {
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+
+  const handleRegister = async () => {
+    if (password !== confirmPassword) {
+      Alert.alert("Error", "Passwords do not match");
+      return;
+    }
+
+    try {
+      // Ensure password is a string
+      if (typeof password !== 'string') {
+        throw new Error('Password must be a string');
+      }
+
+     // const hashedPassword = await bcrypt.hash(password, 10);
+
+      const response = await fetch('http://192.168.1.16:8081/register', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ email, password }),
+      });
+
+      if (response.ok) {
+        Alert.alert("Success", "User registered successfully!");
+      } else {
+        Alert.alert("Error", "Failed to register user.");
+      }
+    } catch (error) {
+      console.error('Error:', error);
+      Alert.alert("Error", "An error occurred while registering the user.");
+    }
+  };
+
   return (
     <View style={styles.container}>
       {/* Logo */}
@@ -20,28 +58,32 @@ const Register = () => {
         </Link>
       </TouchableOpacity>
 
-            {/* Input Fields */}
-            <TextInput
+      {/* Input Fields */}
+      <TextInput
         style={styles.input}
         placeholder="Email"
         keyboardType="email-address"
+        value={email}
+        onChangeText={setEmail}
       />
       <TextInput
         style={styles.input}
         placeholder="Password"
         secureTextEntry={true}
+        value={password}
+        onChangeText={setPassword}
       />
             <TextInput
         style={styles.input}
         placeholder="Re-enter Password"
         secureTextEntry={true}
+        value={confirmPassword}
+        onChangeText={setConfirmPassword}
       />
 
       {/* Register Button */}
-      <TouchableOpacity style={styles.button}>
-        <Link href="..">
+      <TouchableOpacity style={styles.button} onPress={handleRegister}>
           <Text style={styles.buttonText}>Register</Text>
-        </Link>
       </TouchableOpacity>
 
       {/* Already Have an Account Link */}
