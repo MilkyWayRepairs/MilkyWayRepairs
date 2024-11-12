@@ -1,9 +1,9 @@
 # Refer to README under flask-backend directory to setup backend 
 from flask import Flask
+from flask import request, jsonify
 from flask_sqlalchemy import SQLAlchemy
 from dotenv import load_dotenv
 import os
-
 
 load_dotenv()
 
@@ -25,28 +25,44 @@ class User(db.Model):
     phone_number = db.Column(db.String(20), nullable=False)
     name = db.Column(db.String(100), nullable=False)
 
+# @app.route('/add_user')
+# def add_user():
+#     try:
+#         # Add a new user
+#         new_user = User(email='therealrobbrownie@hotmail.com', password_hash='WARMACHINEROX', 
+#                         phone_number='8089992012', name='Robert Brownie Jr.')
+#         db.session.add(new_user)
+#         db.session.commit()
 
-@app.route('/add_user')
-def add_user():
+#         # Retrieve all users
+#         users = User.query.all()
+#         for user in users:
+#             print(user.email, user.name)
+
+#         return "User added and data retrieved!"
+
+#     except Exception as e:
+#         print("Error during database operation:", e)
+#         return "Database operation failed."
+
+@app.route('/register', methods=['POST'])
+def register():
+    data = request.get_json()
+    email = data.get('email')
+    password = data.get('password')
+
     try:
         # Add a new user
-        new_user = User(email='therealrobbrownie@hotmail.com', password_hash='WARMACHINEROX', 
-                        phone_number='8089992012', name='Robert Brownie Jr.')
+        new_user = User(email=email, password_hash=password, 
+                        phone_number='', name='')
         db.session.add(new_user)
         db.session.commit()
 
-        # Retrieve all users
-        users = User.query.all()
-        for user in users:
-            print(user.email, user.name)
-
-        return "User added and data retrieved!"
+        return jsonify({"message": "User registered successfully!"}), 200
 
     except Exception as e:
         print("Error during database operation:", e)
-        return "Database operation failed."
-
-
+        return jsonify({"message": "Database operation failed."}), 500
 
 if __name__ == '__main__':
     app.run(debug=True)
