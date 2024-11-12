@@ -1,8 +1,40 @@
-import { Text, View, Image, TouchableOpacity, StyleSheet, TextInput } from "react-native";
-import { Link, } from "expo-router"
-import React from 'react';
+import { Text, View, Image, TouchableOpacity, StyleSheet, TextInput, Alert } from "react-native";
+import { Link, } from "expo-router";
+import React, { useState } from 'react';
+import { IP_ADDRESS } from '@env'
 
 const Register = () => {
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+
+  const handleRegister = async () => {
+    if (password !== confirmPassword) {
+      Alert.alert("Passwords don't match");
+      return;
+    }
+
+  try {
+    
+    const response = await fetch(`http://${IP_ADDRESS}:5000/register`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email, password })
+    });
+
+    const data = await response.json();
+    if (response.ok){
+      Alert.alert("Registration successful");
+    } else {
+      Alert.alert("Registration failed", data.message);
+    }
+  } catch (error) {
+    Alert.alert("Error", "Unable to register at the moment.");
+  }
+};
+
+  
+
   return (
     <View style={styles.container}>
       {/* Logo */}
@@ -20,28 +52,32 @@ const Register = () => {
         </Link>
       </TouchableOpacity>
 
-            {/* Input Fields */}
-            <TextInput
+      {/* Input Fields */}
+      <TextInput
         style={styles.input}
         placeholder="Email"
         keyboardType="email-address"
+        value={email}
+        onChangeText={setEmail}
       />
       <TextInput
         style={styles.input}
         placeholder="Password"
         secureTextEntry={true}
+        value={password}
+        onChangeText={setPassword}
       />
             <TextInput
         style={styles.input}
         placeholder="Re-enter Password"
         secureTextEntry={true}
+        value={confirmPassword}
+        onChangeText={setConfirmPassword}
       />
 
       {/* Register Button */}
-      <TouchableOpacity style={styles.button}>
-        <Link href="..">
+      <TouchableOpacity style={styles.button} onPress={handleRegister}>
           <Text style={styles.buttonText}>Register</Text>
-        </Link>
       </TouchableOpacity>
 
       {/* Already Have an Account Link */}
