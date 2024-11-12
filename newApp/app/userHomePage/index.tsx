@@ -2,15 +2,15 @@ import { Text, View, Image, TouchableOpacity, StyleSheet, TextInput } from "reac
 import { Link, } from "expo-router"
 import React from 'react';
 
-const Login = () => {
+const userHomePage = () => {
   return (
     <View style={styles.container}>
       {/* Logo */}
       <Image 
-        source={require('../../assets/images/MilkyWayRepairNoCar.png')} 
+        source={require('../../assets/images/MilkyWayRepair.png')} 
         style={styles.logo}
       />
-
+      
       {/* Back Arrow */}
       <TouchableOpacity style={styles.arrowBackContainer}>
         <Link href="..">
@@ -20,30 +20,11 @@ const Login = () => {
         </Link>
       </TouchableOpacity>
 
-            {/* Input Fields */}
-            <TextInput
-        style={styles.input}
-        placeholder="Email"
-        keyboardType="email-address"
-      />
-      <TextInput
-        style={styles.input}
-        placeholder="Password"
-        secureTextEntry={true}
-      />
-
-      {/* Login Button */}
-      <TouchableOpacity style={styles.button}>
-        <Link href="/userHomePage">
-          <Text style={styles.buttonText}>Login</Text>
-        </Link>
-      </TouchableOpacity>
-
-      {/* Don't Have an Account Link */}
-      <TouchableOpacity onPress={() => {/* Navigate to register screen */}}>
-        <Link href="/register">
-          <Text style={styles.linkText}>Don't have an account?</Text>
-        </Link>
+      {/* Title Text */}
+      <TouchableOpacity style={styles.titleTextContainer}>
+        <Text style={styles.titleText}>
+            Milky Way Repairs
+        </Text>
       </TouchableOpacity>
     </View>
   );
@@ -59,10 +40,10 @@ const styles = StyleSheet.create({
       backgroundColor: '#fff',
     },
     logo: {
-      width: 200,
-      height: 150,
-      marginTop: 0,
-      resizeMode: 'contain',
+        width: 357,
+        height: 248,
+        marginTop: 165,
+        marginLeft: 39,
     } as const,
     input: {
       width: '80%',
@@ -101,18 +82,32 @@ const styles = StyleSheet.create({
     },
     arrowBackContainer: {
       position: 'absolute',
-      top: 50,
-      left: 21,
+      top: 60,
+      left: 15,
       // Ensure the container has dimensions
-      width: 53,
-      height: 50,
+      width: 48,
+      height: 48,
       justifyContent: 'center',
       alignItems: 'center',
     },
     arrowBack: {
-      height: 50,
-      width: 53, 
-    }
+      height: 48,
+      width: 48, 
+    },
+    titleTextContainer: {
+      position: 'absolute',
+      top: 70,
+      left: 47,
+      width: 317,
+      height: 36,
+      justifyContent: 'center',
+      alignItems: 'center',
+    },
+    titleText: {
+        color: 'black',
+        fontSize: 20,
+    },
+
   });
   
-  export default Login;  
+  export default userHomePage;  
