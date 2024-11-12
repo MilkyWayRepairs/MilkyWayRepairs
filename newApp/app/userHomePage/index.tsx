@@ -21,11 +21,11 @@ const userHomePage = () => {
       </TouchableOpacity>
 
       {/* Title Text */}
-      <TouchableOpacity style={styles.titleTextContainer}>
+      <View style={styles.titleTextContainer}>
         <Text style={styles.titleText}>
             Milky Way Repairs
         </Text>
-      </TouchableOpacity>
+      </View>
     </View>
   );
 };
