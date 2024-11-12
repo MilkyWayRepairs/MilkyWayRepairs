@@ -17,7 +17,7 @@ $ .venv/Scripts/activate
 ### Note : Python must be installed onto your computer, and Python MUST be added to PATH 
 3) Install Flask
  ```
-$ pip install Flask flask_sqlalchemy pymysql python-dotenv python-cors
+$ pip install Flask flask_sqlalchemy pymysql python-dotenv flask-cors
  ```
 
 ## MacOS / Linux
@@ -35,7 +35,7 @@ $ .venv/bin/activate
 ### Note : Python must be installed onto your computer, and Python MUST be added to PATH 
 3) Install Flask
  ```
-$ pip install Flask flask_sqlalchemy pymysql python-dotenv python-cors
+$ pip install Flask flask_sqlalchemy pymysql python-dotenv flask-cors
  ```
 
 
