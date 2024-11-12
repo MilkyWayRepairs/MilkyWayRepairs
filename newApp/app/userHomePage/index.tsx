@@ -26,6 +26,66 @@ const userHomePage = () => {
             Milky Way Repairs
         </Text>
       </View>
+
+      {/* Schedule Appointment Button */}
+      <TouchableOpacity style={styles.scheduleAppointmentButtonContainer}>
+        <Image
+          source={require('../../assets/images/ScheduleAppointment.png')}
+          style={styles.homeScreenButton}
+        />
+      </TouchableOpacity>
+
+      {/* Messages Button */}  
+      <TouchableOpacity style={styles.messagesButtonContainer}>
+        <Image
+          source={require('../../assets/images/Messages.png')}
+          style={styles.homeScreenButton}
+        />
+      </TouchableOpacity>
+
+      {/* Review Button */}
+      <TouchableOpacity style={styles.reviewButtonContainer}>
+        <Image
+          source={require('../../assets/images/Review.png')}
+          style={styles.homeScreenButton}
+        />
+      </TouchableOpacity>
+
+      {/* Status Button */}
+      <TouchableOpacity style={styles.statusButtonContainer}>
+        <Image
+          source={require('../../assets/images/Status.png')}
+          style={styles.homeScreenButton}
+        />
+      </TouchableOpacity>
+
+      {/* Schedule Appointment Text */}
+      <View style={styles.scheduleAppointmentTextContainer}>
+        <Text style={styles.homeScreenButtonText}>
+            Schedule Appointment
+        </Text>
+      </View>
+
+      {/* Messages Text */}
+      <View style={styles.messagesTextContainer}>
+        <Text style={styles.homeScreenButtonText}>
+            Messages
+        </Text>
+      </View>
+
+      {/* Review Text */}
+      <View style={styles.reviewTextContainer}>
+        <Text style={styles.homeScreenButtonText}>
+            Review
+        </Text>
+      </View>
+
+      {/* Status Text */}
+      <View style={styles.statusTextContainer}>
+        <Text style={styles.homeScreenButtonText}>
+            Status
+        </Text>
+      </View>                        
     </View>
   );
 };
@@ -106,6 +166,86 @@ const styles = StyleSheet.create({
     titleText: {
         color: 'black',
         fontSize: 20,
+    },
+    scheduleAppointmentButtonContainer: {
+        position: 'absolute',
+        top: 549,
+        left: 76,
+        width: 78,
+        height: 78,
+        justifyContent: 'center',
+        alignItems: 'center',
+    },
+    messagesButtonContainer: {
+        position: 'absolute',
+        top: 549,
+        left: 240,
+        width: 78,
+        height: 78,
+        justifyContent: 'center',
+        alignItems: 'center',
+    },
+    reviewButtonContainer: {
+        position: 'absolute',
+        top: 672,
+        left: 85,
+        width: 78,
+        height: 78,
+        justifyContent: 'center',
+        alignItems: 'center',
+    },
+    statusButtonContainer: {
+        position: 'absolute',
+        top: 672,
+        left: 240,
+        width: 78,
+        height: 78,
+        justifyContent: 'center',
+        alignItems: 'center',
+    },
+    homeScreenButton: {
+        width: 78,
+        height: 78,
+    },    
+    scheduleAppointmentTextContainer:{
+        position: 'absolute',
+        top: 632,
+        left: 78,
+        width: 92,
+        height: 36,
+        justifyContent: 'center',
+        alignItems: 'center',        
+    },
+    messagesTextContainer:{
+        position: 'absolute',
+        top: 636,
+        left: 240,
+        width: 78,
+        height: 19,
+        justifyContent: 'center',
+        alignItems: 'center',        
+    },
+    reviewTextContainer:{
+        position: 'absolute',
+        top: 757,
+        left: 83,
+        width: 76,
+        height: 19,
+        justifyContent: 'center',
+        alignItems: 'center',        
+    },
+    statusTextContainer:{
+        position: 'absolute',
+        top: 757,
+        left: 240,
+        width: 78,
+        height: 20,
+        justifyContent: 'center',
+        alignItems: 'center',        
+    },
+    homeScreenButtonText: {
+        color: 'black',
+        fontSize: 14,
     },
 
   });
