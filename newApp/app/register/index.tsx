@@ -1,7 +1,7 @@
 import { Text, View, Image, TouchableOpacity, StyleSheet, TextInput, Alert } from "react-native";
 import { Link, } from "expo-router";
 import React, { useState } from 'react';
-import { IP_ADDRESS } from '@env'
+//import { IP_ADDRESS } from '@env'
 
 const Register = () => {
   const [email, setEmail] = useState('');
@@ -16,7 +16,9 @@ const Register = () => {
 
   try {
     
-    const response = await fetch(`http://${IP_ADDRESS}:5000/register`, {
+    // Registriation will only go through on the device running the app unless 'localhost' is changed to your personal IP 
+    // Replace 'localhost' with IP if doing through different device
+    const response = await fetch(`http://localhost:5000/register`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ email, password })
