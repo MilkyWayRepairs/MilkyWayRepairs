@@ -1,5 +1,5 @@
 import { Text, View, Image, TouchableOpacity, StyleSheet } from "react-native";
-import { Link, } from "expo-router"
+import { Link } from "expo-router";
 import React from 'react';
 
 const LoginOrRegister = () => {
@@ -12,18 +12,18 @@ const LoginOrRegister = () => {
       />
 
       {/* Login Button */}
-      <TouchableOpacity style={styles.button}>
-        <Link href="/login">
+      <Link href="/login" asChild>
+        <TouchableOpacity style={styles.button}>
           <Text style={styles.buttonText}>Login</Text>
-        </Link>
-      </TouchableOpacity>
+        </TouchableOpacity>
+      </Link>
 
       {/* Register Button */}
-      <TouchableOpacity style={styles.button}>
-        <Link href="/register">
+      <Link href="/register" asChild>
+        <TouchableOpacity style={styles.button}>
           <Text style={styles.buttonText}>Register</Text>
-        </Link>
-      </TouchableOpacity>
+        </TouchableOpacity>
+      </Link>
     </View>
   );
 };
@@ -47,20 +47,16 @@ const styles = StyleSheet.create({
     width: 150,
     padding: 10,
     marginVertical: 10,
-    backgroundColor: '#6B4F9B', // Purple color
+    backgroundColor: '#6B4F9B',
     borderColor: '#333',
     borderWidth: 1,
     borderRadius: 20,
+  },
+  buttonText: {
+    color: '#fff',
     fontFamily: 'Calibri',
     fontSize: 23,
-    //fontWeight: 'bold',
-    cursor: 'pointer',
-    },
-    buttonText: {
-      color: '#fff',
-      fontFamily: 'Calibri',
-      fontSize: 23,
-      textAlign: 'center',
+    textAlign: 'center',
   },
 });
 

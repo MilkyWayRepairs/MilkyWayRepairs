@@ -36,12 +36,12 @@ const userHomePage = () => {
       </TouchableOpacity>
 
       {/* Messages Button */}  
-      <TouchableOpacity style={styles.messagesButtonContainer}>
+      <Link href="/Messages" style={styles.messagesButtonContainer}>
         <Image
           source={require('../../assets/images/Messages.png')}
           style={styles.homeScreenButton}
         />
-      </TouchableOpacity>
+      </Link>
 
       {/* Review Button */}
       <TouchableOpacity style={styles.reviewButtonContainer}>

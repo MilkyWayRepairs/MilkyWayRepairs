@@ -1,13 +1,15 @@
 # Refer to README under flask-backend directory to setup backend 
-from flask import Flask
+from flask import Flask, request, jsonify
 from flask_sqlalchemy import SQLAlchemy
 from dotenv import load_dotenv
+from flask_cors import CORS
 import os
 
 
 load_dotenv()
 
 app = Flask(__name__)
+CORS(app)
 
 # Configure the SQLAlchemy part of the application
 app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv("PERSONAL_URI")
@@ -25,29 +27,28 @@ class User(db.Model):
     phone_number = db.Column(db.String(20), nullable=False)
     name = db.Column(db.String(100), nullable=False)
 
-
-@app.route('/add_user')
-def add_user():
+@app.route('/register', methods=['POST'])
+def register():
+    data = request.get_json()
+    new_email = data.get('email')
+    password = data.get('password')
+    print("Recieved email: ", new_email)    #debugging
+    print("Recieved password: ", password)  #debugging
+    
     try:
-        # Add a new user
-        new_user = User(email='therealrobbrownie@hotmail.com', password_hash='WARMACHINEROX', 
-                        phone_number='8089992012', name='Robert Brownie Jr.')
+        # Add user to database
+        new_user = User(email=new_email, password_hash=password, phone_number='N/A', name='none')
         db.session.add(new_user)
         db.session.commit()
-
-        # Retrieve all users
-        users = User.query.all()
-        for user in users:
-            print(user.email, user.name)
-
-        return "User added and data retrieved!"
-
+        print("User successfully registered.")  #debugging
+        return jsonify({"message": "User registered successfully"}), 200
     except Exception as e:
-        print("Error during database operation:", e)
-        return "Database operation failed."
-
+        db.session.rollback()
+        print("Error during registration:", e) #debugging
+        return jsonify({"message": "Registration failed", "error": str(e)}), 400
 
 
 if __name__ == '__main__':
+    print("main")
     app.run(debug=True)
 
