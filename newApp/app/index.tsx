@@ -1,6 +1,21 @@
-import { Text, View, Image, TouchableOpacity, StyleSheet } from "react-native";
-import { Link } from "expo-router";
+import { Text, View, Image, TouchableOpacity, StyleSheet, } from "react-native";
+import { Link, useRouter, useRootNavigationState } from "expo-router";
 import React from 'react';
+import { useEffect } from 'react';
+
+/* Uncomment this code if you would like to test a page that we haven't created a navigation to and change "folderName" with the name of the folder you would like to navigate to, then run npx expo start */
+// export default function HomePage() {
+//   const router = useRouter();
+//   const navigationState = useRootNavigationState();
+
+//   useEffect(() => {
+//     if (navigationState?.key) { // Ensures the layout is ready
+//       router.push('/folderName'); // Replace with your test route
+//     }
+//   }, [navigationState?.key]);
+
+//   return null; // Keep this as null if you just want to redirect on load
+// }
 
 const LoginOrRegister = () => {
   return (
