@@ -21,6 +21,11 @@ const userHomePage = () => {
     translateX.value = withTiming(10); // Animate to visible position
   };
 
+  const handleOverlayClose = () => {
+    setIsOverlayVisible(false);
+    translateX.value = withTiming(400); // Animate to off-screen position
+  }
+
   return (
     <View style={styles.container}>
       {/* Logo */}
@@ -48,8 +53,7 @@ const userHomePage = () => {
       {/* Account Button */}
       <TouchableOpacity 
         style={styles.accountButtonContainer}
-        onPress={handleAccountPress}
-      >
+        onPress={handleAccountPress}>
         <Text>
           {"                                 "}
           <Image
@@ -77,7 +81,16 @@ const userHomePage = () => {
       </TouchableOpacity>
 
       {/* Account Overlay */}
-      <Animated.View style={[styles.accountOverlayContainer, animatedStyles]}>
+      {isOverlayVisible && (
+        <TouchableOpacity 
+          style={styles.overlayBackground}
+          activeOpacity={0} 
+          onPress={handleOverlayClose}
+        ></TouchableOpacity>
+      )}
+      <Animated.View style={[styles.accountOverlayContainer, animatedStyles]}
+      onStartShouldSetResponder={() => true}
+        onTouchEnd={(e) => e.stopPropagation()}>
         <View style={[styles.accountOverlayContent, styles.logoutContent]}>
           <Text style={styles.accountOverlayText}>
             Logout
@@ -203,14 +216,14 @@ const styles = StyleSheet.create({
       marginLeft: 0,
       marginRight: 0,
     },
-    accountOverlayContainer: {
+    accountOverlayContainer: {  // Everything below is the overlay
       position: 'absolute',
       top: 0,
       left: 250,
       width: 185,
       height: '100%',
       backgroundColor: "#EBE4EC", 
-      zIndex: 1,
+      zIndex: 2,
       overflow: 'visible',
       justifyContent: 'center',
       alignItems: 'center',
@@ -237,7 +250,16 @@ const styles = StyleSheet.create({
       top: 100, // Adjust this value to position the second box
     },
     accountOverlayText: {
-      color: 'black', //Change this to off white
+      color: 'black',
+    },
+    overlayBackground: {
+      position: 'absolute',
+      top: 0,
+      left: 0,
+      width: '100%',
+      height: '100%',
+      backgroundColor: 'rgba(0, 0, 0, 0.4)', 
+      zIndex: 1,
     },
   });
   
