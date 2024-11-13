@@ -25,7 +25,7 @@ const Register = () => {
     });
 
     const data = await response.json();
-    if (response.ok){
+    if (response.ok && data.code === 0){
       Alert.alert("Registration successful");
     } else {
       Alert.alert("Registration failed", data.message);
