@@ -9,7 +9,8 @@ from flask_bcrypt import Bcrypt
 from models import db, User
 # not sure if i need the above lib
 
-import os
+import os 
+#re, dns.resolver
 
 
 load_dotenv()
