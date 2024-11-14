@@ -1,4 +1,4 @@
-import { Text, View, Image, TouchableOpacity, StyleSheet, TextInput } from "react-native";
+import { Text, View, Image, TouchableOpacity, StyleSheet, TextInput, Keyboard, TouchableWithoutFeedback } from "react-native";
 import { Link } from "expo-router";
 import React, { useState } from 'react';
 import AccountSidebar from '../accountSidebar'; // Ensure the path is correct
@@ -39,6 +39,7 @@ const Reviews = () => {
   };
 
   return (
+      <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
       <View style={styles.container}>
         {/* Back Arrow and Header */}
         <View style={styles.header}>
@@ -94,6 +95,7 @@ const Reviews = () => {
         {/* Account Sidebar */}
         <AccountSidebar isVisible={isSidebarVisible} onClose={handleOverlayClose} />
       </View>
+    </TouchableWithoutFeedback>
   );
 };
 
