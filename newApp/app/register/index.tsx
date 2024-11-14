@@ -69,7 +69,8 @@ const Register = () => {
         value={password}
         onChangeText={setPassword}
       />
-            <TextInput
+      <Text style={styles}>Password must be at least 8 characters long and have at least 3 of these characters: !#$%&</Text>
+      <TextInput
         style={styles.input}
         placeholder="Re-enter Password"
         secureTextEntry={true}

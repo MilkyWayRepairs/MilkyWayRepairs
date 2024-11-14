@@ -27,7 +27,7 @@ class User(db.Model):
     phone_number = db.Column(db.String(20), nullable=False)
     name = db.Column(db.String(100), nullable=False)
 
-def checkIfEmailExists(email):
+def doesEmailExists(email):
     users = User.query.all()
     for user in users:
         if email == user.email:
@@ -36,19 +36,14 @@ def checkIfEmailExists(email):
     print("email not in use")
     return False
 
-def isValidEmail(email):
-    # Basic email format check
-    email_regex = r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$'
-    if not re.match(email_regex, email):
-        return False
-    
+
+def validateEmail(email):
     # Extract the domain part from the email
     domain = email.split('@')[1]
     
     # Check if the domain has MX records (Mail Exchange records)
     try:
         dns.resolver.resolve(domain, 'MX')
-        print(domain)
         return True  # Domain is valid and has MX records
     except dns.resolver.NXDOMAIN:
         return False  # Domain does not exist
@@ -56,6 +51,10 @@ def isValidEmail(email):
         return False  # Domain exists but has no MX records
     except dns.exception.DNSException:
         return False  # Other DNS errors
+    
+def validatePassword(password):
+    validPassword = r'^(?=.{8,})(?=(?:[^!#$%&]*[!#$%&]){3,})(?=.*[a-zA-Z0-9])[a-zA-Z0-9!#$%&]+$'
+    return re.match(validPassword, password) is not None
 
 
 @app.route('/register', methods=['POST'])
@@ -66,15 +65,19 @@ def register():
     print("Recieved email: ", email)    #debugging
     print("Recieved password: ", password)  #debugging
 
-    if (checkIfEmailExists(email)):
+    if (doesEmailExists(email)):
         return jsonify({
         "message": "Email already in use\nEnter a differnt email",
         "code": 1
         }), 200
-    elif not isValidEmail(email):
+    elif not validateEmail(email):
         return jsonify({
             "message": "Not a valid email",
             "code": 2
+        })
+    elif not validatePassword(password):
+        return jsonify({
+            "message": "Not a valid password"
         })
     else:
         try:
