@@ -1,5 +1,4 @@
 import { Text, View, Image, TouchableOpacity, StyleSheet, TextInput, Keyboard, TouchableWithoutFeedback } from "react-native";
-// ... existing imports ... } from "react-native";
 import { Link } from "expo-router";
 import React, { useState } from 'react';
 
