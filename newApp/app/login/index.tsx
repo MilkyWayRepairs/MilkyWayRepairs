@@ -1,52 +1,54 @@
-import { Text, View, Image, TouchableOpacity, StyleSheet, TextInput } from "react-native";
+import { Text, View, Image, TouchableOpacity, StyleSheet, TextInput, Keyboard, TouchableWithoutFeedback } from "react-native";
 import { Link } from "expo-router";
 import React from 'react';
 
 const Login = () => {
   return (
-    <View style={styles.container}>
-      {/* Logo */}
-      <Image 
-        source={require('../../assets/images/MilkyWayRepairNoCar.png')} 
-        style={styles.logo}
-      />
+    <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+      <View style={styles.container}>
+        {/* Logo */}
+        <Image 
+          source={require('../../assets/images/MilkyWayRepairNoCar.png')} 
+          style={styles.logo}
+        />
 
-      {/* Back Arrow */}
-      <TouchableOpacity style={styles.arrowBackContainer}>
-        <Link href="..">
-          <Image 
-            source={require('../../assets/images/arrowBack.png')} 
-            style={styles.arrowBack}
-          />
-        </Link>
-      </TouchableOpacity>
-
-      {/* Input Fields */}
-      <TextInput
-        style={styles.input}
-        placeholder="Email"
-        keyboardType="email-address"
-      />
-      <TextInput
-        style={styles.input}
-        placeholder="Password"
-        secureTextEntry={true}
-      />
-
-      {/* Login Button */}
-      <Link href="/userHomePage" asChild>
-        <TouchableOpacity style={styles.button}>
-          <Text style={styles.buttonText}>Login</Text>
+        {/* Back Arrow */}
+        <TouchableOpacity style={styles.arrowBackContainer}>
+          <Link href="..">
+            <Image 
+              source={require('../../assets/images/arrowBack.png')} 
+              style={styles.arrowBack}
+            />
+          </Link>
         </TouchableOpacity>
-      </Link>
 
-      {/* Don't Have an Account Link */}
-      <TouchableOpacity>
-        <Link href="/register">
-          <Text style={styles.linkText}>Don't have an account?</Text>
+        {/* Input Fields */}
+        <TextInput
+          style={styles.input}
+          placeholder="Email"
+          keyboardType="email-address"
+        />
+        <TextInput
+          style={styles.input}
+          placeholder="Password"
+          secureTextEntry={true}
+        />
+
+        {/* Login Button */}
+        <Link href="/userHomePage" asChild>
+          <TouchableOpacity style={styles.button}>
+            <Text style={styles.buttonText}>Login</Text>
+          </TouchableOpacity>
         </Link>
-      </TouchableOpacity>
-    </View>
+
+        {/* Don't Have an Account Link */}
+        <TouchableOpacity>
+          <Link href="/register">
+            <Text style={styles.linkText}>Don't have an account?</Text>
+          </Link>
+        </TouchableOpacity>
+      </View>
+    </TouchableWithoutFeedback>
   );
 };
 

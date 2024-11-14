@@ -1,4 +1,4 @@
-import { Text, View, Image, TouchableOpacity, StyleSheet, TextInput } from "react-native";
+import { Text, View, Image, TouchableOpacity, StyleSheet, TextInput, Keyboard, TouchableWithoutFeedback } from "react-native";
 import { Link } from "expo-router";
 import React, { useState } from 'react';
 
@@ -33,6 +33,7 @@ const StarRating = () => {
 
 const Reviews = () => {
   return (
+      <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
       <View style={styles.container}>
         {/* Back Arrow and Header */}
         <View style={styles.header}>
@@ -87,6 +88,7 @@ const Reviews = () => {
           </TouchableOpacity>
         </View>
       </View>
+    </TouchableWithoutFeedback>
   );
 };
 
