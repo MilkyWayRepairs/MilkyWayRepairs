@@ -43,13 +43,15 @@ const userHomePage = () => {
         />
       </Link>
 
-      {/* Review Button */}
-      <TouchableOpacity style={styles.reviewButtonContainer}>
-        <Image
-          source={require('../../assets/images/Review.png')}
-          style={styles.homeScreenButton}
-        />
-      </TouchableOpacity>
+        {/* Review Button */}
+        <TouchableOpacity style={styles.reviewButtonContainer}>
+            <Link href="/reviews">
+                <Image
+                    source={require('../../assets/images/Review.png')}
+                    style={styles.homeScreenButton}
+                />
+            </Link>
+        </TouchableOpacity>
 
       {/* Status Button */}
       <TouchableOpacity style={styles.statusButtonContainer}>
