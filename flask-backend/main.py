@@ -3,7 +3,7 @@ from flask import Flask, request, jsonify
 from flask_sqlalchemy import SQLAlchemy
 from dotenv import load_dotenv
 from flask_cors import CORS
-import os
+import os, re, dns.resolver
 
 
 load_dotenv()
@@ -36,6 +36,27 @@ def checkIfEmailExists(email):
     print("email not in use")
     return False
 
+def isValidEmail(email):
+    # Basic email format check
+    email_regex = r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$'
+    if not re.match(email_regex, email):
+        return False
+    
+    # Extract the domain part from the email
+    domain = email.split('@')[1]
+    
+    # Check if the domain has MX records (Mail Exchange records)
+    try:
+        dns.resolver.resolve(domain, 'MX')
+        print(domain)
+        return True  # Domain is valid and has MX records
+    except dns.resolver.NXDOMAIN:
+        return False  # Domain does not exist
+    except dns.resolver.NoAnswer:
+        return False  # Domain exists but has no MX records
+    except dns.exception.DNSException:
+        return False  # Other DNS errors
+
 
 @app.route('/register', methods=['POST'])
 def register():
@@ -45,7 +66,17 @@ def register():
     print("Recieved email: ", email)    #debugging
     print("Recieved password: ", password)  #debugging
 
-    if not (checkIfEmailExists(email)):
+    if (checkIfEmailExists(email)):
+        return jsonify({
+        "message": "Email already in use\nEnter a differnt email",
+        "code": 1
+        }), 200
+    elif not isValidEmail(email):
+        return jsonify({
+            "message": "Not a valid email",
+            "code": 2
+        })
+    else:
         try:
             # Add user to database
             new_user = User(email=email, password_hash=password, phone_number='N/A', name='none')
@@ -63,10 +94,6 @@ def register():
                 "message": "Registration failed", 
                 "error": str(e)
                 }), 400
-    return jsonify({
-        "message": "Email already in use\nEnter a differnt email",
-        "code": 1
-        }), 200
 
 
 if __name__ == '__main__':

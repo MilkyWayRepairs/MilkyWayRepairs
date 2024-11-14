@@ -18,7 +18,7 @@ const Register = () => {
     
     // Registriation will only go through on the device running the app unless 'localhost' is changed to your personal IP 
     // Replace 'localhost' with IP if doing through different device
-    const response = await fetch(`http://localhost:5000/register`, {
+    const response = await fetch(`http://192.168.0.18:5000/register`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ email, password })
