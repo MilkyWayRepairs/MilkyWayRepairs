@@ -1,13 +1,14 @@
 import { Text, View, Image, TouchableOpacity, StyleSheet, TextInput } from "react-native";
 import { Link } from "expo-router";
 import React, { useState } from 'react';
+import AccountSidebar from '../accountSidebar'; // Ensure the path is correct
 
 // Custom Star Rating Component
 const StarRating = () => {
   const [rating, setRating] = useState(0); // Initial rating value
 
   // Function to handle star press
-  const handleStarPress = (star) => {
+  const handleStarPress = (star: number) => {
     setRating(star);
   };
 
@@ -16,13 +17,8 @@ const StarRating = () => {
         <Text style={styles.inputLabel}>Rating</Text>
         <View style={styles.starsContainer}>
           {[1, 2, 3, 4, 5].map((star) => (
-              <TouchableOpacity
-                  key={star}
-                  onPress={() => handleStarPress(star)}
-              >
-                <Text style={star <= rating ? styles.starFilled : styles.starEmpty}>
-                  ★
-                </Text>
+              <TouchableOpacity key={star} onPress={() => handleStarPress(star)}>
+                <Text style={star <= rating ? styles.starFilled : styles.starEmpty}>★</Text>
               </TouchableOpacity>
           ))}
         </View>
@@ -32,6 +28,16 @@ const StarRating = () => {
 };
 
 const Reviews = () => {
+  const [isSidebarVisible, setIsSidebarVisible] = useState(false);
+
+  const handleAccountPress = () => {
+    setIsSidebarVisible(true); // Show the sidebar
+  };
+
+  const handleOverlayClose = () => {
+    setIsSidebarVisible(false); // Hide the sidebar
+  };
+
   return (
       <View style={styles.container}>
         {/* Back Arrow and Header */}
@@ -79,13 +85,14 @@ const Reviews = () => {
               <Text style={styles.navText}>Home</Text>
             </Link>
           </TouchableOpacity>
-          <TouchableOpacity style={styles.navButton}>
-            <Link href="./account">
-              <Image source={require('../../assets/images/accountLogo.png')} style={styles.navIcon} />
-              <Text style={styles.navText}>Account</Text>
-            </Link>
+          <TouchableOpacity style={styles.navButton} onPress={handleAccountPress}>
+            <Image source={require('../../assets/images/accountLogo.png')} style={styles.navIcon} />
+            <Text style={styles.navText}>Account</Text>
           </TouchableOpacity>
         </View>
+
+        {/* Account Sidebar */}
+        <AccountSidebar isVisible={isSidebarVisible} onClose={handleOverlayClose} />
       </View>
   );
 };
@@ -98,7 +105,7 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
   },
   header: {
-    backgroundColor: '#E0BBE4', // Light purple color (match with Figma)
+    backgroundColor: '#E0BBE4',
     paddingVertical: 15,
     alignItems: 'center',
   },
@@ -118,12 +125,12 @@ const styles = StyleSheet.create({
     width: 30,
   },
   inputSection: {
-    width: '100%',  // Take up the full width
-    alignItems: 'center', // Center the content inside this section
+    width: '100%',
+    alignItems: 'center',
     padding: 20,
     backgroundColor: '#fff',
-    borderColor: '#ccc',  // Border color around the input section
-    borderWidth: 1,       // Border width
+    borderColor: '#ccc',
+    borderWidth: 1,
     borderRadius: 10,
   },
   inputContainer: {
@@ -137,7 +144,7 @@ const styles = StyleSheet.create({
   },
   reviewInput: {
     width: '100%',
-    height: 80, // Taller height for the review input
+    height: 80,
     borderColor: '#ccc',
     borderWidth: 1,
     borderRadius: 5,
@@ -150,11 +157,12 @@ const styles = StyleSheet.create({
     backgroundColor: '#6B4F9B',
     borderRadius: 20,
     alignItems: 'center',
-    marginTop: 20, // Adds some space above the button
+    marginTop: 20,
   },
   buttonText: {
     color: '#fff',
     fontSize: 18,
+    textAlign: 'center',
   },
   buttonLink: {
     width: '100%',
@@ -187,12 +195,12 @@ const styles = StyleSheet.create({
   },
   starFilled: {
     fontSize: 30,
-    color: '#7b00ff', // Gold color
+    color: '#7b00ff',
     marginHorizontal: 5,
   },
   starEmpty: {
     fontSize: 30,
-    color: '#CCCCCC', // Grey color
+    color: '#CCCCCC',
     marginHorizontal: 5,
   },
   ratingText: {
@@ -202,3 +210,4 @@ const styles = StyleSheet.create({
 });
 
 export default Reviews;
+
