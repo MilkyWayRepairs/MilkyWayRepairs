@@ -1,4 +1,4 @@
-import { Text, View, Image, TouchableOpacity, StyleSheet, TextInput, Alert } from "react-native";
+import { Text, View, Image, TouchableOpacity, StyleSheet, TextInput, Alert, TouchableWithoutFeedback, Keyboard } from "react-native";
 import { Link, } from "expo-router";
 import React, { useState } from 'react';
 //import { IP_ADDRESS } from '@env'
@@ -38,58 +38,60 @@ const Register = () => {
   
 
   return (
-    <View style={styles.container}>
-      {/* Logo */}
-      <Image 
-        source={require('../../assets/images/MilkyWayRepairNoCar.png')} 
-        style={styles.logo}
-      />
+    <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+      <View style={styles.container}>
+        {/* Logo */}
+        <Image 
+          source={require('../../assets/images/MilkyWayRepairNoCar.png')} 
+          style={styles.logo}
+        />
 
-      {/* Back Arrow */}
-      <TouchableOpacity style={styles.arrowBackContainer}>
-        <Link href="..">
-          <Image 
-          source={require('../../assets/images/arrowBack.png')} 
-          style={styles.arrowBack}/>
-        </Link>
-      </TouchableOpacity>
+        {/* Back Arrow */}
+        <TouchableOpacity style={styles.arrowBackContainer}>
+          <Link href="..">
+            <Image 
+            source={require('../../assets/images/arrowBack.png')} 
+            style={styles.arrowBack}/>
+          </Link>
+        </TouchableOpacity>
 
-      {/* Input Fields */}
-      <TextInput
-        style={styles.input}
-        placeholder="Email"
-        keyboardType="email-address"
-        value={email}
-        onChangeText={setEmail}
-      />
-      <TextInput
-        style={styles.input}
-        placeholder="Password"
-        secureTextEntry={true}
-        value={password}
-        onChangeText={setPassword}
-      />
-      <Text style={styles}>Password must be at least 8 characters long and have at least 3 of these characters: !#$%&</Text>
-      <TextInput
-        style={styles.input}
-        placeholder="Re-enter Password"
-        secureTextEntry={true}
-        value={confirmPassword}
-        onChangeText={setConfirmPassword}
-      />
+        {/* Input Fields */}
+        <TextInput
+          style={styles.input}
+          placeholder="Email"
+          keyboardType="email-address"
+          value={email}
+          onChangeText={setEmail}
+        />
+        <TextInput
+          style={styles.input}
+          placeholder="Password"
+          secureTextEntry={true}
+          value={password}
+          onChangeText={setPassword}
+        />
+        <Text style={styles}>Password must be at least 8 characters long and have at least 3 of these characters: !#$%&</Text>
+        <TextInput
+          style={styles.input}
+          placeholder="Re-enter Password"
+          secureTextEntry={true}
+          value={confirmPassword}
+          onChangeText={setConfirmPassword}
+        />
 
-      {/* Register Button */}
-      <TouchableOpacity style={styles.button} onPress={handleRegister}>
-          <Text style={styles.buttonText}>Register</Text>
-      </TouchableOpacity>
+        {/* Register Button */}
+        <TouchableOpacity style={styles.button} onPress={handleRegister}>
+            <Text style={styles.buttonText}>Register</Text>
+        </TouchableOpacity>
 
-      {/* Already Have an Account Link */}
-      <TouchableOpacity onPress={() => {/* Navigate to login screen */}}>
-        <Link href="/login">
-          <Text style={styles.linkText}>Already have an account?</Text>
-        </Link>
-      </TouchableOpacity>
-    </View>
+        {/* Already Have an Account Link */}
+        <TouchableOpacity onPress={() => {/* Navigate to login screen */}}>
+          <Link href="/login">
+            <Text style={styles.linkText}>Already have an account?</Text>
+          </Link>
+        </TouchableOpacity>
+      </View>
+    </TouchableWithoutFeedback>
   );
 };
 
