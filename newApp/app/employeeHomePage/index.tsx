@@ -50,6 +50,85 @@ const userHomePage = () => {
         </Text>
       </Text>
 
+      {/* Schedule Appointment Button */}
+      <TouchableOpacity style={styles.scheduleAppointmentButtonContainer}>
+        <Image
+          source={require('../../assets/images/ScheduleAppointment.png')}
+          style={styles.homeScreenButton}
+        />
+      </TouchableOpacity>
+
+      {/* Messages Button */}  
+      <Link href="/Messages" style={styles.messagesButtonContainer}>
+        <Image
+          source={require('../../assets/images/Messages.png')}
+          style={styles.homeScreenButton}
+        />
+      </Link>
+
+      {/* Logs Button */}
+      <TouchableOpacity style={styles.logsButtonContainer}>
+        <Image
+          source={require('../../assets/images/employeeLogs.png')}
+          style={styles.homeScreenButton}
+        />
+      </TouchableOpacity>
+
+      {/* Review Button */}
+      <TouchableOpacity style={styles.reviewButtonContainer}>
+            <Link href="/reviews">
+                <Image
+                    source={require('../../assets/images/Review.png')}
+                    style={styles.homeScreenButton}
+                />
+            </Link>
+        </TouchableOpacity>
+
+      {/* Update Status Button */}
+      <TouchableOpacity style={styles.updateStatusButtonContainer}>
+        <Image
+          source={require('../../assets/images/Status.png')}
+          style={styles.homeScreenButton}
+        />
+      </TouchableOpacity>
+
+      {/* Schedule Appointment Text */}
+      <View style={styles.scheduleAppointmentTextContainer}>
+        <Text style={styles.homeScreenButtonText}>
+            Schedule {"\n"}
+            Appointment
+        </Text>
+      </View>
+
+      {/* Messages Text */}
+      <View style={styles.messagesTextContainer}>
+        <Text style={styles.homeScreenButtonText}>
+            Messages
+        </Text>
+      </View>
+
+      {/* Logs Text */}
+      <View style={styles.logsTextContainer}>
+        <Text style={styles.homeScreenButtonText}>
+            Add Log
+        </Text>
+      </View>
+
+      {/* Review Text */}
+      <View style={styles.reviewTextContainer}>
+        <Text style={styles.homeScreenButtonText}>
+            Reviews
+        </Text>
+      </View>
+
+      {/* Status Text */}
+      <View style={styles.statusTextContainer}>
+        <Text style={styles.homeScreenButtonText}>
+            Update {"\n"}
+            Status
+        </Text>
+      </View> 
+
       {/* Account Button */}
       <TouchableOpacity 
         style={styles.accountButtonContainer}
@@ -65,7 +144,7 @@ const userHomePage = () => {
           </Text>
         </Text>
       </TouchableOpacity>
-
+    
       {/* Home Button */}
       <TouchableOpacity style={styles.homeButtonContainer}>
         <Link href="/employeeHomePage">
@@ -116,10 +195,11 @@ const styles = StyleSheet.create({
       backgroundColor: '#fff',
     },
     logo: {
-        width: 357,
-        height: 248,
-        marginTop: 165,
-        marginLeft: 39,
+      top: -50,
+      width: 357,
+      height: 248,
+      marginTop: 165,
+      marginLeft: 39,
     } as const,
     input: {
       width: '80%',
@@ -158,7 +238,7 @@ const styles = StyleSheet.create({
     },
     arrowBackContainer: {
       position: 'absolute',
-      top: 60,
+      top: 20,
       left: 15,
       // Ensure the container has dimensions
       width: 48,
@@ -172,7 +252,7 @@ const styles = StyleSheet.create({
     },
     titleTextContainer: {
       position: 'absolute',
-      top: 67,
+      top: 27,
       left: 135,
       width: 317,
       height: 36,
@@ -182,6 +262,108 @@ const styles = StyleSheet.create({
     titleText: {
         color: 'black',
         fontSize: 20,
+    },
+    homeScreenButton: {
+      width: 78,
+      height: 78,
+    },
+    scheduleAppointmentButtonContainer: {
+      position: 'absolute',
+      top: 417,
+      left: 45,
+      width: 78,
+      height: 78,
+      justifyContent: 'center',
+      alignItems: 'center',
+    },
+    messagesButtonContainer: {
+      position: 'absolute',
+      top: 420,
+      left: 180,
+      width: 78,
+      height: 78,
+      justifyContent: 'center',
+      alignItems: 'center',
+    },
+    logsButtonContainer: {
+      position: 'absolute',
+      top: 417,
+      left: 310,
+      width: 78,
+      height: 78,
+      justifyContent: 'center',
+      alignItems: 'center',
+    },
+    reviewButtonContainer: {
+      position: 'absolute',
+      top: 580,
+      left: 100,
+      width: 78,
+      height: 78,
+      justifyContent: 'center',
+      alignItems: 'center',
+    },
+    updateStatusButtonContainer: {
+      position: 'absolute',
+      top: 578,
+      left: 245,
+      width: 78,
+      height: 78,
+      justifyContent: 'center',
+      alignItems: 'center',
+    },
+    scheduleAppointmentTextContainer:{
+      position: 'absolute',
+      top: 510,
+      left: 20,
+      width: 130,
+      height: 60,
+      justifyContent: 'center',
+      alignItems: 'center',
+      flexWrap: 'wrap',
+      flexDirection: 'row',
+
+    },
+    messagesTextContainer:{
+        position: 'absolute',
+        top: 513,
+        left: 180,
+        width: 78,
+        height: 19,
+        justifyContent: 'center',
+        alignItems: 'center',        
+    },
+    logsTextContainer:{
+      position: 'absolute',
+      top: 513,
+      left: 310,
+      width: 78,
+      height: 19,
+      justifyContent: 'center',
+      alignItems: 'center',        
+    },
+    reviewTextContainer:{
+        position: 'absolute',
+        top: 667,
+        left: 98,
+        width: 76,
+        height: 19,
+        justifyContent: 'center',
+        alignItems: 'center',        
+    },
+    statusTextContainer:{
+        position: 'absolute',
+        top: 660,
+        left: 244,
+        width: 78,
+        height: 45,
+        justifyContent: 'center',
+        alignItems: 'center',        
+    },
+    homeScreenButtonText: {
+      color: 'black',
+      fontSize: 14,
+      textAlign: 'center',
     },
     homeButtonContainer: {
       position: 'absolute',
