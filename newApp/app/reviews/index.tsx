@@ -1,8 +1,10 @@
-import { Text, View, Image, TouchableOpacity, StyleSheet, TextInput, Keyboard, TouchableWithoutFeedback } from "react-native";
-import { Link } from "expo-router";
+import { Text, View, Image, TouchableOpacity, Alert, StyleSheet, TextInput, Keyboard, TouchableWithoutFeedback } from "react-native";
+import { Link, useRouter } from "expo-router";
 import React, { useState } from 'react';
+import { SERVER_URL } from '../../config/config';
 import AccountSidebar from '../accountSidebar'; // Ensure the path is correct
 
+/*
 // Custom Star Rating Component
 const StarRating = () => {
   const [rating, setRating] = useState(0); // Initial rating value
@@ -11,6 +13,12 @@ const StarRating = () => {
   const handleStarPress = (star: number) => {
     setRating(star);
   };
+*/
+
+const StarRating = ({ rating, setRating }: { rating: number; setRating: (rating: number) => void }) => {
+  const handleStarPress = (star: number) => {
+    setRating(star)
+  }
 
   return (
       <View style={styles.starRatingContainer}>
@@ -29,6 +37,9 @@ const StarRating = () => {
 
 const Reviews = () => {
   const [isSidebarVisible, setIsSidebarVisible] = useState(false);
+  const [review, setReview] = useState("")
+  const [rating, setRating] = useState(0)
+  const router = useRouter()
 
   const handleAccountPress = () => {
     setIsSidebarVisible(true); // Show the sidebar
@@ -36,6 +47,32 @@ const Reviews = () => {
 
   const handleOverlayClose = () => {
     setIsSidebarVisible(false); // Hide the sidebar
+  };
+
+  const submitReview = async () => {
+    if (!review.trim()) {
+      Alert.alert("Error", "Review cannot be empty.");
+      return;
+    }
+
+    try {
+      const response = await fetch(`${SERVER_URL}/reviews`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ review: review.trim(), rating: rating }),
+      });
+
+      if (response.ok) {
+        Alert.alert("Success", "Review submitted successfully!");
+        setReview(""); // Clear the input field after success
+        setRating(0)
+        router.push("./submittedReviews")
+      } else {
+        Alert.alert("Error", "Failed to submit review. Please try again.");
+      }
+    } catch (error) {
+      Alert.alert("Error", "An error occurred while submitting the review.");
+    }
   };
 
   return (
@@ -57,7 +94,7 @@ const Reviews = () => {
         {/* Container for Input Fields and Submit Button with Border */}
         <View style={styles.inputSection}>
           {/* Star Rating Component */}
-          <StarRating />
+          <StarRating rating={rating} setRating={setRating} />
 
           {/* Input Fields for Review */}
           <View style={styles.inputContainer}>
@@ -66,15 +103,15 @@ const Reviews = () => {
                 style={styles.reviewInput}
                 placeholder="Thank You for Choosing Milky Way Repairs!"
                 placeholderTextColor="#A9A9A9"
+                value={review}
+                onChangeText={setReview}
                 multiline
             />
           </View>
 
           {/* Submit Button */}
-          <TouchableOpacity style={styles.button}>
-            <Link href="./submittedReviews" style={styles.buttonLink}>
+          <TouchableOpacity style={styles.button} onPress={submitReview}>
               <Text style={styles.buttonText}>Submit</Text>
-            </Link>
           </TouchableOpacity>
         </View>
 
