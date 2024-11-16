@@ -6,7 +6,7 @@ from flask_cors import CORS
 # from flask_session import Session
 from config import ApplicationConfig
 from flask_bcrypt import Bcrypt
-from models import db, User
+from models import db, User, Review
 import os, re, dns.resolver
 
 
@@ -120,8 +120,8 @@ def register():
 # Sever sided session login authentication
 @app.route("/login", methods=["POST"])
 def login_user():
-    email = request.json["email"]
-    password = request.json["password"]
+    email = request.json.get("email")
+    password = request.json.get("password")
 
     user = User.query.filter_by(email=email).first()
 
@@ -137,6 +137,37 @@ def login_user():
         "id": user.user_id,
         "email": user.email
     })
+
+@app.route('/reviews', methods=['POST'])
+def add_review():
+    data = request.get_json()
+    user_id = session.get("user_id")
+    review_content = data.get('review')
+    rating = data.get('rating')
+
+    print(review_content)
+
+    #if not user_id:
+    #    return jsonify({"error": "Unauthorized"}), 401
+    
+    if not review_content or not rating:
+        return jsonify({"error": "Review content and rating are required."}), 400
+
+    if rating < 1 or rating > 5:
+        return jsonify({"error": "Rating must be between 1 and 5."}), 400
+
+    try:
+        # Create a new Review object
+        new_review = Review(review_text=review_content, user=1)
+        db.session.add(new_review)
+        db.session.commit()
+
+        print("Review was added to db")
+        return jsonify({"message": "Review submitted successfully"}), 200
+    except Exception as e:
+        db.session.rollback()
+        print("Error: ", e)
+        return jsonify({"error": "Failed to submit review", "details": str(e)}), 400
 
 @app.route("/logout", methods=["POST"])
 def logout_user():

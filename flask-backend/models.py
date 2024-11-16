@@ -16,4 +16,10 @@ class User(db.Model):
     password_hash = db.Column(db.String(255), nullable=False)
     phone_number = db.Column(db.String(20))
     name = db.Column(db.String(100))
+
+class Review(db.Model):
+    __tablename__ = 'reviews'
+    review_id = db.Column(db.Integer, primary_key=True)
+    review_text = db.Column(db.String(500), nullable=False)
+    user = db.Column(db.String(100), nullable=False)
     role = db.Column(db.String(20))
