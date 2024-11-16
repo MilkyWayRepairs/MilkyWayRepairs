@@ -98,7 +98,8 @@ def register():
     else:
         try:
             # Add user to database
-            new_user = User(email=email, password_hash=password, phone_number='N/A', name='none')
+            hashed_password = bcrypt.generate_password_hash(password).decode('utf-8')
+            new_user = User(email=email, password_hash=hashed_password, phone_number='N/A', name='none')
             db.session.add(new_user)
             db.session.commit()
             print("User successfully registered.")  #debugging
