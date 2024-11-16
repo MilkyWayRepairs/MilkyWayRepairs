@@ -2,6 +2,7 @@ import { Text, View, Image, TouchableOpacity, StyleSheet, TextInput, Keyboard, T
 import { Link } from "expo-router";
 import React, { useState } from "react";
 import httpClient from "../httpClient";
+import { SERVER_URL } from "@/config/config";
 
 const Login = () => {
   const [email, setEmail] = useState<string>("");
@@ -9,10 +10,11 @@ const Login = () => {
 
   const logInUser = async () => {
     try {
-      const resp = await httpClient.post("//localhost:5000/login", {
+      const resp = await httpClient.post(`${SERVER_URL}/login`, {
         email,
         password,
       });
+      console.log('Response:', resp);
       window.location.href = "../userHomePage";
     } catch (error: any) {
       if (error.response?.status === 401) {
@@ -40,26 +42,27 @@ const Login = () => {
           </Link>
         </TouchableOpacity>
 
+
         {/* Input Fields */}
-        <input
-          type="text"
+        <TextInput
           placeholder="Email"
           value={email}
-          onChange={(e) => setEmail(e.target.value)}
+          onChangeText={setEmail}
           style={styles.input}
         />
         
-        <input
-          type="password"
+        <TextInput
           placeholder="Password"
           value={password}
-          onChange={(e) => setPassword(e.target.value)}
+          onChangeText={setPassword}
+          secureTextEntry={true}
           style={styles.input}
         />
+        
         {/* Login Button */}
-        <button style={styles.button} onClick={logInUser}>
+        <TouchableOpacity style={styles.button} onPress={logInUser}>
         <Text style={styles.buttonText}>Login</Text>
-        </button>
+        </TouchableOpacity>
 
 
         {/* Don't Have an Account Link */}
