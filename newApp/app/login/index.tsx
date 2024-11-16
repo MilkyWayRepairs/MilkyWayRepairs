@@ -1,5 +1,5 @@
 import { Text, View, Image, TouchableOpacity, StyleSheet, TextInput, Keyboard, TouchableWithoutFeedback } from "react-native";
-import { Link } from "expo-router";
+import { Link, router } from "expo-router";
 import React, { useState } from "react";
 import httpClient from "../httpClient";
 import { SERVER_URL } from "@/config/config";
@@ -14,15 +14,22 @@ const Login = () => {
         email,
         password,
       });
-      console.log('Response:', resp);
-      window.location.href = "../userHomePage";
-    } catch (error: any) {
-      if (error.response?.status === 401) {
-        alert("Invalid credentials");
-      }
+ console.log('Response:', resp);
+    // Check if the response contains the expected data
+    if (resp.status === 200 && resp.data) {
+      router.push('/userHomePage')
+    } else {
+      console.error('Unexpected response format:', resp);
     }
-  };
-
+  } catch (error: any) {
+    console.error('Login error:', error);
+    if (error.response?.status === 401) {
+      alert("Invalid credentials");
+    } else {
+      alert("An error occurred. Please try again.");
+    }
+  }
+};
   return (
     <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
       <View style={styles.container}>

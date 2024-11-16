@@ -1,9 +1,9 @@
 # Refer to README under flask-backend directory to setup backend 
-from flask import Flask, request, jsonify
+from flask import Flask, request, jsonify, session
 from flask_sqlalchemy import SQLAlchemy
 from dotenv import load_dotenv
 from flask_cors import CORS
-from flask_session import Session
+# from flask_session import Session
 from config import ApplicationConfig
 from flask_bcrypt import Bcrypt
 from models import db, User
@@ -17,7 +17,6 @@ app.config.from_object(ApplicationConfig)
 
 bcrypt = Bcrypt(app)
 CORS(app, supports_credentials=True)
-server_session = Session(app)
 db.init_app(app)
 
 with app.app_context():
@@ -27,6 +26,8 @@ with app.app_context():
 app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv("PERSONAL_URI")
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
+# Make sure that there is a secret key in your .env file to manage sessions
+app.secret_key = os.getenv("SECRET_KEY")
 
 # Creates personal session token for each user
 @app.route("/@me")
@@ -139,7 +140,7 @@ def login_user():
 
 @app.route("/logout", methods=["POST"])
 def logout_user():
-    session.pop("user_id")
+    session.pop("user_id", None)
     return "200"
 
 
