@@ -1,19 +1,8 @@
 import { Text, View, Image, TouchableOpacity, Alert, StyleSheet, TextInput, Keyboard, TouchableWithoutFeedback } from "react-native";
 import { Link, useRouter } from "expo-router";
 import React, { useState } from 'react';
-import { SERVER_URL } from '../../config/config';
+import { SERVER_URL } from "../../config/config";
 import AccountSidebar from '../accountSidebar'; // Ensure the path is correct
-
-/*
-// Custom Star Rating Component
-const StarRating = () => {
-  const [rating, setRating] = useState(0); // Initial rating value
-
-  // Function to handle star press
-  const handleStarPress = (star: number) => {
-    setRating(star);
-  };
-*/
 
 const StarRating = ({ rating, setRating }: { rating: number; setRating: (rating: number) => void }) => {
   const handleStarPress = (star: number) => {

@@ -22,3 +22,4 @@ class Review(db.Model):
     review_id = db.Column(db.Integer, primary_key=True)
     review_text = db.Column(db.String(500), nullable=False)
     user = db.Column(db.String(100), nullable=False)
+    role = db.Column(db.Enum('user', 'employee', 'admin'), nullable=False)
