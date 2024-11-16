@@ -1,8 +1,26 @@
 import { Text, View, Image, TouchableOpacity, StyleSheet, TextInput, Keyboard, TouchableWithoutFeedback } from "react-native";
 import { Link } from "expo-router";
-import React from 'react';
+import React, { useState } from "react";
+import httpClient from "../httpClient";
 
 const Login = () => {
+  const [email, setEmail] = useState<string>("");
+  const [password, setPassword] = useState<string>("");
+
+  const logInUser = async () => {
+    try {
+      const resp = await httpClient.post("//localhost:5000/login", {
+        email,
+        password,
+      });
+      window.location.href = "../userHomePage";
+    } catch (error: any) {
+      if (error.response?.status === 401) {
+        alert("Invalid credentials");
+      }
+    }
+  };
+
   return (
     <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
       <View style={styles.container}>
@@ -23,23 +41,26 @@ const Login = () => {
         </TouchableOpacity>
 
         {/* Input Fields */}
-        <TextInput
-          style={styles.input}
+        <input
+          type="text"
           placeholder="Email"
-          keyboardType="email-address"
-        />
-        <TextInput
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
           style={styles.input}
-          placeholder="Password"
-          secureTextEntry={true}
         />
-
+        
+        <input
+          type="password"
+          placeholder="Password"
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
+          style={styles.input}
+        />
         {/* Login Button */}
-        <Link href="/userHomePage" asChild>
-          <TouchableOpacity style={styles.button}>
-            <Text style={styles.buttonText}>Login</Text>
-          </TouchableOpacity>
-        </Link>
+        <button style={styles.button} onClick={logInUser}>
+        <Text style={styles.buttonText}>Login</Text>
+        </button>
+
 
         {/* Don't Have an Account Link */}
         <TouchableOpacity>
