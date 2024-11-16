@@ -19,7 +19,7 @@
     "@mui/icons-material": "^6.1.6",
     "@react-navigation/native": "^6.0.2",
     "axios": "^1.7.7",
-    "expo": "^52.0.6",
+    "expo": "^52.0.7",
     "expo-constants": "~17.0.3",
     "expo-font": "~13.0.1",
     "expo-linking": "~7.0.2",
