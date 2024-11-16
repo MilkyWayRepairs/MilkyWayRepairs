@@ -70,7 +70,9 @@ const Register = () => {
           value={password}
           onChangeText={setPassword}
         />
-        <Text style={styles}>Password must be at least 8 characters long and have at least 3 of these characters: !#$%&</Text>
+        <Text style={styles.passwordText}>Password must:{'\n'}
+          be at least 8 characters long and{'\n'}
+          have at least 3 of these characters: !#$%&</Text>
         <TextInput
           style={styles.input}
           placeholder="Re-enter Password"
@@ -118,6 +120,10 @@ const styles = StyleSheet.create({
     borderRadius: 5,
     paddingHorizontal: 10,
     marginVertical: 10,
+  },
+  passwordText: {
+    width: 300,
+    justifyContent: 'center',
   },
   button: {
     width: 150,
