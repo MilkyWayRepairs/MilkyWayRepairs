@@ -37,8 +37,6 @@ const Register = () => {
   }
 };
 
-  
-
   return (
     <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
       <View style={styles.container}>
