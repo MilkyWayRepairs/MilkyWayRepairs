@@ -6,7 +6,7 @@ from flask_cors import CORS
 # from flask_session import Session
 from config import ApplicationConfig
 from flask_bcrypt import Bcrypt
-from models import db, User, Review
+from models import db, User
 import os, re, dns.resolver
 
 
@@ -32,12 +32,12 @@ app.secret_key = os.getenv("SECRET_KEY")
 # Creates personal session token for each user
 @app.route("/@me")
 def get_current_user():
-    user_id = session.get("user_id")
+    id = session.get("id")
 
-    if not user_id:
+    if not id:
         return jsonify({"error": "Unauthorized"}), 401
     
-    user = User.query.filter_by(id=user_id).first()
+    user = User.query.filter_by(id=id).first()
     return jsonify({
         "id": user.id,
         "email": user.email
@@ -120,8 +120,8 @@ def register():
 # Sever sided session login authentication
 @app.route("/login", methods=["POST"])
 def login_user():
-    email = request.json.get("email")
-    password = request.json.get("password")
+    email = request.json["email"]
+    password = request.json["password"]
 
     user = User.query.filter_by(email=email).first()
 
@@ -131,23 +131,24 @@ def login_user():
     if not bcrypt.check_password_hash(user.password_hash, password):
         return jsonify({"error": "Unauthorized"}), 401
     
-    session["user_id"] = user.user_id
+    session["id"] = user.id
 
     return jsonify({
-        "id": user.user_id,
-        "email": user.email
+        "id": user.id,
+        "email": user.email,
+        "role": user.role
     })
 
 @app.route('/reviews', methods=['POST'])
 def add_review():
     data = request.get_json()
-    user_id = session.get("user_id")
+    id = session.get("id")
     review_content = data.get('review')
     rating = data.get('rating')
 
     print(review_content)
 
-    #if not user_id:
+    #if not id:
     #    return jsonify({"error": "Unauthorized"}), 401
     
     if not review_content or not rating:
@@ -171,7 +172,7 @@ def add_review():
 
 @app.route("/logout", methods=["POST"])
 def logout_user():
-    session.pop("user_id", None)
+    session.pop("id", None)
     return "200"
 
 
