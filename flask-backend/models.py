@@ -16,6 +16,7 @@ class User(db.Model):
     password_hash = db.Column(db.String(255), nullable=False)
     phone_number = db.Column(db.String(20))
     name = db.Column(db.String(100))
+    role = db.Column(db.String(10))
 
 class Review(db.Model):
     __tablename__ = 'reviews'
