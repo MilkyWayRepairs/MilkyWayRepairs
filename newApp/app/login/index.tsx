@@ -2,6 +2,7 @@ import { Text, View, Image, TouchableOpacity, StyleSheet, TextInput, Keyboard, T
 import { Link, router } from "expo-router";
 import React, { useState } from "react";
 import httpClient from "../httpClient";
+// Refer to readme under app/config/ 
 import { SERVER_URL } from "@/config/config";
 
 const Login = () => {
@@ -17,7 +18,18 @@ const Login = () => {
  console.log('Response:', resp);
     // Check if the response contains the expected data
     if (resp.status === 200 && resp.data) {
-      router.push('/userHomePage')
+      if (resp.data.role == 'user') {
+        router.push('/userHomePage')
+      }
+
+      if (resp.data.role == 'employee') {
+        router.push('/employeeHomePage')
+      }
+
+      if (resp.data.role == 'admin') {
+        router.push('/homeAndAdminOverlay')
+      }
+      
     } else {
       console.error('Unexpected response format:', resp);
     }
