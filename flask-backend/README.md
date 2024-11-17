@@ -45,4 +45,5 @@ $ pip install Flask flask_sqlalchemy pymysql python-dotenv flask-cors dnspython
  2) Create environment variable as shown below, but sqlusername and password are our own database access accounts
  ```
  PERSONAL_URI='mysql+pymysql://sqlusername:sqlpassword@ipaddress:3306/milkywayrepairs'
+ SECRET_KEY='literallyAnyStringICreatedMineRandomlyAsA24BitStringInPython'
  ```
