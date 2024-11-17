@@ -27,7 +27,7 @@ const Login = () => {
       }
 
       if (resp.data.role == 'admin') {
-        router.push('/homeAndAdminOverlay')
+        router.push('/adminHomePage/adminHomePage')
       }
       
     } else {
