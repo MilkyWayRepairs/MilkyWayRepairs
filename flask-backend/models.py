@@ -10,7 +10,7 @@ def get_uuid():
 
 # Define a model for your user table
 class User(db.Model):
-    __tablename__ = 'users'
+    __tablename__ = 'user'
     id = db.Column(db.Integer, primary_key=True)
     email = db.Column(db.String(255), unique=True, nullable=False)
     password_hash = db.Column(db.String(255), nullable=False)
@@ -19,8 +19,8 @@ class User(db.Model):
     role = db.Column(db.String(10))
 
 class Review(db.Model):
-    __tablename__ = 'reviews'
-    review_id = db.Column(db.Integer, primary_key=True)
-    review_text = db.Column(db.String(500), nullable=False)
-    user = db.Column(db.String(100), nullable=False)
-    role = db.Column(db.String(20))
+    __tablename__ = 'review'
+    id = db.Column(db.Integer, primary_key=True)
+    comment = db.Column(db.String(500), nullable=False)
+    user_id = db.Column(db.String(100), nullable=False)
+    num_of_stars = db.Column(db.String(20))
