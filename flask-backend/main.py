@@ -18,9 +18,8 @@ app.config.from_object(ApplicationConfig)
 bcrypt = Bcrypt(app)
 CORS(app, supports_credentials=True)
 db.init_app(app)
-
-with app.app_context():
-    db.create_all()
+#with app.app_context():
+#   db.create_all()
 
 # Configure the SQLAlchemy part of the application
 app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv("PERSONAL_URI")
