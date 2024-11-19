@@ -17,7 +17,7 @@ $ .venv/Scripts/activate
 ### Note : Python must be installed onto your computer, and Python MUST be added to PATH 
 3) Install Flask
  ```
-$ pip install Flask flask_sqlalchemy pymysql python-dotenv flask-cors
+$ pip install Flask flask_sqlalchemy pymysql python-dotenv flask-cors dnspython flask-session redis flask-bcrypt cryptography
  ```
 
 ## MacOS / Linux
@@ -35,7 +35,7 @@ $ .venv/bin/activate
 ### Note : Python must be installed onto your computer, and Python MUST be added to PATH 
 3) Install Flask
  ```
-$ pip install Flask flask_sqlalchemy pymysql python-dotenv flask-cors
+$ pip install Flask flask_sqlalchemy pymysql python-dotenv flask-cors dnspython
  ```
 
 
@@ -45,4 +45,5 @@ $ pip install Flask flask_sqlalchemy pymysql python-dotenv flask-cors
  2) Create environment variable as shown below, but sqlusername and password are our own database access accounts
  ```
  PERSONAL_URI='mysql+pymysql://sqlusername:sqlpassword@ipaddress:3306/milkywayrepairs'
+ SECRET_KEY='literallyAnyStringICreatedMineRandomlyAsA24BitStringInPython'
  ```

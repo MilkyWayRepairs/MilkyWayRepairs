@@ -84,12 +84,18 @@ const Messages: React.FC = () => {
 
       {/* Bottom Navigation Bar */}
       <View style={styles.bottomNav}>
+        
         <TouchableOpacity style={styles.homeButtonContainer}>
           <Link href="/userHomePage">
-            <Image source={require('../../assets/images/homeLogo.png')} style={styles.navIcon} />
-            <Text style={styles.navText}>Home</Text>
+          {"  "}
+          <Image 
+          source={require('../../assets/images/homeLogo.png')} 
+          style={styles.navIcon} />
+            {"\n"}     
+              <Text style={styles.navText}>Home</Text>
           </Link>
         </TouchableOpacity>
+
         <TouchableOpacity style={styles.accountButtonContainer} onPress={handleAccountPress}>
           <Image source={require('../../assets/images/accountLogo.png')} style={styles.navIcon} />
           <Text style={styles.navText}>Account</Text>
@@ -208,11 +214,11 @@ const styles = StyleSheet.create({
   navIcon: {
     width: 30,
     height: 30,
-    backgroundColor: 'transparent', // Removed any background color to match the Account icon
   },
   navText: {
     fontSize: 14,
     color: '#000',
+    marginTop: 10,
   },
   accountOverlayContainer: {  // Everything below is the overlay
     position: 'absolute',

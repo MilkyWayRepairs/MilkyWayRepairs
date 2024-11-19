@@ -1,8 +1,47 @@
 import { Text, View, Image, TouchableOpacity, StyleSheet, TextInput, Keyboard, TouchableWithoutFeedback } from "react-native";
-import { Link } from "expo-router";
-import React from 'react';
+import { Link, router } from "expo-router";
+import React, { useState } from "react";
+import httpClient from "../httpClient";
+// Refer to readme under app/config/ 
+import { SERVER_URL } from "@/config/config";
 
 const Login = () => {
+  const [email, setEmail] = useState<string>("");
+  const [password, setPassword] = useState<string>("");
+
+  const logInUser = async () => {
+    try {
+      const resp = await httpClient.post(`${SERVER_URL}/login`, {
+        email,
+        password,
+      });
+ console.log('Response:', resp);
+    // Check if the response contains the expected data
+    if (resp.status === 200 && resp.data) {
+      if (resp.data.role == 'user') {
+        router.push('/userHomePage')
+      }
+
+      if (resp.data.role == 'employee') {
+        router.push('/employeeHomePage')
+      }
+
+      if (resp.data.role == 'admin') {
+        router.push('/adminHomePage/adminHomePage')
+      }
+      
+    } else {
+      console.error('Unexpected response format:', resp);
+    }
+  } catch (error: any) {
+    console.error('Login error:', error);
+    if (error.response?.status === 401) {
+      alert("Invalid credentials");
+    } else {
+      alert("An error occurred. Please try again.");
+    }
+  }
+};
   return (
     <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
       <View style={styles.container}>
@@ -22,24 +61,28 @@ const Login = () => {
           </Link>
         </TouchableOpacity>
 
+
         {/* Input Fields */}
         <TextInput
-          style={styles.input}
           placeholder="Email"
-          keyboardType="email-address"
-        />
-        <TextInput
+          value={email}
+          onChangeText={setEmail}
           style={styles.input}
-          placeholder="Password"
-          secureTextEntry={true}
         />
-
+        
+        <TextInput
+          placeholder="Password"
+          value={password}
+          onChangeText={setPassword}
+          secureTextEntry={true}
+          style={styles.input}
+        />
+        
         {/* Login Button */}
-        <Link href="/userHomePage" asChild>
-          <TouchableOpacity style={styles.button}>
-            <Text style={styles.buttonText}>Login</Text>
-          </TouchableOpacity>
-        </Link>
+        <TouchableOpacity style={styles.button} onPress={logInUser}>
+        <Text style={styles.buttonText}>Login</Text>
+        </TouchableOpacity>
+
 
         {/* Don't Have an Account Link */}
         <TouchableOpacity>

@@ -1,7 +1,7 @@
 import { Text, View, Image, TouchableOpacity, StyleSheet, TextInput, Alert, TouchableWithoutFeedback, Keyboard } from "react-native";
-import { Link, } from "expo-router";
+import { Link, router, } from "expo-router";
 import React, { useState } from 'react';
-//import { IP_ADDRESS } from '@env'
+import { SERVER_URL } from '../../config/config';
 
 const Register = () => {
   const [email, setEmail] = useState('');
@@ -12,13 +12,14 @@ const Register = () => {
     if (password !== confirmPassword) {
       Alert.alert("Passwords don't match");
       return;
+
     }
 
   try {
     
     // Registriation will only go through on the device running the app unless 'localhost' is changed to your personal IP 
     // Replace 'localhost' with IP if doing through different device
-    const response = await fetch(`http://192.168.0.18:5000/register`, {
+    const response = await fetch(`${SERVER_URL}/register`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ email, password })
@@ -27,6 +28,7 @@ const Register = () => {
     const data = await response.json();
     if (response.ok && data.code === 0){
       Alert.alert("Registration successful");
+      router.push('/userHomePage');
     } else {
       Alert.alert("Registration failed", data.message);
     }
@@ -34,8 +36,6 @@ const Register = () => {
     Alert.alert("Error", "Unable to register at the moment.");
   }
 };
-
-  
 
   return (
     <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
@@ -70,7 +70,9 @@ const Register = () => {
           value={password}
           onChangeText={setPassword}
         />
-        <Text style={styles}>Password must be at least 8 characters long and have at least 3 of these characters: !#$%&</Text>
+        <Text style={styles.passwordText}>Password must:{'\n'}
+          be at least 8 characters long and{'\n'}
+          have at least 3 of these characters: !#$%&</Text>
         <TextInput
           style={styles.input}
           placeholder="Re-enter Password"
@@ -118,6 +120,10 @@ const styles = StyleSheet.create({
     borderRadius: 5,
     paddingHorizontal: 10,
     marginVertical: 10,
+  },
+  passwordText: {
+    width: 300,
+    justifyContent: 'center',
   },
   button: {
     width: 150,

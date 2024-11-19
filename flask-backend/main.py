@@ -1,31 +1,48 @@
 # Refer to README under flask-backend directory to setup backend 
-from flask import Flask, request, jsonify
+from flask import Flask, request, jsonify, session
 from flask_sqlalchemy import SQLAlchemy
 from dotenv import load_dotenv
 from flask_cors import CORS
+# from flask_session import Session
+from config import ApplicationConfig
+from flask_bcrypt import Bcrypt
+from models import db, User
 import os, re, dns.resolver
 
 
-load_dotenv()
 
+load_dotenv()
 app = Flask(__name__)
-CORS(app)
+app.config.from_object(ApplicationConfig)
+
+bcrypt = Bcrypt(app)
+CORS(app, supports_credentials=True)
+db.init_app(app)
+
+with app.app_context():
+    db.create_all()
 
 # Configure the SQLAlchemy part of the application
 app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv("PERSONAL_URI")
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
-# Initialize SQLAlchemySS
-db = SQLAlchemy(app)
+# Make sure that there is a secret key in your .env file to manage sessions
+app.secret_key = os.getenv("SECRET_KEY")
 
-# Define a model for your user table
-class User(db.Model):
-    __tablename__ = 'user'
-    user_id = db.Column(db.Integer, primary_key=True)
-    email = db.Column(db.String(255), unique=True, nullable=False)
-    password_hash = db.Column(db.String(255), nullable=False)
-    phone_number = db.Column(db.String(20), nullable=False)
-    name = db.Column(db.String(100), nullable=False)
+# Creates personal session token for each user
+@app.route("/@me")
+def get_current_user():
+    id = session.get("id")
+
+    if not id:
+        return jsonify({"error": "Unauthorized"}), 401
+    
+    user = User.query.filter_by(id=id).first()
+    return jsonify({
+        "id": user.id,
+        "email": user.email
+    }) 
+
 
 def doesEmailExists(email):
     users = User.query.all()
@@ -82,7 +99,8 @@ def register():
     else:
         try:
             # Add user to database
-            new_user = User(email=email, password_hash=password, phone_number='N/A', name='none')
+            hashed_password = bcrypt.generate_password_hash(password).decode('utf-8')
+            new_user = User(email=email, password_hash=hashed_password, phone_number='N/A', name='none', role='user')
             db.session.add(new_user)
             db.session.commit()
             print("User successfully registered.")  #debugging
@@ -97,6 +115,65 @@ def register():
                 "message": "Registration failed", 
                 "error": str(e)
                 }), 400
+
+
+# Sever sided session login authentication
+@app.route("/login", methods=["POST"])
+def login_user():
+    email = request.json["email"]
+    password = request.json["password"]
+
+    user = User.query.filter_by(email=email).first()
+
+    if user is None:
+        return jsonify({"error": "Unauthorized"}), 401
+
+    if not bcrypt.check_password_hash(user.password_hash, password):
+        return jsonify({"error": "Unauthorized"}), 401
+    
+    session["id"] = user.id
+
+    return jsonify({
+        "id": user.id,
+        "email": user.email,
+        "role": user.role
+    })
+
+@app.route('/reviews', methods=['POST'])
+def add_review():
+    data = request.get_json()
+    id = session.get("id")
+    review_content = data.get('review')
+    rating = data.get('rating')
+
+    print(review_content)
+
+    #if not id:
+    #    return jsonify({"error": "Unauthorized"}), 401
+    
+    if not review_content or not rating:
+        return jsonify({"error": "Review content and rating are required."}), 400
+
+    if rating < 1 or rating > 5:
+        return jsonify({"error": "Rating must be between 1 and 5."}), 400
+
+    try:
+        # Create a new Review object
+        new_review = Review(review_text=review_content, user=1)
+        db.session.add(new_review)
+        db.session.commit()
+
+        print("Review was added to db")
+        return jsonify({"message": "Review submitted successfully"}), 200
+    except Exception as e:
+        db.session.rollback()
+        print("Error: ", e)
+        return jsonify({"error": "Failed to submit review", "details": str(e)}), 400
+
+@app.route("/logout", methods=["POST"])
+def logout_user():
+    session.pop("id", None)
+    return "200"
 
 
 if __name__ == '__main__':
