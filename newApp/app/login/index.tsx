@@ -27,7 +27,7 @@ const Login = () => {
       }
 
       if (resp.data.role == 'admin') {
-        router.push('/adminHomePage/adminHomePage')
+        router.push('/adminHomePage')
       }
       
     } else {
