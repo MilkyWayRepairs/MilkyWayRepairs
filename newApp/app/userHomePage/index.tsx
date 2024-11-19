@@ -49,10 +49,12 @@ const userHomePage = () => {
 
       {/* Schedule Appointment Button */}
       <TouchableOpacity style={styles.scheduleAppointmentButtonContainer}>
-        <Image
-          source={require('../../assets/images/ScheduleAppointment.png')}
-          style={styles.homeScreenButton}
-        />
+        <Link href="/scheduleAppointment">
+          <Image
+            source={require('../../assets/images/ScheduleAppointment.png')}
+            style={styles.homeScreenButton}
+          />
+        </Link>
       </TouchableOpacity>
 
       {/* Messages Button */}  
