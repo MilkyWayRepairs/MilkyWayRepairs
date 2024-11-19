@@ -6,7 +6,7 @@ from flask_cors import CORS
 # from flask_session import Session
 from config import ApplicationConfig
 from flask_bcrypt import Bcrypt
-from models import db, User
+from models import db, User, Review
 import os, re, dns.resolver
 
 
