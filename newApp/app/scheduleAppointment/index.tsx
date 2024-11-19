@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { View, Text, TextInput, Button, StyleSheet, Alert, Platform } from 'react-native';
-//import DateTimePicker from '@react-native-community/datetimepicker';
+import DateTimePicker, { DateTimePickerEvent } from '@react-native-community/datetimepicker';
 import AccountSidebar from '../accountSidebar'; // Adjust the path as needed
 import BottomNavBar from '../bottomNavBar'; // Adjust the path as needed
 
@@ -9,13 +9,6 @@ const AppointmentScheduler = () => {
     const [date, setDate] = useState(new Date());
     const [showDatePicker, setShowDatePicker] = useState(false);
     const [isSidebarVisible, setIsSidebarVisible] = useState(false);
-
-    const onChangeDate = (event: any, selectedDate?: Date) => {
-        setShowDatePicker(Platform.OS === 'ios'); // Keep date picker open on iOS
-        if (selectedDate) {
-            setDate(selectedDate);
-        }
-    };
 
     const handleSchedule = () => {
         if (!name) {
@@ -35,6 +28,13 @@ const AppointmentScheduler = () => {
     const handleOverlayClose = () => {
         setIsSidebarVisible(false); // Hide the sidebar
     };
+
+    const handleDateChange = (event: DateTimePickerEvent, selectedDate?: Date) => {
+        setShowDatePicker(false) // close the picker
+        if (selectedDate) {
+            setDate(selectedDate) // Update the date state
+        }
+    }
 
     return (
         <View style={styles.container}>
@@ -61,9 +61,12 @@ const AppointmentScheduler = () => {
                     value={date}
                     mode="datetime"
                     display="default"
-                    onChange={onChangeDate}
+                    onChange={handleDateChange}
                 />
             )}
+
+            <Text style={styles.label}>Selected Date and Time:</Text>
+            <Text style={styles.selectedDate}>{date.toLocaleString()}</Text>
 
             <View style={styles.buttonContainer}>
                 <Button title="Schedule Appointment" onPress={handleSchedule} />
@@ -88,6 +91,11 @@ const styles = StyleSheet.create({
     label: {
         fontSize: 16,
         marginBottom: 5,
+    },
+    selectedDate: {
+        fontSize: 16,
+        color: 'blue',
+        marginTop: 10
     },
     input: {
         borderWidth: 1,
