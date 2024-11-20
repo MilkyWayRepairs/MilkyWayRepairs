@@ -1,5 +1,8 @@
+import datetime
 from flask_sqlalchemy import SQLAlchemy
 from uuid import uuid4
+
+from sqlalchemy import func
 
 
 # Initialize SQLAlchemySS
@@ -21,6 +24,7 @@ class User(db.Model):
 class Review(db.Model):
     __tablename__ = 'review'
     id = db.Column(db.Integer, primary_key=True)
-    review_text = db.Column(db.String(500), nullable=False)
+    text = db.Column(db.String(500), nullable=False)
     user_id = db.Column(db.String(100), nullable=False)
     num_of_stars = db.Column(db.String(20))
+    created_at = db.Column(db.DateTime, server_default=func.now(), nullable=False)

@@ -138,34 +138,47 @@ def login_user():
         "role": user.role
     })
 
-@app.route('/reviews', methods=['POST'])
-def add_review():
-    data = request.get_json()
-    id = session.get("id")
-    review_text = data.get('review')
-    rating = data.get('rating')
+@app.route('/reviews', methods=['POST', 'GET'])
+def reviews():
+    if request.method == 'POST':
+        data = request.get_json()
+        id = session.get("id")
+        review_text = data.get('review')
+        rating = data.get('rating')
 
-        #if not id:
-    #    return jsonify({"error": "Unauthorized"}), 401
-    
-    if not review_text or not rating:
-        return jsonify({"error": "Review content and rating are required."}), 400
+        if not review_text or not rating:
+            return jsonify({"error": "Review content and rating are required."}), 400
 
-    if rating < 1 or rating > 5:
-        return jsonify({"error": "Rating must be between 1 and 5."}), 400
+        if rating < 1 or rating > 5:
+            return jsonify({"error": "Rating must be between 1 and 5."}), 400
 
-    try:
-        # Create a new Review object
-        new_review = Review(review_text=review_text, user_id=id, num_of_stars=rating)
-        db.session.add(new_review)
-        db.session.commit()
+        try:
+            new_review = Review(text=review_text, user_id=id, num_of_stars=rating)
+            db.session.add(new_review)
+            db.session.commit()
+            print("Review was added to db")
+            return jsonify({"message": "Review submitted successfully"}), 200
+        except Exception as e:
+            db.session.rollback()
+            print("Error: ", e)
+            return jsonify({"error": "Failed to submit review", "details": str(e)}), 400
 
-        print("Review was added to db")
-        return jsonify({"message": "Review submitted successfully"}), 200
-    except Exception as e:
-        db.session.rollback()
-        print("Error: ", e)
-        return jsonify({"error": "Failed to submit review", "details": str(e)}), 400
+    elif request.method == 'GET':
+        return get_reviews()
+
+def get_reviews():
+    reviews = Review.query.all()
+    reviews_list = [
+        {
+            "id": review.id,
+            "user_id": review.user_id,
+            "text": review.text,
+            "stars": review.num_of_stars,
+            "created_at": review.created_at
+        }
+        for review in reviews
+    ]
+    return jsonify(reviews_list)
 
 @app.route("/logout", methods=["POST"])
 def logout_user():

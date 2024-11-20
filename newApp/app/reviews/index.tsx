@@ -55,7 +55,7 @@ const Reviews = () => {
         Alert.alert("Success", "Review submitted successfully!");
         setReview(""); // Clear the input field after success
         setRating(0)
-        router.push("./submittedReviews")
+        router.push("/reviews/submittedReviews")
       } else {
         Alert.alert("Error", "Failed to submit review. Please try again.");
       }
