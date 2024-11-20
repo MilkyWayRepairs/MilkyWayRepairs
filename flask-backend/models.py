@@ -21,6 +21,6 @@ class User(db.Model):
 class Review(db.Model):
     __tablename__ = 'review'
     id = db.Column(db.Integer, primary_key=True)
-    comment = db.Column(db.String(500), nullable=False)
+    review_text = db.Column(db.String(500), nullable=False)
     user_id = db.Column(db.String(100), nullable=False)
     num_of_stars = db.Column(db.String(20))

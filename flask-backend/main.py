@@ -142,15 +142,13 @@ def login_user():
 def add_review():
     data = request.get_json()
     id = session.get("id")
-    review_content = data.get('review')
+    review_text = data.get('review')
     rating = data.get('rating')
 
-    print(review_content)
-
-    #if not id:
+        #if not id:
     #    return jsonify({"error": "Unauthorized"}), 401
     
-    if not review_content or not rating:
+    if not review_text or not rating:
         return jsonify({"error": "Review content and rating are required."}), 400
 
     if rating < 1 or rating > 5:
@@ -158,7 +156,7 @@ def add_review():
 
     try:
         # Create a new Review object
-        new_review = Review(review_text=review_content, user=1)
+        new_review = Review(review_text=review_text, user_id=id, num_of_stars=rating)
         db.session.add(new_review)
         db.session.commit()
 
