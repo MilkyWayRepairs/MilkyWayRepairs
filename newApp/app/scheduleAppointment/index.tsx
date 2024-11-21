@@ -82,7 +82,6 @@ const AppointmentScheduler = () => {
                 <DateTimePicker
                     value={date}
                     mode={mode}
-                    is24Hour={true}
                     display={Platform.OS === 'ios' ? 'inline' : 'default'}
                     onChange={onChange}
                 />
