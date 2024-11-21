@@ -5,6 +5,8 @@ import React from 'react';
 import { SlideOutRight, withDelay, withTiming } from "react-native-reanimated";
 import { useAnimatedStyle, withSpring, useSharedValue } from "react-native-reanimated";
 import Animated from "react-native-reanimated";
+import { ScrollView } from 'react-native'; // Import ScrollView
+
 
 const homeAndAdminOverlay = () => {
   const translateX = useSharedValue(400); // Start off-screen
@@ -33,6 +35,9 @@ const homeAndAdminOverlay = () => {
         style={styles.logo}
       />
       
+
+
+
       {/* Title Text and Back Arrow Container */}
       <View style={[styles.titleTextContainer, {backgroundColor: "lavenderblush"}]}>
         <Text style={styles.titleText}>
@@ -47,98 +52,71 @@ const homeAndAdminOverlay = () => {
         </TouchableOpacity>        
       </View>
 
-      {/* Schedule Appointment Button */}
-      <TouchableOpacity style={styles.scheduleAppointmentButtonContainer}>
-        <Image
-          source={require('../../assets/images/ScheduleAppointment.png')}
-          style={styles.homeScreenButton}
-        />
-      </TouchableOpacity>
 
-      {/* Messages Button */}  
-      <Link href="/Messages" style={styles.messagesButtonContainer}>
-        <Image
-          source={require('../../assets/images/Messages.png')}
-          style={styles.homeScreenButton}
-        />
-      </Link>
+      <ScrollView
+  horizontal={true} // Enable horizontal scrolling
+  showsHorizontalScrollIndicator={false} // Hide the scrollbar if not needed
+  contentContainerStyle={styles2.scrollContainer} // Add a container style for alignment
+>
+  {/* Schedule Appointment Button */}
+  <TouchableOpacity style={styles2.scrollButtonContainer}>
+  <Link href="setSchedule.tsx">  <Image
+      source={require('../../assets/images/ScheduleAppointment.png')}
+      style={styles2.homeScreenButton}
+    />
+    </Link>
 
-      {/* Review Button */}
-      <TouchableOpacity style={styles.reviewButtonContainer}>
-          <Link href="/reviews">
-              <Image
-                  source={require('../../assets/images/Review.png')}
-                  style={styles.homeScreenButton}
-              />
-          </Link>
-      </TouchableOpacity>
+    <Text style={styles2.homeScreenButtonText}>Set Schedule </Text>
+   
 
-      {/* Status Button */}
-      <TouchableOpacity style={styles.statusButtonContainer}>
-        <Image
-          source={require('../../assets/images/Status.png')}
-          style={styles.homeScreenButton}
-        />
-      </TouchableOpacity>
+  </TouchableOpacity>
 
-      {/* Logs Button */}
-      <TouchableOpacity style={styles.logsButtonContainer}>
-        <Image
-          source={require('../../assets/images/employeeLogs.png')}
-          style={styles.homeScreenButton}
-        />
-      </TouchableOpacity>
+  {/* Messages Button */}
+  <TouchableOpacity style={styles2.scrollButtonContainer}>
+    <Image
+      source={require('../../assets/images/Messages.png')}
+      style={styles2.homeScreenButton}
+    />
+    <Text style={styles2.homeScreenButtonText}>Messages</Text>
+  </TouchableOpacity>
 
-      {/* Manager Button */}
-      <TouchableOpacity style={styles.managerButtonContainer}>
-        <Image
-          source={require('../../assets/images/Manager.png')}
-          style={styles.homeScreenButton}
-        />
-      </TouchableOpacity>      
+  {/* Review Button */}
+  <TouchableOpacity style={styles2.scrollButtonContainer}>
+    <Image
+      source={require('../../assets/images/Review.png')}
+      style={styles2.homeScreenButton}
+    />
+    <Text style={styles2.homeScreenButtonText}>Review</Text>
+  </TouchableOpacity>
 
-      {/* Schedule Appointment Text */}
-      <View style={styles.scheduleAppointmentTextContainer}>
-        <Text style={styles.homeScreenButtonText}>
-            Schedule Appointment
-        </Text>
-      </View>
+  {/* Status Button */}
+  <TouchableOpacity style={styles2.scrollButtonContainer}>
+    <Image
+      source={require('../../assets/images/Status.png')}
+      style={styles2.homeScreenButton}
+    />
+    <Text style={styles2.homeScreenButtonText}>Update Status</Text>
+  </TouchableOpacity>
 
-      {/* Messages Text */}
-      <View style={styles.messagesTextContainer}>
-        <Text style={styles.homeScreenButtonText}>
-            Messages
-        </Text>
-      </View>
+  {/* Logs Button */}
+  <TouchableOpacity style={styles2.scrollButtonContainer}>
+    <Image
+      source={require('../../assets/images/employeeLogs.png')}
+      style={styles2.homeScreenButton}
+    />
+    <Text style={styles2.homeScreenButtonText}>Add Log</Text>
+  </TouchableOpacity>
 
-      {/* Review Text */}
-      <View style={styles.reviewTextContainer}>
-        <Text style={styles.homeScreenButtonText}>
-            Review
-        </Text>
-      </View>
+  {/* Manager Button */}
+  <TouchableOpacity style={styles2.scrollButtonContainer}>
+    <Image
+      source={require('../../assets/images/Manager.png')}
+      style={styles2.homeScreenButton}
+    />
+    <Text style={styles2.homeScreenButtonText}>Manager</Text>
 
-      {/* Status Text */}
-      <View style={styles.statusTextContainer}>
-        <Text style={styles.homeScreenButtonText}>
-            Update Status
-        </Text>
-      </View>
-
-      {/* Logs Text */}
-      <View style={styles.logsTextContainer}>
-        <Text style={styles.homeScreenButtonText}>
-            Add Log
-        </Text>
-      </View>
-
-      {/* Manager Text */}
-      <View style={styles.managerTextContainer}>
-        <Text style={styles.homeScreenButtonText}>
-          Manager
-        </Text>
-      </View>
-
+  </TouchableOpacity>
+  
       {/* Account Button */}
       <TouchableOpacity 
         style={styles.accountButtonContainer}
@@ -154,6 +132,9 @@ const homeAndAdminOverlay = () => {
           </Text>
         </Text>
       </TouchableOpacity>
+      </ScrollView>
+
+
     
       {/* Home Button */}
       <TouchableOpacity style={styles.homeButtonContainer}>
@@ -168,6 +149,8 @@ const homeAndAdminOverlay = () => {
           </Text>
         </Link>
       </TouchableOpacity>
+
+
 
       {/* Account Overlay */}
       {isOverlayVisible && (
@@ -196,8 +179,38 @@ const homeAndAdminOverlay = () => {
         </View>
       </Animated.View>                              
     </View>
+
+
+   
+
+
   );
 };
+
+
+const styles2 = StyleSheet.create({
+  // Add a container style for the ScrollView
+  scrollContainer: {
+    flexDirection: 'row', // Align items horizontally
+    alignItems: 'center', // Center items vertically
+    justifyContent: 'flex-start', // Align items to the start
+    paddingHorizontal: 10, // Optional: add padding on the left and right
+  },
+  scrollButtonContainer: {
+    marginHorizontal: 10, // Add space between buttons
+    alignItems: 'center', // Center items in each button container
+  },
+  homeScreenButton: {
+    width: 78,
+    height: 78,
+    marginBottom: 5, // Add space between the image and text
+  },
+  homeScreenButtonText: {
+    fontSize: 14,
+    color: 'black',
+    textAlign: 'center',
+  },
+});
 
 // Styling
 const styles = StyleSheet.create({
