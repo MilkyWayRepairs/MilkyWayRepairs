@@ -31,8 +31,9 @@ class Review(db.Model):
 
 class Message(db.Model):
     __tablename__ = 'message'
+
     message_id = db.Column(db.Integer, primary_key=True)  # Match the database schema
     sender_id = db.Column(db.Integer, nullable=False)
     receiver_id = db.Column(db.Integer, nullable=False)
     content = db.Column(db.Text, nullable=False)
-    timestamp = db.Column(db.DateTime, default=datetime.utcnow)
+    timestamp = db.Column(db.DateTime, default=datetime.timedelta)  # Fix datetime import issue
