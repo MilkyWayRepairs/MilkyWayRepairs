@@ -1,48 +1,96 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, StyleSheet, FlatList, TouchableOpacity, Image } from 'react-native';
-import { firestore } from './firebaseConfig'; // Import Firebase configuration
-import { Link } from 'expo-router';
+import { View, Text, StyleSheet, FlatList, TouchableOpacity, TextInput, Button, Image } from 'react-native';
+import { Link, useRouter } from 'expo-router';
+import axios, { AxiosError } from 'axios';
 import { useAnimatedStyle, useSharedValue, withTiming } from "react-native-reanimated";
 import Animated from "react-native-reanimated";
 
 interface Message {
-  id: string;
+  id: number;
   content: string;
   sender: string;
   timestamp: any;
 }
 
+interface User {
+  id: number;
+  name: string;
+  email: string;
+}
+
 const Messages: React.FC = () => {
   const [messages, setMessages] = useState<Message[]>([]);
+  const [newMessage, setNewMessage] = useState('');
+  const [senderId] = useState(1); // Example sender ID
+  const [receiverId, setReceiverId] = useState<number | null>(null); // Dynamic receiver ID
+  const [users, setUsers] = useState<User[]>([]); // List of users
   const translateX = useSharedValue(400); // Start off-screen
   const [isOverlayVisible, setIsOverlayVisible] = useState(false);
+  const [isSidebarVisible, setIsSidebarVisible] = useState(false);
+  const router = useRouter(); // Use router to navigate between pages
 
   useEffect(() => {
-    const unsubscribe = firestore.collection('messages')
-      .orderBy('timestamp', 'desc')
-      .onSnapshot(snapshot => {
-        const fetchedMessages = snapshot.docs.map(doc => ({
-          id: doc.id,
-          ...doc.data(),
-        })) as Message[];
-        setMessages(fetchedMessages);
-      }, error => {
-        console.error("Error fetching messages: ", error);
-      });
+    //fetchMessages();
+    fetchUsers();
+  }, [receiverId]);
+/*
+  const fetchMessages = async () => {
+    if (receiverId === null) return;
+    try {
+        const response = await axios.get('http://192.168.0.33:5000/messages', {
+            params: { sender_id: senderId, receiver_id: receiverId },
+        });
+        setMessages(response.data);
+    } catch (error) {
+        if (axios.isAxiosError(error)) {
+            // Handle Axios errors
+            console.error('Error fetching messages:', error.message);
+            if (error.response) {
+                console.error('Response data:', error.response.data);
+                console.error('Response status:', error.response.status);
+                console.error('Response headers:', error.response.headers);
+            } else if (error.request) {
+                console.error('No response received:', error.request);
+            }
+        } else {
+            // Handle non-Axios errors
+            console.error('Error setting up request:', (error as Error).message);
+        }
+    }
+};*/
 
-    return () => unsubscribe(); // Cleanup on unmount
-  }, []);
+const fetchUsers = async () => {
+    try {
+        const response = await axios.get('http://192.168.0.33:5000/users', {
+            params: { current_user_id: senderId },
+        });
+        setUsers(response.data);
+    } catch (error) {
+        console.error('Error fetching users:', error);
+    }
+};
+ 
+  const startChatting = (receiverId: number) => {
+    setReceiverId(receiverId);
+    setIsSidebarVisible(false);
+    router.push(`../Messages/${receiverId}`); // Navigate to chat page with selected user
+  };
 
   const renderMessageItem = ({ item }: { item: Message }) => (
-    <Link href={`/Messages/${item.id}`} style={styles.messageItem}>
-      <View>
-        <Text style={styles.senderText}>{item.sender}</Text>
-        <Text style={styles.contentText}>{item.content}</Text>
-        <Text style={styles.timestampText}>
-          {item.timestamp ? new Date(item.timestamp.seconds * 1000).toLocaleString() : ''}
-        </Text>
-      </View>
-    </Link>
+    <View style={styles.messageItem}>
+      <Text style={styles.senderText}>
+        {item.sender === `User${senderId}` ? 'You' : `User${receiverId}`}:
+      </Text>
+      <Text style={styles.contentText}>{item.content}</Text>
+      <Text style={styles.timestampText}>{new Date(item.timestamp).toLocaleString()}</Text>
+    </View>
+  );
+
+  const renderUserItem = ({ item }: { item: User }) => (
+    <TouchableOpacity style={styles.userItem} onPress={() => startChatting(item.id)}>
+      <Text style={styles.userName}>{item.name}</Text>
+      <Text style={styles.userEmail}>{item.email}</Text>
+    </TouchableOpacity>
   );
 
   const animatedStyles = useAnimatedStyle(() => {
@@ -53,22 +101,30 @@ const Messages: React.FC = () => {
 
   const handleAccountPress = () => {
     setIsOverlayVisible(true);
-    translateX.value = withTiming(0); // Animate to visible position
+    translateX.value = withTiming(0);
   };
 
   const handleOverlayClose = () => {
     setIsOverlayVisible(false);
-    translateX.value = withTiming(400); // Animate to off-screen position
+    translateX.value = withTiming(400);
+  };
+
+  const handleStartChatPress = () => {
+    setIsSidebarVisible(true);
+  };
+
+  const handleSidebarClose = () => {
+    setIsSidebarVisible(false);
   };
 
   return (
     <View style={styles.container}>
-      {/* Header Section with Background Color */}
+      {/* Header */}
       <View style={styles.header}>
         <Text style={styles.headerText}>Messages</Text>
       </View>
 
-      {/* List of Messages */}
+      {/* Chat List */}
       {messages.length === 0 ? (
         <View style={styles.noMessagesContainer}>
           <Text style={styles.noMessagesText}>No messages found</Text>
@@ -77,22 +133,27 @@ const Messages: React.FC = () => {
         <FlatList
           data={messages}
           renderItem={renderMessageItem}
-          keyExtractor={(item) => item.id}
+          keyExtractor={(item) => item.id.toString()}
           contentContainerStyle={styles.listContent}
         />
       )}
 
-      {/* Bottom Navigation Bar */}
+      {/* Start a New Chat Button */}
+      <TouchableOpacity style={styles.startChatButton} onPress={handleStartChatPress}>
+        <Text style={styles.startChatButtonText}>Start a New Chat</Text>
+      </TouchableOpacity>
+
+      {/* Navigation */}
       <View style={styles.bottomNav}>
-        
         <TouchableOpacity style={styles.homeButtonContainer}>
           <Link href="/userHomePage">
-          {"  "}
-          <Image 
-          source={require('../../assets/images/homeLogo.png')} 
-          style={styles.navIcon} />
-            {"\n"}     
-              <Text style={styles.navText}>Home</Text>
+            {"  "}
+            <Image
+              source={require('../../assets/images/homeLogo.png')}
+              style={styles.navIcon}
+            />
+            {"\n"}
+            <Text style={styles.navText}>Home</Text>
           </Link>
         </TouchableOpacity>
 
@@ -104,36 +165,29 @@ const Messages: React.FC = () => {
 
       {/* Account Overlay */}
       {isOverlayVisible && (
-        <TouchableOpacity 
-          style={styles.overlayBackground}
-          activeOpacity={0} 
-          onPress={handleOverlayClose}
-        ></TouchableOpacity>
+        <TouchableOpacity style={styles.overlayBackground} activeOpacity={0} onPress={handleOverlayClose} />
       )}
-      <Animated.View style={[styles.accountOverlayContainer, animatedStyles]}
-      onStartShouldSetResponder={() => true}
-        onTouchEnd={(e) => e.stopPropagation()}>
+      <Animated.View style={[styles.accountOverlayContainer, animatedStyles]}>
         <View style={[styles.accountOverlayContent, styles.logoutContent]}>
-          <Text style={styles.accountOverlayText}>
-            Logout
-          </Text>
+          <Text style={styles.accountOverlayText}>Logout</Text>
         </View>
-        <View style={[styles.accountOverlayContent, styles.performanceContent]}>
-          <Text style={styles.accountOverlayText}>
-            Car Information
-          </Text>
-        </View>
-        <View style={[styles.accountOverlayContent, styles.performanceContent, { top: 190 }]}>
-          <Text style={styles.accountOverlayText}>
-            Upcoming Appointments
-          </Text>
-        </View>
-        <View style={[styles.accountOverlayContent, styles.performanceContent, { top: 280 }]}>
-          <Text style={styles.accountOverlayText}>
-            Account Information
-          </Text>
-        </View>
+        {/* Additional account options */}
       </Animated.View>
+
+      {/* Sidebar for Selecting Users */}
+      {isSidebarVisible && (
+        <View style={styles.sidebarContainer}>
+          <TouchableOpacity style={styles.sidebarCloseButton} onPress={handleSidebarClose}>
+            <Text style={styles.sidebarCloseText}>Close</Text>
+          </TouchableOpacity>
+          <FlatList
+            data={users}
+            renderItem={renderUserItem}
+            keyExtractor={(item) => item.id.toString()}
+            contentContainerStyle={styles.userListContent}
+          />
+        </View>
+      )}
     </View>
   );
 };
@@ -264,6 +318,62 @@ const styles = StyleSheet.create({
     height: '100%',
     backgroundColor: 'rgba(0, 0, 0, 0.4)', 
     zIndex: 1,
+  },
+  startChatButton: {
+    backgroundColor: '#E0BBE4', // Light purple color
+    paddingVertical: 15,
+    paddingHorizontal: 20,
+    borderRadius: 10,
+    marginVertical: 10,
+    alignItems: 'center',
+    justifyContent: 'center',
+    width: '90%', // Adjust to make it fill most of the width, centered
+    alignSelf: 'center', // Center the button horizontally
+  },
+  startChatButtonText: {
+    color: '#fff',
+    fontSize: 18,
+    fontWeight: 'bold',
+  },
+  userItem: {
+    padding: 15,
+    marginVertical: 8,
+    backgroundColor: '#f9f9f9',
+    borderRadius: 10,
+    width: '90%',
+    alignSelf: 'center',
+  },
+  userName: {
+    fontSize: 16,
+    fontWeight: 'bold',
+  },
+  userEmail: {
+    fontSize: 14,
+    color: '#666',
+  },
+  sidebarContainer: {
+    position: 'absolute',
+    top: 0,
+    right: 0,
+    width: '70%',
+    height: '100%',
+    backgroundColor: '#fff',
+    zIndex: 3,
+    paddingTop: 20,
+    borderLeftWidth: 1,
+    borderColor: '#ccc',
+  },
+  sidebarCloseButton: {
+    padding: 10,
+    alignSelf: 'flex-end',
+    marginRight: 10,
+  },
+  sidebarCloseText: {
+    color: '#888',
+    fontSize: 16,
+  },
+  userListContent: {
+    paddingHorizontal: 16,
   },
 });
 
