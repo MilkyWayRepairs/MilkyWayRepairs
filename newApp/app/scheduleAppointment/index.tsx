@@ -1,14 +1,36 @@
 import React, { useState } from 'react';
 import { View, Text, TextInput, Button, StyleSheet, Alert, Platform } from 'react-native';
-import DateTimePicker, { DateTimePickerEvent } from '@react-native-community/datetimepicker';
+import DateTimePicker from '@react-native-community/datetimepicker';
 import AccountSidebar from '../accountSidebar'; // Adjust the path as needed
 import BottomNavBar from '../bottomNavBar'; // Adjust the path as needed
 
 const AppointmentScheduler = () => {
     const [name, setName] = useState('');
     const [date, setDate] = useState(new Date());
-    const [showDatePicker, setShowDatePicker] = useState(false);
+    const [show, setShow] = useState(false);
+    const [mode, setMode] = useState<'date' | 'time'>('date');
     const [isSidebarVisible, setIsSidebarVisible] = useState(false);
+
+    const onChange = (event: any, selectedDate?: Date) => {
+        if (selectedDate) {
+            if (mode === 'date') {
+                // Update the full date (date + time)
+                setDate(selectedDate);
+            } else if (mode === 'time') {
+                // Only update the time, keeping the existing date
+                const newDate = new Date(date);
+                newDate.setHours(selectedDate.getHours());
+                newDate.setMinutes(selectedDate.getMinutes());
+                setDate(newDate);
+            }
+        }
+        setShow(false); // Close the picker
+    };
+
+    const showMode = (currentMode: 'date' | 'time') => {
+        setMode(currentMode); // Set the mode (date or time)
+        setShow(true); // Show the picker
+    };
 
     const handleSchedule = () => {
         if (!name) {
@@ -29,13 +51,6 @@ const AppointmentScheduler = () => {
         setIsSidebarVisible(false); // Hide the sidebar
     };
 
-    const handleDateChange = (event: DateTimePickerEvent, selectedDate?: Date) => {
-        setShowDatePicker(false) // close the picker
-        if (selectedDate) {
-            setDate(selectedDate) // Update the date state
-        }
-    }
-
     return (
         <View style={styles.container}>
             {/* Account Sidebar */}
@@ -55,13 +70,21 @@ const AppointmentScheduler = () => {
             />
 
             <Text style={styles.label}>Select Date and Time</Text>
-            <Button title="Pick Date and Time" onPress={() => setShowDatePicker(true)} />
-            {showDatePicker && (
+
+            {/* Button to Pick Date */}
+            <Button title="Pick Date" onPress={() => showMode('date')} />
+
+            {/* Button to Pick Time */}
+            <Button title="Pick Time" onPress={() => showMode('time')} />
+
+            {/* DateTimePicker */}
+            {show && (
                 <DateTimePicker
                     value={date}
-                    mode="datetime"
-                    display="default"
-                    onChange={handleDateChange}
+                    mode={mode}
+                    is24Hour={true}
+                    display={Platform.OS === 'ios' ? 'inline' : 'default'}
+                    onChange={onChange}
                 />
             )}
 
@@ -95,7 +118,7 @@ const styles = StyleSheet.create({
     selectedDate: {
         fontSize: 16,
         color: 'blue',
-        marginTop: 10
+        marginTop: 10,
     },
     input: {
         borderWidth: 1,
