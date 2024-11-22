@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { View, Text, StyleSheet, FlatList, TextInput, TouchableOpacity } from 'react-native';
 import axios from 'axios';
 import { useRouter, useLocalSearchParams } from 'expo-router';
-
+import { SERVER_URL } from '@/config/config';
 
 interface Message {
   id: number;
@@ -28,7 +28,7 @@ const ChatPage: React.FC = () => {
     if (!receiverId) return;
 
     try {
-      const response = await axios.post('http://192.168.0.33:5000/chat', {
+      const response = await axios.post(`${SERVER_URL}/chat`, {
         sender_id: senderId,
         receiver_id: receiverId,
       });
@@ -49,7 +49,7 @@ const ChatPage: React.FC = () => {
     if (newMessage.trim() === '') return;
 
     try {
-      const response = await axios.post('http://192.168.0.33:5000/messages', {
+      const response = await axios.post(`${SERVER_URL}/messages`, {
         sender_id: senderId,
         receiver_id: receiverId,
         content: newMessage,

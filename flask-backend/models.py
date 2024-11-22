@@ -38,6 +38,16 @@ class Message(db.Model):
     content = db.Column(db.Text, nullable=False)
     timestamp = db.Column(db.DateTime, default=datetime.timedelta)  # Fix datetime import issue
 
+class Vehicle(db.Model):
+    __tablename__ = 'vehicle'
+
+    VIN = db.Column(db.String(20), primary_key=True)
+    user_id = db.Column(db.Integer)
+    status = db.Column(db.Integer)
+    make = db.Column(db.String(20))
+    model = db.Column(db.String(20))
+    year = db.Column(db.String(6))
+
 class PerformanceEvaluation(db.Model):
     __tablename__ = 'performance evaluation'
     evaluation_id = db.Column(db.Integer, primary_key=True)

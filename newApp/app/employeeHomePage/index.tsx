@@ -1,7 +1,7 @@
 import { Text, View, Image, TouchableOpacity, StyleSheet, TextInput } from "react-native";
 import { Link, } from "expo-router"
 import React from 'react';
-import { rgbaColor } from "react-native-reanimated/lib/typescript/reanimated2/Colors";
+// import { rgbaColor } from "react-native-reanimated/lib/typescript/reanimated2/Colors";
 import { SlideOutRight, withDelay, withTiming } from "react-native-reanimated";
 import { useAnimatedStyle, withSpring, useSharedValue } from "react-native-reanimated";
 import Animated from "react-native-reanimated";
@@ -86,10 +86,12 @@ const userHomePage = () => {
 
       {/* Update Status Button */}
       <TouchableOpacity style={styles.updateStatusButtonContainer}>
-        <Image
-          source={require('../../assets/images/Status.png')}
-          style={styles.homeScreenButton}
-        />
+        <Link href="/status/employee">
+          <Image
+            source={require('../../assets/images/Status.png')}
+            style={styles.homeScreenButton}
+          />
+        </Link>
       </TouchableOpacity>
 
       {/* Schedule Appointment Text */}

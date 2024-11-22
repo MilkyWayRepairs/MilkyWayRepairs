@@ -7,7 +7,7 @@ from flask_cors import CORS
 from config import ApplicationConfig
 from flask_bcrypt import Bcrypt
 from datetime import datetime
-from models import db, User, Review, Message
+from models import db, User, Review, Message, Vehicle
 import os, re, dns.resolver
 
 
@@ -263,7 +263,91 @@ def logout_user():
     session.pop("id", None)
     return "200"
 
+@app.route('/get-vehicle-status', methods=['POST', 'GET'])
+def get_status():
+    user_id = session.get("id")
 
+    if not user_id:
+        return jsonify({"error": "Unauthorized"}), 401
+    
+    try:
+        vehicle = Vehicle.query.filter_by(user_id=user_id).first()
+
+        if not vehicle:
+            return jsonify({"error:" "No vehicle found for this user"}), 401
+
+        vehicle_data = {
+            "VIN": vehicle.VIN,
+            "make": vehicle.make,
+            "model": vehicle.model,
+            "year": vehicle.year,
+            "status": vehicle.status,
+        }
+
+        return jsonify(vehicle_data), 200
+    except Exception as e:
+        app.logger.error(f"Error retrieving vehicle status: {e}")
+        return jsonify({"error": "Internal Server Error"}), 500
+    
+@app.route('/search-vehicle', methods=['POST'])
+def search_vehicle():
+    data = request.json
+    make = data.get('make')
+    model = data.get('model')
+    year = data.get('year')
+    vin = data.get('vin')
+
+    try:
+        query = Vehicle.query
+
+        if make:
+            query = query.filter(Vehicle.make.ilike(f"%{make}%"))
+        if model:
+            query = query.filter(Vehicle.model.ilike(f"%{model}%"))
+        if year:
+            query = query.filter_by(year=year)
+        if vin:
+            query = query.filter_by(vin=vin)
+
+        vehicles = query.all()
+
+        vehicle_list = [{
+            "make": vehicle.make,
+            "model": vehicle.model,
+            "year": vehicle.year,
+            "VIN": vehicle.VIN,
+            "status": vehicle.status
+        } for vehicle in vehicles]
+
+        return jsonify(vehicle_list), 200
+
+    except Exception as e:
+        app.logger.error(f"Error searching vehicles: {e}")
+        return jsonify({"error": "Internal Server Error"}), 500
+    
+@app.route('/update-vehicle-status', methods=['POST'])
+def update_vehicle_status():
+    data = request.json
+    vehicleVIN = data.get('VIN')
+    new_status = data.get('status')
+    print(data)
+
+    try:
+        print(f"Searching for vehicle with VIN: {vehicleVIN}")
+        vehicle = Vehicle.query.filter_by(VIN=vehicleVIN).first()
+
+        if not vehicle:
+            return jsonify({"error": "Vehicle not found"}), 404
+
+        vehicle.status = new_status
+        db.session.commit()
+
+        return jsonify({"message": "Vehicle status updated successfully"}), 200
+
+    except Exception as e:
+        app.logger.error(f"Error updating vehicle status: {e}")
+        return jsonify({"error": "Internal Server Error"}), 500
+    
 if __name__ == '__main__':
     print("main")
     app.run(host="0.0.0.0", port=5000, debug=True)

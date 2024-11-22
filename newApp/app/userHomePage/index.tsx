@@ -77,10 +77,12 @@ const userHomePage = () => {
 
       {/* Status Button */}
       <TouchableOpacity style={styles.statusButtonContainer}>
-        <Image
-          source={require('../../assets/images/Status.png')}
-          style={styles.homeScreenButton}
-        />
+        <Link href="/status/customer">
+          <Image
+            source={require('../../assets/images/Status.png')}
+            style={styles.homeScreenButton}
+          />
+          </Link>
       </TouchableOpacity>
 
       {/* Schedule Appointment Text */}
