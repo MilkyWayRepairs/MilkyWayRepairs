@@ -35,9 +35,6 @@ const homeAndAdminOverlay = () => {
         style={styles.logo}
       />
       
-
-
-
       {/* Title Text and Back Arrow Container */}
       <View style={[styles.titleTextContainer, {backgroundColor: "lavenderblush"}]}>
         <Text style={styles.titleText}>
@@ -67,8 +64,6 @@ const homeAndAdminOverlay = () => {
     </Link>
 
     <Text style={styles2.homeScreenButtonText}>Set Schedule </Text>
-   
-
   </TouchableOpacity>
 
   {/* Messages Button */}
@@ -82,11 +77,13 @@ const homeAndAdminOverlay = () => {
 
   {/* Review Button */}
   <TouchableOpacity style={styles2.scrollButtonContainer}>
-    <Image
+  <Link href="/adminPerformanceEvaluation">  <Image
       source={require('../../assets/images/Review.png')}
       style={styles2.homeScreenButton}
     />
-    <Text style={styles2.homeScreenButtonText}>Review</Text>
+    </Link>
+
+    <Text style={styles2.homeScreenButtonText}>Reviews </Text>
   </TouchableOpacity>
 
   {/* Status Button */}

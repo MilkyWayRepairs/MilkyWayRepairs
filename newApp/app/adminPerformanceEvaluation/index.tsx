@@ -7,7 +7,7 @@ const adminPerformanceEvaluation = () => {
     <View style={styles.container}>
       {/* Back Arrow */}
       <TouchableOpacity style={styles.arrowBackContainer}>
-        <Link href="/homeAndAdminOverlay">
+        <Link href="..">
           <Image 
           source={require('../../assets/images/arrowBack.png')} 
           style={styles.arrowBack}/>
@@ -57,7 +57,7 @@ const adminPerformanceEvaluation = () => {
       />
         
       {/* Calculate Button */}
-      <Link href="/homeAndAdminOverlay" asChild>
+      <Link href=".." asChild>
           <TouchableOpacity style={styles.button}>
             <Text style={styles.buttonText}>Calculate</Text>
           </TouchableOpacity>

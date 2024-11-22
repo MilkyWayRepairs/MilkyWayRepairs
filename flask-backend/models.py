@@ -37,3 +37,11 @@ class Message(db.Model):
     receiver_id = db.Column(db.Integer, nullable=False)
     content = db.Column(db.Text, nullable=False)
     timestamp = db.Column(db.DateTime, default=datetime.timedelta)  # Fix datetime import issue
+
+class PerformanceEvaluation(db.Model):
+    __tablename__ = 'performance evaluation'
+    evaluation_id = db.Column(db.Integer, primary_key=True)
+    name = User.name
+    employee_id = User.id
+    expected_hours = db.Column(db.Double, nullable=False)
+    actual_hours = db.Column(db.Double, nullable=False)
