@@ -50,7 +50,7 @@ class Vehicle(db.Model):
 
 class PerformanceEvaluation(db.Model):
     __tablename__ = 'performance evaluation'
-    evaluation_id = db.Column(db.Integer, primary_key=True)
+    id = db.Column(db.Integer, primary_key=True)
     name = User.name
     employee_id = User.id
     expected_hours = db.Column(db.Double, nullable=False)

@@ -1,8 +1,52 @@
 import { Text, View, Image, TouchableOpacity, StyleSheet, TextInput } from "react-native";
 import { Link, } from "expo-router"
-import React from 'react';
+import React, { act, useState } from 'react';
+import { SERVER_URL } from "../../config/config";
+import AccountSidebar from '../accountSidebar'; // Ensure the path is correct
 
 const adminPerformanceEvaluation = () => {
+  const[employeeName, setEmployeeName] = useState("");
+  const[employeeID, setEmployeeID] = useState("");
+  const[expectedTime, setExpectedTime] = useState("");
+  const[actualTime, setActualTime] = useState("");
+  
+  const handleCalculate = async () => {
+    if(!employeeName.trim() || !employeeID.trim() || !expectedTime.trim() || !actualTime.trim()){
+      alert("All fields are required!");
+      return;
+    }
+
+    try{
+      const response = await fetch(`${SERVER_URL}/performanceEvaluation`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          employeeName,
+          employeeID,
+          expectedTime: parseFloat(expectedTime),
+          actualTime: parseFloat(actualTime),
+        }),
+      });
+
+      if(response.ok){
+        const data = await response.json();
+        alert("Evaluation submitted successfully!");
+        console.log("Server Response:", data);
+        setEmployeeName("");
+        setEmployeeID("");
+        setExpectedTime("");
+        setActualTime("");
+      } else{
+        alert("Failed to submit evaluation. Please try again.");
+      }
+    } catch(error){
+      console.error("Error submitting evaluation", error);
+      alert("An error occured. Please try again.");
+    }
+  };
+
   return (
     <View style={styles.container}>
       {/* Back Arrow */}
@@ -39,29 +83,35 @@ const adminPerformanceEvaluation = () => {
         style={[styles.input, styles.employeeNameInput]}
         placeholder="Name"
         keyboardType="default"
+        value={employeeName}
+        onChangeText={setEmployeeName}
       />
       <TextInput
         style={[styles.input, styles.employeeIDInput]}
         placeholder="ID#"
         keyboardType="number-pad"
+        value={employeeID}
+        onChangeText={setEmployeeID}
       />
       <TextInput
         style={[styles.input, styles.expectedTimeInput]}
         placeholder="Hours"
         keyboardType="decimal-pad"
+        value={expectedTime}
+        onChangeText={setExpectedTime}
       />
       <TextInput
         style={[styles.input, styles.actualTimeInput]}
         placeholder="Hours"
         keyboardType="decimal-pad"
+        value={actualTime}
+        onChangeText={setActualTime}
       />
         
       {/* Calculate Button */}
-      <Link href=".." asChild>
-          <TouchableOpacity style={styles.button}>
-            <Text style={styles.buttonText}>Calculate</Text>
-          </TouchableOpacity>
-      </Link>
+      <TouchableOpacity style={styles.button} onPress={handleCalculate}>
+        <Text style={styles.buttonText}>Calculate</Text>
+      </TouchableOpacity>
         
     </View>
   );

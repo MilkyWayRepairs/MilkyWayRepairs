@@ -7,7 +7,7 @@ from flask_cors import CORS
 from config import ApplicationConfig
 from flask_bcrypt import Bcrypt
 from datetime import datetime
-from models import db, User, Review, Message, Vehicle
+from models import db, User, Review, Message, Vehicle, PerformanceEvaluation
 import os, re, dns.resolver
 
 
@@ -347,6 +347,54 @@ def update_vehicle_status():
     except Exception as e:
         app.logger.error(f"Error updating vehicle status: {e}")
         return jsonify({"error": "Internal Server Error"}), 500
+    
+@app.route('/performanceEvaluation', methods=['POST', 'GET'])
+def performance_evaluation():
+    if request.method == 'POST':
+        #Handle submission of performance evaluation
+        data = request.get_json()
+        employee_name = data.get('employeeName')
+        employee_id = data.get('employeeID')
+        expected_time = data.get('expectedTime')
+        actual_time = data.get('actualTime')
+
+        #Validate input
+        if not all([employee_name, employee_id, expected_time, actual_time]):
+            return jsonify({"error": "All fields are required"}), 400
+        
+        try:
+            #Check if employee ID exists in the users table
+            user = User.query.filter_by(id=employee_id).first()
+            if not user:
+                return jsonify({"error": "Employee ID does not exist"}), 400
+            
+            #Verify that the employee name matches ID
+            if user.name != employee_name:
+                return jsonify({"error": "Employee name does not match employee ID"}), 400
+            
+            #Ensure expected time and actual time are greater than 0
+            try:
+                expected_time = float(expected_time)
+                actual_time = float(actual_time)
+                if expected_time <= 0 or actual_time <= 0:
+                    raise ValueError
+            except ValueError:
+                return jsonify({"error": "Expected and actual times must be numbers greater than 0"}), 400
+            
+            #Add performance evaluation to the database
+            new_evaluation = PerformanceEvaluation(
+                name = employee_name,
+                employee_id = employee_id,
+                expected_hours = expected_time,
+                actual_hours = actual_time
+            )
+            db.session.add(new_evaluation)
+            db.session.commit
+            return jsonify({"message": "Performance evaluation submitted successfully"}),
+        except Exception as e:
+            db.session.rollback()
+            app.logger.error(f"Error saving performance evaluation: {e}")
+            return jsonify({"error": "Internal server error"}), 500
     
 if __name__ == '__main__':
     print("main")
