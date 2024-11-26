@@ -6,8 +6,8 @@ from flask_cors import CORS
 # from flask_session import Session
 from config import ApplicationConfig
 from flask_bcrypt import Bcrypt
-from datetime import datetime
-from models import db, User, Review, Message, Vehicle, PerformanceEvaluation
+from datetime import datetime, timedelta
+from models import db, User, Review, Message, Appointments
 import os, re, dns.resolver
 
 
@@ -257,145 +257,74 @@ def get_users():
         app.logger.error(f"Error fetching users: {e}")
         return jsonify({'error': 'Internal Server Error'}), 500
     
+# makes sure that time being sent is not conflicting with other appointments
+# might not add
+'''
+def is_conflicting(date, time):
+    # Convert the time to a datetime object for easier comparison
+    start_time = (datetime.combine(date, time) - timedelta(minutes=30)).time()
+    end_time = (datetime.combine(date, time) + timedelta(minutes=30)).time()
+
+    print(f"Checking conflicts for date: {date}, time: {time}")
+    print(f"Time range: {start_time} - {end_time}")
+
+    try:
+        # Query the database for overlapping appointments
+        conflict = Appointments.query.filter(
+            Appointments.date == date,
+            Appointments.time >= start_time,
+            Appointments.time <= end_time
+        ).first()
+
+        print("Query executed successfully")
+        print(f"Conflict result: {conflict}")
+
+        return conflict is not None
+    except Exception as e:
+        print("Error during conflict check:", e)
+        return False
+'''
+    
+@app.route('/scheduleAppointment', methods=['POST'])
+def schedule_appointment():
+    try:
+        data = request.get_json()
+
+        name = data.get('name')
+        appointment_datetime = data.get('appointment_date')
+
+        if not name or not appointment_datetime:
+            return jsonify({"message": "Name and appointment data are required"}), 400
+        
+        # parse the ISO date into a python datetime object
+        parsed_datetime = datetime.fromisoformat(appointment_datetime)
+        appointment_date = parsed_datetime.date()
+        appointment_time = parsed_datetime.time()
+
+        # Check for conflicts
+        # Might not add
+        '''
+        if is_conflicting(appointment_date, appointment_time):
+            return jsonify({"message": "The chosen time conflicts with another appointment"}), 409
+        '''
+
+        # save the appointment to the database
+        new_appointment = Appointments(date=appointment_date, time=appointment_time, name=name)
+        db.session.add(new_appointment)
+        db.session.commit()
+
+        return jsonify({"message": f"Appointment scheduled for {name} on {appointment_date} at {appointment_time}"}), 200
+    except ValueError as e:
+        return jsonify({"message": "Invalid date format", "error": str(e)}), 400
+    except Exception as e:
+        return jsonify({"message": "An error occurred in the backend", "error": str(e)}), 500
 
 @app.route("/logout", methods=["POST"])
 def logout_user():
     session.pop("id", None)
     return "200"
 
-@app.route('/get-vehicle-status', methods=['POST', 'GET'])
-def get_status():
-    user_id = session.get("id")
 
-    if not user_id:
-        return jsonify({"error": "Unauthorized"}), 401
-    
-    try:
-        vehicle = Vehicle.query.filter_by(user_id=user_id).first()
-
-        if not vehicle:
-            return jsonify({"error:" "No vehicle found for this user"}), 401
-
-        vehicle_data = {
-            "VIN": vehicle.VIN,
-            "make": vehicle.make,
-            "model": vehicle.model,
-            "year": vehicle.year,
-            "status": vehicle.status,
-        }
-
-        return jsonify(vehicle_data), 200
-    except Exception as e:
-        app.logger.error(f"Error retrieving vehicle status: {e}")
-        return jsonify({"error": "Internal Server Error"}), 500
-    
-@app.route('/search-vehicle', methods=['POST'])
-def search_vehicle():
-    data = request.json
-    make = data.get('make')
-    model = data.get('model')
-    year = data.get('year')
-    vin = data.get('vin')
-
-    try:
-        query = Vehicle.query
-
-        if make:
-            query = query.filter(Vehicle.make.ilike(f"%{make}%"))
-        if model:
-            query = query.filter(Vehicle.model.ilike(f"%{model}%"))
-        if year:
-            query = query.filter_by(year=year)
-        if vin:
-            query = query.filter_by(vin=vin)
-
-        vehicles = query.all()
-
-        vehicle_list = [{
-            "make": vehicle.make,
-            "model": vehicle.model,
-            "year": vehicle.year,
-            "VIN": vehicle.VIN,
-            "status": vehicle.status
-        } for vehicle in vehicles]
-
-        return jsonify(vehicle_list), 200
-
-    except Exception as e:
-        app.logger.error(f"Error searching vehicles: {e}")
-        return jsonify({"error": "Internal Server Error"}), 500
-    
-@app.route('/update-vehicle-status', methods=['POST'])
-def update_vehicle_status():
-    data = request.json
-    vehicleVIN = data.get('VIN')
-    new_status = data.get('status')
-    print(data)
-
-    try:
-        print(f"Searching for vehicle with VIN: {vehicleVIN}")
-        vehicle = Vehicle.query.filter_by(VIN=vehicleVIN).first()
-
-        if not vehicle:
-            return jsonify({"error": "Vehicle not found"}), 404
-
-        vehicle.status = new_status
-        db.session.commit()
-
-        return jsonify({"message": "Vehicle status updated successfully"}), 200
-
-    except Exception as e:
-        app.logger.error(f"Error updating vehicle status: {e}")
-        return jsonify({"error": "Internal Server Error"}), 500
-    
-@app.route('/performanceEvaluation', methods=['POST', 'GET'])
-def performance_evaluation():
-    if request.method == 'POST':
-        #Handle submission of performance evaluation
-        data = request.get_json()
-        employee_name = data.get('employeeName')
-        employee_id = data.get('employeeID')
-        expected_time = data.get('expectedTime')
-        actual_time = data.get('actualTime')
-
-        #Validate input
-        if not all([employee_name, employee_id, expected_time, actual_time]):
-            return jsonify({"error": "All fields are required"}), 400
-        
-        try:
-            #Check if employee ID exists in the users table
-            user = User.query.filter_by(id=employee_id).first()
-            if not user:
-                return jsonify({"error": "Employee ID does not exist"}), 400
-            
-            #Verify that the employee name matches ID
-            if user.name != employee_name:
-                return jsonify({"error": "Employee name does not match employee ID"}), 400
-            
-            #Ensure expected time and actual time are greater than 0
-            try:
-                expected_time = float(expected_time)
-                actual_time = float(actual_time)
-                if expected_time <= 0 or actual_time <= 0:
-                    raise ValueError
-            except ValueError:
-                return jsonify({"error": "Expected and actual times must be numbers greater than 0"}), 400
-            
-            #Add performance evaluation to the database
-            new_evaluation = PerformanceEvaluation(
-                name = employee_name,
-                employee_id = employee_id,
-                expected_hours = expected_time,
-                actual_hours = actual_time
-            )
-            db.session.add(new_evaluation)
-            db.session.commit
-            return jsonify({"message": "Performance evaluation submitted successfully"}),
-        except Exception as e:
-            db.session.rollback()
-            app.logger.error(f"Error saving performance evaluation: {e}")
-            return jsonify({"error": "Internal server error"}), 500
-    
 if __name__ == '__main__':
     print("main")
     app.run(host="0.0.0.0", port=5000, debug=True)

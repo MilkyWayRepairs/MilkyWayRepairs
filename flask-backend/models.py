@@ -55,3 +55,10 @@ class PerformanceEvaluation(db.Model):
     employee_id = User.id
     expected_hours = db.Column(db.Double, nullable=False)
     actual_hours = db.Column(db.Double, nullable=False)
+
+class Appointments(db.Model):
+    __tablename__ = 'appointments'
+    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    date = db.Column(db.Date, nullable=True)
+    time = db.Column(db.Time, nullable=True)
+    name = db.Column(db.String(100), nullable=True)
