@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { View, Text, StyleSheet, FlatList, TextInput, TouchableOpacity } from 'react-native';
 import axios from 'axios';
-import { useRouter, useLocalSearchParams } from 'expo-router';
+import { useLocalSearchParams, useRouter } from 'expo-router';
 import { SERVER_URL } from '@/config/config';
 
 interface Message {
@@ -14,18 +14,30 @@ interface Message {
 const ChatPage: React.FC = () => {
   const [messages, setMessages] = useState<Message[]>([]);
   const [newMessage, setNewMessage] = useState('');
-  const { receiverId } = useLocalSearchParams();
-  const senderId = 1; // Example sender ID
+  const { receiverId, receiverName } = useLocalSearchParams() ;
   const router = useRouter();
+  console.log("Extracted Receiver ID:", receiverId);
+  console.log("Extracted Receiver Name:", receiverName);
+  const senderId = 1; // Example sender ID
+  
 
+
+  
   useEffect(() => {
+    console.log("Receiver ID1:", receiverId); // Debugging
+    console.log("Receiver Name1:", receiverName); // Debugging
     if (receiverId) {
       fetchOrCreateChat();
     }
+    
   }, [receiverId]);
 
   const fetchOrCreateChat = async () => {
-    if (!receiverId) return;
+    if (!receiverId) {
+      console.error("Receiver ID is missing, redirecting to default page...");
+      router.push('../Messages'); // Redirect to a safe fallback route
+      return null;
+  }
 
     try {
       const response = await axios.post(`${SERVER_URL}/chat`, {
@@ -46,31 +58,25 @@ const ChatPage: React.FC = () => {
   };
 
   const sendMessage = async () => {
-    if (newMessage.trim() === '') return;
+    if (!newMessage.trim()) return;
+
+    const payload = {
+        sender_id: senderId,
+        receiver_id: receiverId,  // Ensure this is included
+        content: newMessage,
+    };
+
+    console.log("Sending payload:", payload);  // Log the payload for debugging
 
     try {
-      const response = await axios.post(`${SERVER_URL}/messages`, {
-        sender_id: senderId,
-        receiver_id: receiverId,
-        content: newMessage,
-      });
-
-      if (response.status === 200) {
-        setMessages((prevMessages) => [
-          ...prevMessages,
-          {
-            id: Math.random(),
-            content: newMessage,
-            sender: `User${senderId}`,
-            timestamp: new Date().toISOString(),
-          },
-        ]);
+        const response = await axios.post(`${SERVER_URL}/messages`, payload);
+        setMessages((prev) => [...prev, response.data]);
         setNewMessage('');
-      }
     } catch (error) {
-      console.error('Error sending message:', error);
+        console.error('Error sending message:', error);
     }
-  };
+};
+
   
 
   const renderMessageItem = ({ item }: { item: Message }) => (
@@ -84,9 +90,8 @@ const ChatPage: React.FC = () => {
     <View style={styles.container}>
       <View style={styles.header}>
         <TouchableOpacity onPress={() => router.push('./Messages')}>
-          <Text style={styles.backButton}>Back</Text>
+          <Text>{receiverName || 'Mechanic'}</Text>
         </TouchableOpacity>
-        <Text style={styles.headerText}>Chat</Text>
       </View>
       <FlatList
         data={messages}

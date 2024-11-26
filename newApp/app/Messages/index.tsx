@@ -1,9 +1,11 @@
 import React, { useEffect, useState } from 'react';
 import { View, Text, StyleSheet, FlatList, TouchableOpacity, TextInput, Button, Image } from 'react-native';
 import { Link, useRouter } from 'expo-router';
-import axios, { AxiosError } from 'axios';
+import axios from 'axios';
 import { useAnimatedStyle, useSharedValue, withTiming } from "react-native-reanimated";
 import Animated from "react-native-reanimated";
+import { SERVER_URL } from '@/config/config';
+
 
 interface Message {
   id: number;
@@ -61,9 +63,10 @@ const Messages: React.FC = () => {
 
 const fetchUsers = async () => {
     try {
-        const response = await axios.get('http://192.168.0.33:5000/users', {
-            params: { current_user_id: senderId },
+        const response = await axios.get(`${SERVER_URL}/users`, {
+          params: { current_user_id: senderId },
         });
+        console.log("Fetched users:", response.data); // Log users for debugging
         setUsers(response.data);
     } catch (error) {
         console.error('Error fetching users:', error);
@@ -71,9 +74,29 @@ const fetchUsers = async () => {
 };
  
   const startChatting = (receiverId: number) => {
-    setReceiverId(receiverId);
-    setIsSidebarVisible(false);
-    router.push(`../Messages/${receiverId}`); // Navigate to chat page with selected user
+    const selectedUser = users.find(user => user.id === receiverId);
+
+
+    console.log("Selected User:", selectedUser); // Debug selected user
+    if (!selectedUser) {
+      console.error(`User with ID ${receiverId} not found`);
+      return;
+  }
+    console.log("Starting chat with receiverId:", receiverId);
+
+    router.push({
+      pathname: `../Messages/ChatPage`,
+      params: {
+        receiverId: `${selectedUser.id}`,
+        receiverName: `${selectedUser.name}`,
+      },
+      
+  });
+  console.log("Navigating to ChatPage with params:", {
+    receiverId: selectedUser.id,
+    receiverName: selectedUser.name,
+});
+
   };
 
   const renderMessageItem = ({ item }: { item: Message }) => (
