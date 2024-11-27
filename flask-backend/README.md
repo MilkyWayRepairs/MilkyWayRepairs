@@ -17,7 +17,7 @@ $ .venv/Scripts/activate
 ### Note : Python must be installed onto your computer, and Python MUST be added to PATH 
 3) Install Flask
  ```
-$ pip install Flask flask_sqlalchemy pymysql python-dotenv flask-cors dnspython flask-session redis flask-bcrypt cryptography
+$ pip install Flask flask_sqlalchemy pymysql python-dotenv flask-cors dnspython flask-session redis flask-bcrypt cryptography requests
  ```
 
 ## MacOS / Linux

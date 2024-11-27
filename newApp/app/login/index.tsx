@@ -4,10 +4,13 @@ import React, { useState } from "react";
 import httpClient from "../httpClient";
 // Refer to readme under app/config/ 
 import { SERVER_URL } from "@/config/config";
+import AsyncStorage from '@react-native-async-storage/async-storage';
+
 
 const Login = () => {
   const [email, setEmail] = useState<string>("");
   const [password, setPassword] = useState<string>("");
+
 
   const logInUser = async () => {
     try {
@@ -18,6 +21,12 @@ const Login = () => {
  console.log('Response:', resp);
     // Check if the response contains the expected data
     if (resp.status === 200 && resp.data) {
+      
+      const userId = resp.data.id; // Assuming `resp.data` contains an `id` field that represents userId
+      await AsyncStorage.setItem('userId', userId.toString());
+      console.log("userId saved successfully in AsyncStorage:", userId);
+
+      
       if (resp.data.role == 'user') {
         router.push('/userHomePage')
       }
