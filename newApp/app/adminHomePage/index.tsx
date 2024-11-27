@@ -55,7 +55,7 @@ const homeAndAdminOverlay = () => {
   showsHorizontalScrollIndicator={false} // Hide the scrollbar if not needed
   contentContainerStyle={styles2.scrollContainer} // Add a container style for alignment
 >
-  {/* Schedule Appointment Button */}
+  {/* Set Employee Schedule button*/}
   <TouchableOpacity style={styles2.scrollButtonContainer}>
   <Link href="setSchedule.tsx">  <Image
       source={require('../../assets/images/ScheduleAppointment.png')}
@@ -123,7 +123,7 @@ const homeAndAdminOverlay = () => {
           <Image
           source={require('../../assets/images/accountLogo.png')}
           style={styles.homeAndAccountButton}/>
-          {"\n                             "}
+          {"\n    "}
           <Text style={styles.homeAndAccountText}>
             Account
           </Text>

@@ -1,3 +1,4 @@
+
 import { Text, View, Image, TouchableOpacity, StyleSheet, TextInput, Alert, TouchableWithoutFeedback, Keyboard } from "react-native";
 import { Link, router, } from "expo-router";
 import React, { useState } from 'react';
@@ -7,6 +8,7 @@ const Register = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
+  const [phoneNumber,setPhonenumber] = useState('');
 
   const handleRegister = async () => {
     if (password !== confirmPassword) {
@@ -80,7 +82,14 @@ const Register = () => {
           value={confirmPassword}
           onChangeText={setConfirmPassword}
         />
-
+        <TextInput
+          style={styles.input}
+          placeholder="Phone Number"
+          keyboardType="number-pad"
+          value={phoneNumber}
+          onChangeText={setPhonenumber}
+        />
+    
         {/* Register Button */}
         <TouchableOpacity style={styles.button} onPress={handleRegister}>
             <Text style={styles.buttonText}>Register</Text>
