@@ -1,8 +1,10 @@
 import React, { useEffect, useState } from 'react';
+import AsyncStorage from '@react-native-async-storage/async-storage';//npm install @react-native-async-storage/async-storage
 import { View, Text, StyleSheet, FlatList, TextInput, TouchableOpacity } from 'react-native';
 import axios from 'axios';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { SERVER_URL } from '@/config/config';
+import SendBird from 'sendbird';
 
 interface Message {
   id: number;
@@ -14,34 +16,67 @@ interface Message {
 const ChatPage: React.FC = () => {
   const [messages, setMessages] = useState<Message[]>([]);
   const [newMessage, setNewMessage] = useState('');
-  const { receiverId, receiverName } = useLocalSearchParams() ;
+  const { receiverId, receiverName } = useLocalSearchParams();
   const router = useRouter();
-  console.log("Extracted Receiver ID:", receiverId);
-  console.log("Extracted Receiver Name:", receiverName);
-  const senderId = 1; // Example sender ID
-  
+  const [userId, setUserId] = useState<string | null>(null);
+  const [receiverDataReady, setReceiverDataReady] = useState(false);
 
+  const sb = new SendBird({ appId: '5D0726A7-302C-4867-867E-ED5500933EC8' });
 
-  
+  //debugging
   useEffect(() => {
-    console.log("Receiver ID1:", receiverId); // Debugging
-    console.log("Receiver Name1:", receiverName); // Debugging
+    console.log("Debug: Extracted receiverId:", receiverId);
+    console.log("Debug: Extracted receiverName:", receiverName);
+  }, []);
+
+  useEffect(() => {
+    const connectToSendbird = async () => {
+      try {
+        const storedUserId = await AsyncStorage.getItem('userId');
+        if (storedUserId) {
+          console.log("Retrieved userId from AsyncStorage:", storedUserId);  // Add logging here to confirm retrieval
+          setUserId(storedUserId);
+          sb.connect(storedUserId, (user, error) => {
+            if (error) {
+              console.error('Sendbird connection error:', error);
+            } else {
+              console.log('Connected to Sendbird:', user);
+            }
+          });
+        } else {
+          console.error("userId not found in AsyncStorage");
+        }
+      } catch (error) {
+        console.error('Error accessing AsyncStorage:', error);
+      }
+    };
+  
+    connectToSendbird();
+  }, []);
+  
+
+  useEffect(() => {
     if (receiverId) {
+      setReceiverDataReady(true);
+    }
+  }, [receiverId]);
+
+  useEffect(() => {
+    if (receiverDataReady) {
       fetchOrCreateChat();
     }
-    
-  }, [receiverId]);
+  }, [receiverDataReady]);
 
   const fetchOrCreateChat = async () => {
     if (!receiverId) {
       console.error("Receiver ID is missing, redirecting to default page...");
       router.push('../Messages'); // Redirect to a safe fallback route
       return null;
-  }
+    }
 
     try {
       const response = await axios.post(`${SERVER_URL}/chat`, {
-        sender_id: senderId,
+        sender_id: userId,
         receiver_id: receiverId,
       });
 
@@ -50,7 +85,7 @@ const ChatPage: React.FC = () => {
         setMessages(response.data.messages);
       } else if (response.status === 201) {
         // New chat created
-        setMessages([{ id: Math.random(), content: "Chat started", sender: `User${senderId}`, timestamp: new Date().toISOString() }]);
+        setMessages([{ id: Math.random(), content: "Chat started", sender: `User${userId}`, timestamp: new Date().toISOString() }]);
       }
     } catch (error) {
       console.error('Error fetching or creating chat:', error);
@@ -58,29 +93,47 @@ const ChatPage: React.FC = () => {
   };
 
   const sendMessage = async () => {
-    if (!newMessage.trim()) return;
-
+    console.log("Attempting to send message...");
+    if (!newMessage.trim()) {
+      console.error("Message is empty, not sending.");
+      return;
+    }
+  
+    if (!userId) {
+      console.error("userId is not set, cannot send message.");
+      return;
+    }
+  
+    if (!receiverId) {
+      console.error("receiverId is not set, cannot send message.");
+      return;
+    }
+  
     const payload = {
-        sender_id: senderId,
-        receiver_id: receiverId,  // Ensure this is included
-        content: newMessage,
+      sender_id: userId,
+      receiver_id: receiverId,
+      content: newMessage,
     };
-
+  
     console.log("Sending payload:", payload);  // Log the payload for debugging
-
+  
     try {
-        const response = await axios.post(`${SERVER_URL}/messages`, payload);
+      const response = await axios.post(`${SERVER_URL}/messages`, payload);
+      if (response.status === 201) {
+        console.log("Message sent successfully:", response.data);
         setMessages((prev) => [...prev, response.data]);
         setNewMessage('');
+      } else {
+        console.error("Unexpected response status:", response.status);
+      }
     } catch (error) {
-        console.error('Error sending message:', error);
+      console.error('Error sending message:', error);
     }
-};
-
+  };
   
 
   const renderMessageItem = ({ item }: { item: Message }) => (
-    <View style={[styles.messageItem, item.sender === `User${senderId}` ? styles.myMessage : styles.theirMessage]}>
+    <View style={[styles.messageItem, item.sender === `User${userId}` ? styles.myMessage : styles.theirMessage]}>
       <Text style={styles.messageContent}>{item.content}</Text>
       <Text style={styles.timestamp}>{new Date(item.timestamp).toLocaleTimeString()}</Text>
     </View>

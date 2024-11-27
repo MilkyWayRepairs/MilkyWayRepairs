@@ -8,8 +8,15 @@ from config import ApplicationConfig
 from flask_bcrypt import Bcrypt
 from datetime import datetime, timedelta
 from models import db, User, Review, Message, Appointments
-import os, re, dns.resolver
+import os, re, dns.resolver, requests
 
+# Sendbird Configuration
+SENDBIRD_API_TOKEN = os.getenv("SENDBIRD_API_TOKEN")
+SENDBIRD_APP_ID = os.getenv("SENDBIRD_APP_ID")
+HEADERS = {
+    'Content-Type': 'application/json',
+    'Api-Token': SENDBIRD_API_TOKEN
+}
 
 
 load_dotenv()
@@ -181,7 +188,34 @@ def get_reviews():
     ]
     return jsonify(reviews_list)
 
-#messages        
+
+#messages   
+     
+# Update the Endpoint to Create or Fetch a Chat Channel
+@app.route('/chat', methods=['POST'])
+def get_or_create_chat():
+    data = request.json
+    sender_id = str(data['sender_id'])
+    receiver_id = str(data['receiver_id'])
+
+    # Create or get a Sendbird group channel
+    channel_url = f'channel_{sender_id}_{receiver_id}'
+    create_channel_url = f'https://api-{SENDBIRD_APP_ID}.sendbird.com/v3/group_channels'
+    payload = {
+        'user_ids': [sender_id, receiver_id],
+        'is_distinct': True,
+        'channel_url': channel_url
+    }
+
+    response = requests.post(create_channel_url, headers=HEADERS, json=payload)
+
+    if response.status_code == 200:
+        return jsonify({'message': 'Chat created successfully', 'channel_url': channel_url}), 200
+    else:
+        return jsonify({'error': 'Failed to create chat', 'details': response.json()}), 400
+
+
+      
 # Endpoint to create a new chat if it doesn't exist
 @app.route('/start_chat', methods=['POST'])
 def start_chat():
@@ -210,35 +244,40 @@ def start_chat():
 
     return jsonify({"message": "New chat started"}), 201
 
-#checks if a chat exists
-@app.route('/chat', methods=['POST'])
-def get_or_create_chat():
+# Fetch Messages from Sendbird
+@app.route('/messages/<channel_url>', methods=['GET'])
+def get_messages(channel_url):
+    # Fetch messages from the Sendbird channel
+    get_messages_url = f'https://api-{SENDBIRD_APP_ID}.sendbird.com/v3/group_channels/{channel_url}/messages'
+    response = requests.get(get_messages_url, headers=HEADERS)
+
+    if response.status_code == 200:
+        return jsonify(response.json()), 200
+    else:
+        return jsonify({'error': 'Failed to retrieve messages', 'details': response.json()}), 400
+
+
+
+@app.route('/messages', methods=['POST'])
+def send_message():
     data = request.json
-    sender_id = data['sender_id']
-    receiver_id = data['receiver_id']
+    sender_id = str(data['sender_id'])
+    channel_url = data['channel_url']
+    message_content = data['content']
 
-    # Check if a chat already exists
-    existing_messages = Message.query.filter(
-        ((Message.sender_id == sender_id) & (Message.receiver_id == receiver_id)) |
-        ((Message.sender_id == receiver_id) & (Message.sender_id == sender_id))
-    ).all()
+    # Send a message via Sendbird
+    send_message_url = f'https://api-{SENDBIRD_APP_ID}.sendbird.com/v3/group_channels/{channel_url}/messages'
+    payload = {
+        'message_type': 'MESG',
+        'user_id': sender_id,
+        'message': message_content
+    }
+    response = requests.post(send_message_url, headers=HEADERS, json=payload)
 
-    if existing_messages:
-        # Chat already exists, return existing chat
-        chat_messages = [{'id': msg.message_id, 'content': msg.content, 'sender': msg.sender_id, 'timestamp': msg.timestamp.isoformat()} for msg in existing_messages]
-        return jsonify({"chat_exists": True, "messages": chat_messages}), 200
-
-    # Create a new chat if it doesn't exist
-    new_message = Message(
-        sender_id=sender_id,
-        receiver_id=receiver_id,
-        content="Chat started",
-        timestamp=datetime.now()
-    )
-    db.session.add(new_message)
-    db.session.commit()
-
-    return jsonify({"chat_exists": False, "message": "New chat created"}), 201
+    if response.status_code == 200:
+        return jsonify({'message': 'Message sent successfully'}), 201
+    else:
+        return jsonify({'error': 'Failed to send message', 'details': response.json()}), 400
 
 
 #select user to start chatting

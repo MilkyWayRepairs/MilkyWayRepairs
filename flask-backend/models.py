@@ -31,7 +31,6 @@ class Review(db.Model):
 
 class Message(db.Model):
     __tablename__ = 'message'
-
     message_id = db.Column(db.Integer, primary_key=True)  # Match the database schema
     sender_id = db.Column(db.Integer, nullable=False)
     receiver_id = db.Column(db.Integer, nullable=False)

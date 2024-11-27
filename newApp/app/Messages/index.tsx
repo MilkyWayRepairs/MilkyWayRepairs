@@ -84,11 +84,14 @@ const fetchUsers = async () => {
   }
     console.log("Starting chat with receiverId:", receiverId);
 
+    const receiverIdStr = `${selectedUser.id}`;
+    const receiverNameStr = `${selectedUser.name}`;
+
     router.push({
       pathname: `../Messages/ChatPage`,
       params: {
-        receiverId: `${selectedUser.id}`,
-        receiverName: `${selectedUser.name}`,
+        receiverId: receiverIdStr,
+        receiverName: receiverNameStr,
       },
       
   });
