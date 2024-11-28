@@ -142,6 +142,7 @@ const ChatPage: React.FC = () => {
           renderItem={renderMessage}
           keyExtractor={getMessageKey}
           contentContainerStyle={styles.messagesContainer}
+          inverted={false}
         />
       </View>
 
@@ -153,6 +154,8 @@ const ChatPage: React.FC = () => {
             onChangeText={setNewMessage}
             placeholder="Type a message..."
             multiline
+            numberOfLines={1}
+            maxLength={1000}
           />
           <TouchableOpacity
             style={[styles.sendButton, !newMessage.trim() && styles.sendButtonDisabled]}
@@ -185,6 +188,7 @@ const styles = StyleSheet.create({
   },
   messagesWrapper: {
     flex: 1,
+    marginBottom: 60,
   },
   messagesContainer: {
     padding: 10,
@@ -218,11 +222,16 @@ const styles = StyleSheet.create({
     borderColor: '#ddd',
     backgroundColor: '#fff',
     paddingBottom: Platform.OS === 'ios' ? 20 : 10,
+    position: 'relative',
+    zIndex: 1,
   },
   inputContainer: {
     flexDirection: 'row',
     padding: 10,
     alignItems: 'center',
+    backgroundColor: '#fff',
+    minHeight: 60,
+    maxHeight: 120,
   },
   input: {
     flex: 1,
@@ -235,6 +244,7 @@ const styles = StyleSheet.create({
     maxHeight: 100,
     minHeight: 40,
     backgroundColor: '#f9f9f9',
+    textAlignVertical: 'center',
   },
   sendButton: {
     backgroundColor: '#E0BBE4',
