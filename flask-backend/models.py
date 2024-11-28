@@ -63,12 +63,13 @@ class Appointments(db.Model):
     time = db.Column(db.Time, nullable=True)
     name = db.Column(db.String(100), nullable=True)
 
+'''
 class adminControls(db.Model): 
     __tablename__ = "Admin Controls "
     salary = db.Column(db.Integer, primary_key=True, autoincrement=True)
     weeklySchedule =  db.Column(db.Date, nullable=True)  #(Json object) nullable 
     id =  db.Column(db.Integer, primary_key=True, autoincrement=True)  # employeeid or userId, not nullable
-
+'''
 
 class Service(db.Model):
     __tablename__ = 'service'
