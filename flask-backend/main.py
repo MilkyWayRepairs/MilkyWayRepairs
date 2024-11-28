@@ -3,6 +3,7 @@ from flask import Flask, request, jsonify, session
 from flask_sqlalchemy import SQLAlchemy
 from dotenv import load_dotenv
 from flask_cors import CORS
+from sqlalchemy import func
 # from flask_session import Session
 from config import ApplicationConfig
 from flask_bcrypt import Bcrypt
@@ -252,35 +253,6 @@ def start_chat():
 
     return jsonify({"message": "New chat started"}), 201
 
-#checks if a chat exists
-@app.route('/chat', methods=['POST'])
-def get_or_create_chat():
-    data = request.json
-    sender_id = data['sender_id']
-    receiver_id = data['receiver_id']
-
-    # Check if a chat already exists
-    existing_messages = Message.query.filter(
-        ((Message.sender_id == sender_id) & (Message.receiver_id == receiver_id)) |
-        ((Message.sender_id == receiver_id) & (Message.sender_id == sender_id))
-    ).all()
-
-    if existing_messages:
-        # Chat already exists, return existing chat
-        chat_messages = [{'id': msg.message_id, 'content': msg.content, 'sender': msg.sender_id, 'timestamp': msg.timestamp.isoformat()} for msg in existing_messages]
-        return jsonify({"chat_exists": True, "messages": chat_messages}), 200
-
-    # Create a new chat if it doesn't exist
-    new_message = Message(
-        sender_id=sender_id,
-        receiver_id=receiver_id,
-        content="Chat started",
-        timestamp=datetime.now()
-    )
-    db.session.add(new_message)
-    db.session.commit()
-
-    return jsonify({"chat_exists": False, "message": "New chat created"}), 201
 
 
 #select user to start chatting
