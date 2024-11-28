@@ -1,6 +1,7 @@
 import datetime
 from flask_sqlalchemy import SQLAlchemy
 from uuid import uuid4
+from datetime import datetime, timezone
 
 from sqlalchemy import func
 
@@ -19,7 +20,7 @@ class User(db.Model):
     password_hash = db.Column(db.String(255), nullable=False)
     phone_number = db.Column(db.String(20))
     name = db.Column(db.String(100))
-    role = db.Column(db.String(10))
+    role = db.Column(db.String(20))
 
 class Review(db.Model):
     __tablename__ = 'review'
@@ -31,11 +32,11 @@ class Review(db.Model):
 
 class Message(db.Model):
     __tablename__ = 'message'
-    message_id = db.Column(db.Integer, primary_key=True)  # Match the database schema
+    message_id = db.Column(db.Integer, primary_key=True)
     sender_id = db.Column(db.Integer, nullable=False)
     receiver_id = db.Column(db.Integer, nullable=False)
     content = db.Column(db.Text, nullable=False)
-    timestamp = db.Column(db.DateTime, default=datetime.timedelta)  # Fix datetime import issue
+    timestamp = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc))
 
 class Vehicle(db.Model):
     __tablename__ = 'vehicle'
@@ -49,7 +50,7 @@ class Vehicle(db.Model):
 
 class PerformanceEvaluation(db.Model):
     __tablename__ = 'performance evaluation'
-    id = db.Column(db.Integer, primary_key=True)
+    evaluation_id = db.Column(db.Integer, primary_key=True)
     name = User.name
     employee_id = User.id
     expected_hours = db.Column(db.Double, nullable=False)
@@ -67,3 +68,37 @@ class adminControls(db.Model):
     salary = db.Column(db.Integer, primary_key=True, autoincrement=True)
     weeklySchedule =  db.Column(db.Date, nullable=True)  #(Json object) nullable 
     id =  db.Column(db.Integer, primary_key=True, autoincrement=True)  # employeeid or userId, not nullable
+
+
+class Service(db.Model):
+    __tablename__ = 'service'
+    
+    service_id = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    customer_id = db.Column(db.Integer, db.ForeignKey('customer.customer_id'))
+    employee_id = db.Column(db.Integer, db.ForeignKey('employee.employee_id'))
+    time_date = db.Column(db.DateTime, nullable=False)
+    payment_method = db.Column(db.String(50), nullable=False)
+    cost = db.Column(db.Numeric(10,2), nullable=False)
+
+class Job(db.Model):
+    __tablename__ = 'job'
+    job_id = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    service_id = db.Column(db.Integer, db.ForeignKey('service.service_id'), nullable=True)
+    rating = db.Column(db.Numeric(2,1))
+    feedback = db.Column(db.Text)
+    
+    service = db.relationship('Service', backref=db.backref('jobs', lazy=True))
+
+class Log(db.Model):
+    __tablename__ = 'log'
+    
+    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    job_title = db.Column(db.Integer, db.ForeignKey('job.job_id'))
+    timestamp = db.Column(db.DateTime, default=func.current_timestamp())
+    date = db.Column(db.String(45))
+    mileage = db.Column(db.String(45))
+    vin = db.Column(db.String(45))
+    job_notes = db.Column(db.String(45))
+    user_id = db.Column(db.String(45))
+    
+    job = db.relationship('Job', backref=db.backref('logs', lazy=True))

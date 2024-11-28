@@ -6,6 +6,10 @@ from flask_cors import CORS
 # from flask_session import Session
 from config import ApplicationConfig
 from flask_bcrypt import Bcrypt
+from datetime import datetime
+from models import db, User, Review, Message, Vehicle, Service, Job, Log
+import os, re, dns.resolver
+
 from datetime import datetime, timedelta
 from models import db, User, Review, Message, Appointments
 import os, re, dns.resolver, requests
@@ -21,20 +25,46 @@ HEADERS = {
 
 load_dotenv()
 app = Flask(__name__)
+
+# Database configuration should come BEFORE app.config.from_object
+app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv("PERSONAL_URI")
+app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+app.config['SECRET_KEY'] = os.getenv("SECRET_KEY")
+
+# Then load additional config
 app.config.from_object(ApplicationConfig)
 
 bcrypt = Bcrypt(app)
 CORS(app, supports_credentials=True)
 db.init_app(app)
-#with app.app_context():
-#   db.create_all()
+with app.app_context():
+    db.create_all()
 
-# Configure the SQLAlchemy part of the application
-app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv("PERSONAL_URI")
-app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+# Add debug route
+@app.route('/')
+def home():
+    return jsonify({
+        "message": "Server is running",
+        "status": "ok"
+    })
 
-# Make sure that there is a secret key in your .env file to manage sessions
-app.secret_key = os.getenv("SECRET_KEY")
+# Add a separate database test endpoint
+@app.route('/db-test')
+def db_test():
+    try:
+        # Modern way to get table names
+        inspector = db.inspect(db.engine)
+        tables = inspector.get_table_names()
+        return jsonify({
+            "message": "Database connected",
+            "tables": tables,
+            "database_uri": app.config['SQLALCHEMY_DATABASE_URI']
+        })
+    except Exception as e:
+        return jsonify({
+            "error": "Database connection failed",
+            "details": str(e)
+        }), 500
 
 # Creates personal session token for each user
 @app.route("/@me")
@@ -188,6 +218,9 @@ def get_reviews():
     ]
     return jsonify(reviews_list)
 
+#messages        
+@app.route('/chat', methods=['POST'])
+def get_or_create_chat():
 
 #messages   
      
@@ -222,11 +255,27 @@ def start_chat():
     data = request.json
     sender_id = data['sender_id']
     receiver_id = data['receiver_id']
-    
-    # Check if a chat already exists
-    existing_messages = Message.query.filter(
+
+    # Fetch all messages between the sender and receiver
+    messages = Message.query.filter(
         ((Message.sender_id == sender_id) & (Message.receiver_id == receiver_id)) |
         ((Message.sender_id == receiver_id) & (Message.receiver_id == sender_id))
+    ).order_by(Message.timestamp).all()
+
+    message_list = [
+        {
+            'message_id': msg.message_id,
+            'sender_id': msg.sender_id,
+            'receiver_id': msg.receiver_id,
+            'content': msg.content,
+            'timestamp': msg.timestamp.isoformat()
+        } for msg in messages
+    ]
+
+    return jsonify({'messages': message_list}), 200
+
+@app.route('/messages', methods=['POST'])
+def send_message():
     ).first()
 
     if existing_messages:
@@ -261,6 +310,21 @@ def get_messages(channel_url):
 @app.route('/messages', methods=['POST'])
 def send_message():
     data = request.json
+    sender_id = data['sender_id']
+    receiver_id = data['receiver_id']
+    content = data['content']
+
+    new_message = Message(sender_id=sender_id, receiver_id=receiver_id, content=content)
+    db.session.add(new_message)
+    db.session.commit()
+
+    return jsonify({
+        'message_id': new_message.message_id,
+        'sender_id': new_message.sender_id,
+        'receiver_id': new_message.receiver_id,
+        'content': new_message.content,
+        'timestamp': new_message.timestamp.isoformat()
+    }), 201
     sender_id = str(data['sender_id'])
     channel_url = data['channel_url']
     message_content = data['content']
@@ -285,7 +349,7 @@ def send_message():
 def get_users():
     try:
         # Fetch all users except the current logged-in user
-        users = User.query.all()
+        users = User.query
 
 
         # Serialize user data
@@ -356,6 +420,90 @@ def schedule_appointment():
     except ValueError as e:
         return jsonify({"message": "Invalid date format", "error": str(e)}), 400
     except Exception as e:
+        app.logger.error(f"Error updating vehicle status: {e}")
+        return jsonify({"error": "Internal Server Error"}), 500
+    
+@app.route('/jobs', methods=['GET'])
+def get_jobs():
+    try:
+        jobs = Job.query.all()
+        print(f"Found {len(jobs)} jobs")  # Debug print
+        
+        jobs_list = [{
+            'job_id': job.job_id,
+            'service_id': job.service_id,
+            'rating': float(job.rating) if job.rating else None,
+            'feedback': job.feedback or f"Job {job.job_id}"  # Use feedback if available, otherwise use job ID
+        } for job in jobs]
+        
+        return jsonify(jobs_list)
+    except Exception as e:
+        print(f"Error in jobs endpoint: {str(e)}")
+        return jsonify({"error": str(e)}), 500
+
+# Add a debug endpoint
+@app.route('/debug/jobs')
+def debug_jobs():
+    try:
+        # Direct database query
+        result = db.session.execute("SELECT * FROM job").fetchall()
+        return jsonify({
+            "raw_count": len(result),
+            "raw_data": [dict(row) for row in result]
+        })
+    except Exception as e:
+        return jsonify({"error": str(e)})
+
+@app.route('/logs', methods=['POST'])
+def submit_log():
+    if not session.get("id"):
+        return jsonify({"error": "Unauthorized"}), 401
+
+    data = request.json
+    try:
+        # Verify that the job exists
+        job = Job.query.get(data['jobTitle'])  # Now jobTitle contains the job_id
+        if not job:
+            return jsonify({"error": "Invalid job selected"}), 400
+
+        new_log = Log(
+            date=data['date'],
+            mileage=data['mileage'],
+            vin=data['vin'],
+            job_title=data['jobTitle'],  # This is now the job_id
+            job_notes=data['jobNotes'],
+            user_id=str(session.get("id"))
+        )
+        db.session.add(new_log)
+        db.session.commit()
+        return jsonify({"message": "Log submitted successfully"}), 200
+    except Exception as e:
+        db.session.rollback()
+        print("Error:", str(e))
+        return jsonify({"error": str(e)}), 400
+
+@app.route('/logs', methods=['GET'])
+def get_logs():
+    try:
+        logs = Log.query.all()
+        logs_list = [{
+            'id': log.id,
+            'date': log.date,
+            'mileage': log.mileage,
+            'vin': log.vin,
+            'jobTitle': log.job_title,  # This is the job_id
+            'jobNotes': log.job_notes
+        } for log in logs]
+        return jsonify(logs_list)
+    except Exception as e:
+        print("Error fetching logs:", str(e))
+        return jsonify({"error": "Failed to fetch logs"}), 500
+
+@app.route('/test', methods=['GET'])
+def test():
+    print("Test endpoint hit!")  # Debug print
+    return jsonify({"message": "Server is working!"})
+
         return jsonify({"message": "An error occurred in the backend", "error": str(e)}), 500
 
 @app.route("/logout", methods=["POST"])
@@ -366,5 +514,5 @@ def logout_user():
 
 if __name__ == '__main__':
     print("main")
-    app.run(host="0.0.0.0", port=5000, debug=True)
+    app.run(host="0.0.0.0", port=5001, debug=True)
 

@@ -1,8 +1,9 @@
 import { Text, View, Image, TouchableOpacity, Alert, StyleSheet, TextInput, Keyboard, TouchableWithoutFeedback } from "react-native";
 import { Link, useRouter } from "expo-router";
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import AccountSidebar from '../accountSidebar'; // Ensure the path is correct
 import { SERVER_URL } from "@/config/config";
+import { Picker } from '@react-native-picker/picker';
 
 // Add this interface
 interface LogFormData {
@@ -11,6 +12,12 @@ interface LogFormData {
   vin: string;
   jobTitle: string;
   jobNotes: string;
+}
+interface Job {
+    job_id: number;
+    service_id: number;
+    rating: number;
+    feedback: string;
 }
 
 const AddLogs = () => {
@@ -22,7 +29,37 @@ const AddLogs = () => {
     jobTitle: '',
     jobNotes: ''
   });
+  const [jobs, setJobs] = useState<Job[]>([]);
   const router = useRouter();
+
+  useEffect(() => {
+    const fetchJobs = async () => {
+      try {
+        const response = await fetch(`${SERVER_URL}/jobs`, {
+          credentials: 'include',
+        });
+        if (response.ok) {
+          const data = await response.json();
+          setJobs(data);
+        }
+      } catch (error) {
+        console.error('Error fetching jobs:', error);
+      }
+    };
+    
+    fetchJobs();
+  }, []);
+
+  const getPlaceholder = (field: string) => {
+    switch(field) {
+      case 'date': return 'Enter date (MM/DD/YYYY)';
+      case 'mileage': return 'Enter current mileage';
+      case 'vin': return 'Enter 17-character VIN';
+      case 'jobTitle': return 'Enter job title (min. 3 characters)';
+      case 'jobNotes': return 'Enter detailed job notes (min. 10 characters)';
+      default: return `Enter ${field}`;
+    }
+  };
 
   const handleAccountPress = () => {
     setIsSidebarVisible(true); // Show the sidebar
@@ -37,6 +74,28 @@ const AddLogs = () => {
   };
 
   const submitLogs = async () => {
+    // Validation checks
+    if (!formData.date) {
+      Alert.alert("Error", "Please enter a date");
+      return;
+    }
+    if (!formData.mileage || isNaN(Number(formData.mileage))) {
+      Alert.alert("Error", "Please enter a valid mileage number");
+      return;
+    }
+    if (!formData.vin || formData.vin.length !== 17) {
+      Alert.alert("Error", "Please enter a valid 17-character VIN");
+      return;
+    }
+    if (!formData.jobTitle) {
+      Alert.alert("Error", "Please select a job");
+      return;
+    }
+    if (!formData.jobNotes || formData.jobNotes.length < 10) {
+      Alert.alert("Error", "Please enter detailed job notes (minimum 10 characters)");
+      return;
+    }
+
     try {
       const response = await fetch(`${SERVER_URL}/logs`, {
         method: "POST",
@@ -59,7 +118,7 @@ const AddLogs = () => {
       if (response.ok) {
         Alert.alert("Success", "Logs submitted successfully!");
         setFormData({ date: '', mileage: '', vin: '', jobTitle: '', jobNotes: '' });
-        router.push("/(app)/logs/submittedLogs");
+        router.push("/logs/submittedLogs");
       } else {
         Alert.alert("Error", data.error || "Failed to submit logs. Please try again.");
       }
@@ -93,14 +152,31 @@ const AddLogs = () => {
               <Text style={styles.inputLabel}>
                 {field.charAt(0).toUpperCase() + field.slice(1).replace(/([A-Z])/g, ' $1')}
               </Text>
-              <TextInput
-                style={styles.textInput}
-                placeholder={`Enter ${field}`}
-                placeholderTextColor="#A9A9A9"
-                value={formData[field as keyof LogFormData]}
-                onChangeText={(value) => handleInputChange(field as keyof LogFormData, value)}
-                multiline={field === 'jobNotes'}
-              />
+              {field === 'jobTitle' ? (
+                <Picker
+                  selectedValue={formData.jobTitle}
+                  style={styles.picker}
+                  onValueChange={(itemValue) => handleInputChange('jobTitle', itemValue)}
+                >
+                  <Picker.Item label="Select a job" value="" />
+                  {jobs.map((job) => (
+                    <Picker.Item 
+                      key={job.job_id} 
+                      label={job.feedback || `Job ${job.job_id}`}
+                      value={job.job_id} 
+                    />
+                  ))}
+                </Picker>
+              ) : (
+                <TextInput
+                  style={styles.textInput}
+                  placeholder={getPlaceholder(field)}
+                  placeholderTextColor="#A9A9A9"
+                  value={formData[field as keyof LogFormData]}
+                  onChangeText={(value) => handleInputChange(field as keyof LogFormData, value)}
+                  multiline={field === 'jobNotes'}
+                />
+              )}
             </View>
           ))}
 
@@ -215,6 +291,15 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: '#000',
   },
+  picker: {
+    width: '100%',
+    height: 40,
+    backgroundColor: '#f9f9f9',
+    borderColor: '#ccc',
+    borderWidth: 1,
+    borderRadius: 5,
+  },
 });
 
 export default AddLogs;
+

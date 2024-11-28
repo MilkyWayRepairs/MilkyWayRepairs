@@ -56,6 +56,8 @@ const ChatPage: React.FC = () => {
   
 
   useEffect(() => {
+    console.log("Receiver ID:", receiverId); // Debugging
+    console.log("Receiver Name:", receiverName); // Debugging
     if (receiverId) {
       setReceiverDataReady(true);
     }
@@ -127,9 +129,10 @@ const ChatPage: React.FC = () => {
         console.error("Unexpected response status:", response.status);
       }
     } catch (error) {
-      console.error('Error sending message:', error);
+        console.error('Error sending message:', error);
     }
-  };
+};
+
   
 
   const renderMessageItem = ({ item }: { item: Message }) => (
@@ -143,6 +146,7 @@ const ChatPage: React.FC = () => {
     <View style={styles.container}>
       <View style={styles.header}>
         <TouchableOpacity onPress={() => router.push('./Messages')}>
+          <Text>{receiverName || 'Mechanic'}</Text>
           <Text>{receiverName || 'Mechanic'}</Text>
         </TouchableOpacity>
       </View>

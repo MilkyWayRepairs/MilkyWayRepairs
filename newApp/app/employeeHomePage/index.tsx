@@ -68,10 +68,12 @@ const userHomePage = () => {
 
       {/* Logs Button */}
       <TouchableOpacity style={styles.logsButtonContainer}>
-        <Image
-          source={require('../../assets/images/employeeLogs.png')}
-          style={styles.homeScreenButton}
-        />
+        <Link href="/logs">
+          <Image
+            source={require('../../assets/images/employeeLogs.png')}
+            style={styles.homeScreenButton}
+          />
+        </Link>
       </TouchableOpacity>
 
       {/* Review Button */}
