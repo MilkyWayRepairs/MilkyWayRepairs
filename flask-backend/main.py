@@ -6,12 +6,8 @@ from flask_cors import CORS
 # from flask_session import Session
 from config import ApplicationConfig
 from flask_bcrypt import Bcrypt
-from datetime import datetime
-from models import db, User, Review, Message, Vehicle, Service, Job, Log
-import os, re, dns.resolver
-
 from datetime import datetime, timedelta
-from models import db, User, Review, Message, Appointments
+from models import db, User, Review, Message, Vehicle, Service, Job, Log, Appointments
 import os, re, dns.resolver, requests
 
 # Sendbird Configuration
@@ -299,44 +295,33 @@ def start_chat():
 def send_message():
     try:
         data = request.json
-        print(f"Received message data: {data}")  # Debug log
-        
-        # Validate required fields
-        required_fields = ['sender_id', 'receiver_id', 'content']
-        if not all(field in data for field in required_fields):
-            return jsonify({
-                'error': 'Missing required fields',
-                'required': required_fields,
-                'received': data
-            }), 400
+        sender_id = data.get('sender_id')
+        receiver_id = data.get('receiver_id')
+        content = data.get('content')
 
-        # Create new message in database
+        if not all([sender_id, receiver_id, content]):
+            return jsonify({'error': 'Missing required fields'}), 400
+
         new_message = Message(
-            sender_id=int(data['sender_id']),
-            receiver_id=int(data['receiver_id']),
-            content=data['content']
+            sender_id=sender_id,
+            receiver_id=receiver_id,
+            content=content
         )
         
-        try:
-            db.session.add(new_message)
-            db.session.commit()
-            
-            # Return the created message
-            return jsonify({
-                'message_id': new_message.message_id,
-                'content': new_message.content,
-                'sender': str(new_message.sender_id),
-                'timestamp': new_message.timestamp.isoformat()
-            }), 201
-            
-        except Exception as e:
-            db.session.rollback()
-            print(f"Database error: {str(e)}")
-            return jsonify({'error': 'Database error occurred'}), 500
+        db.session.add(new_message)
+        db.session.commit()
+
+        return jsonify({
+            'id': new_message.message_id,
+            'content': new_message.content,
+            'sender': str(new_message.sender_id),
+            'timestamp': new_message.timestamp.isoformat()
+        }), 201
 
     except Exception as e:
-        print(f"Error in send_message: {str(e)}")
-        return jsonify({'error': str(e)}), 400
+        db.session.rollback()
+        print(f"Error sending message: {str(e)}")
+        return jsonify({'error': str(e)}), 500
 
 @app.route('/messages', methods=['GET'])
 def get_messages():
@@ -347,7 +332,8 @@ def get_messages():
         if not sender_id or not receiver_id:
             return jsonify({'error': 'Missing sender_id or receiver_id'}), 400
 
-        # Query messages between these two users
+        print(f"Fetching messages between {sender_id} and {receiver_id}")
+
         messages = Message.query.filter(
             db.or_(
                 db.and_(Message.sender_id == sender_id, Message.receiver_id == receiver_id),
@@ -355,8 +341,11 @@ def get_messages():
             )
         ).order_by(Message.timestamp.asc()).all()
 
+        print(f"Found {len(messages)} messages")
+
         messages_list = [{
-            'message_id': msg.message_id,
+            'id': msg.message_id,  # Use message_id consistently
+            'message_id': msg.message_id,  # Include both for compatibility
             'content': msg.content,
             'sender': str(msg.sender_id),
             'timestamp': msg.timestamp.isoformat()
