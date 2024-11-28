@@ -8,19 +8,10 @@ from config import ApplicationConfig
 from flask_bcrypt import Bcrypt
 from datetime import datetime
 from models import db, User, Review, Message, Vehicle, Service, Job, Log
-import os, re, dns.resolver
-
 from datetime import datetime, timedelta
 from models import db, User, Review, Message, Appointments
-import os, re, dns.resolver, requests
+import os, re, dns.resolver, requests, time, random
 
-# Sendbird Configuration
-SENDBIRD_API_TOKEN = os.getenv("SENDBIRD_API_TOKEN")
-SENDBIRD_APP_ID = os.getenv("SENDBIRD_APP_ID")
-HEADERS = {
-    'Content-Type': 'application/json',
-    'Api-Token': SENDBIRD_API_TOKEN
-}
 
 
 load_dotenv()
@@ -33,6 +24,7 @@ app.config['SECRET_KEY'] = os.getenv("SECRET_KEY")
 
 # Then load additional config
 app.config.from_object(ApplicationConfig)
+
 
 bcrypt = Bcrypt(app)
 CORS(app, supports_credentials=True)
@@ -218,31 +210,46 @@ def get_reviews():
     ]
     return jsonify(reviews_list)
 
-#messages        
+
+#messages 
+HEADERS = ApplicationConfig.HEADERS
+SENDBIRD_APP_ID = ApplicationConfig.SENDBIRD_APP_ID
+    
 @app.route('/chat', methods=['POST'])
 def get_or_create_chat():
     data = request.json
-    sender_id = str(data['sender_id'])
-    receiver_id = str(data['receiver_id'])
+    if 'sender_id' not in data or 'receiver_id' not in data:
+        return jsonify({'error': 'Missing sender_id or receiver_id'}), 400
+
+    try:
+        sender_id = str(data['sender_id'])
+        receiver_id = str(data['receiver_id'])
+    except ValueError:
+        return jsonify({'error': 'Invalid sender_id or receiver_id'}), 400
 
     # Create or get a Sendbird group channel
-    channel_url = f'channel_{sender_id}_{receiver_id}'
     create_channel_url = f'https://api-{SENDBIRD_APP_ID}.sendbird.com/v3/group_channels'
     payload = {
         'user_ids': [sender_id, receiver_id],
         'is_distinct': True,
-        'channel_url': channel_url
+        'name': f'Chat between {sender_id} and {receiver_id}',
     }
 
     response = requests.post(create_channel_url, headers=HEADERS, json=payload)
 
-    if response.status_code == 200:
+    if response.status_code in [200, 201]:
+        response_data = response.json()
+        channel_url = response_data.get('channel_url')
+        app.logger.info(f"Channel created successfully: {response_data}")
         return jsonify({'message': 'Chat created successfully', 'channel_url': channel_url}), 200
     else:
-        return jsonify({'error': 'Failed to create chat', 'details': response.json()}), 400
+        app.logger.error(f"Failed to create chat. Response from Sendbird: {response.status_code}, {response.text}")
+        return jsonify({'error': 'Failed to create chat', 'details': response.json()}), 405
 
 
-      
+
+
+     
 # Endpoint to create a new chat if it doesn't exist
 @app.route('/start_chat', methods=['POST'])
 def start_chat():

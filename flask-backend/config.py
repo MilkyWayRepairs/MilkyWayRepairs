@@ -15,3 +15,11 @@ class ApplicationConfig:
     SESSION_PERMANENT = False
     SESSION_USE_SIGNER = True
     SESSION_REDIS = redis.from_url("redis://127.0.0.1:6379")
+
+    SENDBIRD_API_TOKEN = os.getenv("SENDBIRD_API_TOKEN")
+    SENDBIRD_APP_ID = os.getenv("SENDBIRD_APP_ID")
+    HEADERS = {
+    'Content-Type': 'application/json',
+    'Api-Token': SENDBIRD_API_TOKEN
+}
+

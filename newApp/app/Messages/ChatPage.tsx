@@ -1,162 +1,194 @@
 import React, { useEffect, useState } from 'react';
-import AsyncStorage from '@react-native-async-storage/async-storage';//npm install @react-native-async-storage/async-storage
-import { View, Text, StyleSheet, FlatList, TextInput, TouchableOpacity } from 'react-native';
+import AsyncStorage from '@react-native-async-storage/async-storage';// npm install @react-native-async-storage/async-storage
+import { View, Text, StyleSheet, FlatList, TextInput, TouchableOpacity, KeyboardAvoidingView, Platform, SafeAreaView } from 'react-native';
 import axios from 'axios';
-import { useLocalSearchParams, useRouter } from 'expo-router';
+import { useRouter } from 'expo-router';
 import { SERVER_URL } from '@/config/config';
-import SendBird from 'sendbird';
+import SendBird from 'sendbird'; //npm install sendbird
+
+
 
 interface Message {
-  id: number;
+  id: string;
   content: string;
   sender: string;
   timestamp: any;
 }
 
 const ChatPage: React.FC = () => {
+  const sb = new SendBird({ appId: '5D0726A7-302C-4867-867E-ED5500933EC8' });
   const [messages, setMessages] = useState<Message[]>([]);
   const [newMessage, setNewMessage] = useState('');
-  const { receiverId, receiverName } = useLocalSearchParams();
-  const router = useRouter();
   const [userId, setUserId] = useState<string | null>(null);
-  const [receiverDataReady, setReceiverDataReady] = useState(false);
+  const [receiverId, setReceiverId] = useState<string | null>(null);
+  const [receiverName, setReceiverName] = useState<string | null>(null);
+  const [channelUrl, setChannelUrl] = useState<string | null>(null);
+  const router = useRouter();
+  const generateUniqueId = () => `${Date.now()}-${Math.floor(Math.random() * 1000)}`;
 
-  const sb = new SendBird({ appId: '5D0726A7-302C-4867-867E-ED5500933EC8' });
-
-  //debugging
-  useEffect(() => {
-    console.log("Debug: Extracted receiverId:", receiverId);
-    console.log("Debug: Extracted receiverName:", receiverName);
-  }, []);
 
   useEffect(() => {
-    const connectToSendbird = async () => {
+    // Fetch userId from AsyncStorage
+    const getUserData = async () => {
       try {
         const storedUserId = await AsyncStorage.getItem('userId');
         if (storedUserId) {
-          console.log("Retrieved userId from AsyncStorage:", storedUserId);  // Add logging here to confirm retrieval
+          console.log("Retrieved userId from AsyncStorage:", storedUserId);
           setUserId(storedUserId);
-          sb.connect(storedUserId, (user, error) => {
-            if (error) {
-              console.error('Sendbird connection error:', error);
-            } else {
-              console.log('Connected to Sendbird:', user);
-            }
-          });
         } else {
-          console.error("userId not found in AsyncStorage");
+          console.error("userId not found in AsyncStorage, redirecting...");
+          router.push('../Login'); // Redirect to login if userId is missing
         }
       } catch (error) {
         console.error('Error accessing AsyncStorage:', error);
       }
     };
-  
-    connectToSendbird();
+
+    // Fetch receiverId and receiverName from AsyncStorage
+    const getReceiverData = async () => {
+      try {
+        const storedReceiverId = await AsyncStorage.getItem('receiverId');
+        const storedReceiverName = await AsyncStorage.getItem('receiverName');
+
+        if (storedReceiverId && storedReceiverName) {
+          setReceiverId(storedReceiverId);
+          setReceiverName(storedReceiverName);
+          console.log("Retrieved receiverId:", storedReceiverId);
+          console.log("Retrieved receiverName:", storedReceiverName);
+        } else {
+          console.error("Receiver data not found in AsyncStorage, redirecting...");
+          router.push('../Messages'); // Redirect if receiver data is missing
+        }
+      } catch (error) {
+        console.error('Error accessing AsyncStorage:', error);
+      }
+    };
+
+    getUserData();
+    getReceiverData();
   }, []);
-  
 
   useEffect(() => {
-    console.log("Receiver ID:", receiverId); // Debugging
-    console.log("Receiver Name:", receiverName); // Debugging
-    if (receiverId) {
-      setReceiverDataReady(true);
-    }
-  }, [receiverId]);
-
-  useEffect(() => {
-    if (receiverDataReady) {
+    if (receiverId && userId) {
       fetchOrCreateChat();
     }
-  }, [receiverDataReady]);
+  }, [receiverId, userId]);
 
   const fetchOrCreateChat = async () => {
-    if (!receiverId) {
-      console.error("Receiver ID is missing, redirecting to default page...");
+    if (!receiverId || !userId) {
+      console.error("Receiver ID or User ID is missing, redirecting to default page...");
       router.push('../Messages'); // Redirect to a safe fallback route
-      return null;
+      return;
     }
 
     try {
+      console.log("Attempting to fetch or create chat with:", { sender_id: userId, receiver_id: receiverId });
       const response = await axios.post(`${SERVER_URL}/chat`, {
-        sender_id: userId,
+        sender_id: userId,  // Use state variable userId here
         receiver_id: receiverId,
       });
 
-      if (response.status === 200) {
-        // Existing chat
-        setMessages(response.data.messages);
-      } else if (response.status === 201) {
-        // New chat created
-        setMessages([{ id: Math.random(), content: "Chat started", sender: `User${userId}`, timestamp: new Date().toISOString() }]);
+      if (response.status === 200 || response.status === 201) {
+        const { channel_url, messages } = response.data;
+        setMessages([{ id: generateUniqueId(), content: "Chat started", sender: `User${userId}`, timestamp: new Date().toISOString() }]);
+
+    
+        setChannelUrl(channel_url); // Store the channel URL
+        if (messages) {
+          console.log("Existing chat found, setting messages:", messages);
+
+          const updatedMessages = messages.map((msg: { timestamp: string | number | Date; }) => ({
+            ...msg,
+            timestamp: msg.timestamp ? new Date(msg.timestamp).toISOString() : new Date().toISOString(),
+          }));
+  
+          setMessages(updatedMessages);
+
+        } else {
+          console.log("New chat created.");
+          setMessages([{ id: generateUniqueId(), content: "Chat started", sender: `User${userId}`, timestamp: new Date().toISOString() }]);
+
+        }
+      } else {
+        console.error('Unexpected response status:', response.status);
       }
     } catch (error) {
       console.error('Error fetching or creating chat:', error);
     }
-  };
+  }
 
   const sendMessage = async () => {
-    console.log("Attempting to send message...");
-    if (!newMessage.trim()) {
-      console.error("Message is empty, not sending.");
-      return;
+    if (!newMessage.trim() || !receiverId || !userId || !channelUrl) {
+        console.error("Cannot send message. Missing data.");
+        return;
     }
-  
-    if (!userId) {
-      console.error("userId is not set, cannot send message.");
-      return;
-    }
-  
-    if (!receiverId) {
-      console.error("receiverId is not set, cannot send message.");
-      return;
-    }
-  
+   // const channelUrl = `channel_${userId}_${receiverId}`;
     const payload = {
       sender_id: userId,
-      receiver_id: receiverId,
+      channel_url: channelUrl,  // Use the correct channel URL
       content: newMessage,
     };
-  
-    console.log("Sending payload:", payload);  // Log the payload for debugging
-  
+
     try {
-      const response = await axios.post(`${SERVER_URL}/messages`, payload);
-      if (response.status === 201) {
-        console.log("Message sent successfully:", response.data);
-        setMessages((prev) => [...prev, response.data]);
-        setNewMessage('');
-      } else {
-        console.error("Unexpected response status:", response.status);
-      }
+        console.log("Sending payload to server:", payload);  // Log payload for debugging
+        const response = await axios.post(`${SERVER_URL}/messages`, payload);
+        if (response.status === 201) {
+          const newMessageData = {
+            id: generateUniqueId(),
+            content: newMessage,
+            sender: `User${userId}`,
+            timestamp: new Date().toISOString(), // Add timestamp when sending the message
+          };
+            setMessages((prev) => [...prev, newMessageData]);
+            setNewMessage('');
+        } else {
+            console.error('Unexpected response status:', response.status);
+        }
     } catch (error) {
+        console.error('Error sending message:', error);
         console.error('Error sending message:', error);
     }
 };
 
-  
 
-  const renderMessageItem = ({ item }: { item: Message }) => (
-    <View style={[styles.messageItem, item.sender === `User${userId}` ? styles.myMessage : styles.theirMessage]}>
-      <Text style={styles.messageContent}>{item.content}</Text>
-      <Text style={styles.timestamp}>{new Date(item.timestamp).toLocaleTimeString()}</Text>
-    </View>
-  );
+const renderMessageItem = ({ item }: { item: Message }) => (
+  <View style={[styles.messageItem, item.sender === `User${userId}` ? styles.myMessage : styles.theirMessage]}>
+    <Text style={styles.messageContent}>{item.content}</Text>
+    {item.timestamp ? (
+      <Text style={styles.timestamp}>
+        {new Date(item.timestamp).toLocaleString(undefined, {
+          hour: '2-digit',
+          minute: '2-digit',
+          second: '2-digit',
+          hour12: false,
+          timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+        })}
+      </Text>
+    ) : (
+      <Text style={styles.timestamp}>Invalid Date</Text>
+    )}
+  </View>
+);
+
+
 
   return (
-    <View style={styles.container}>
+    <SafeAreaView style={styles.container}>
       <View style={styles.header}>
         <TouchableOpacity onPress={() => router.push('./Messages')}>
-          <Text>{receiverName || 'Mechanic'}</Text>
-          <Text>{receiverName || 'Mechanic'}</Text>
+          <Text>{receiverName || 'Recipient'}</Text>
         </TouchableOpacity>
       </View>
       <FlatList
         data={messages}
         renderItem={renderMessageItem}
-        keyExtractor={(item) => item.id.toString()}
+        keyExtractor={(item) => (item.id ? item.id.toString() : Math.random().toString())}
         contentContainerStyle={styles.messagesContainer}
       />
-      <View style={styles.inputContainer}>
+      <KeyboardAvoidingView
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+        style={styles.inputContainer}
+      >
         <TextInput
           style={styles.input}
           value={newMessage}
@@ -166,8 +198,8 @@ const ChatPage: React.FC = () => {
         <TouchableOpacity style={styles.sendButton} onPress={sendMessage}>
           <Text style={styles.sendButtonText}>Send</Text>
         </TouchableOpacity>
-      </View>
-    </View>
+      </KeyboardAvoidingView>
+    </SafeAreaView>
   );
 };
 
@@ -182,19 +214,39 @@ const styles = StyleSheet.create({
     backgroundColor: '#E0BBE4',
     padding: 15,
   },
-  backButton: {
-    color: '#fff',
-    fontSize: 16,
-    marginRight: 10,
-  },
-  headerText: {
-    fontSize: 20,
-    fontWeight: 'bold',
-    color: '#fff',
-  },
   messagesContainer: {
+    flexGrow: 1,
     paddingHorizontal: 10,
     paddingBottom: 20,
+  },
+  inputContainer: {
+    flexDirection: 'row',
+    padding: 10,
+    borderTopWidth: 1,
+    borderColor: '#ddd',
+    backgroundColor: '#fff',
+    alignItems: 'center',
+  },
+  input: {
+    flex: 1,
+    borderWidth: 1,
+    borderColor: '#ccc',
+    borderRadius: 20,
+    paddingHorizontal: 15,
+    paddingVertical: 5,
+    marginRight: 10,
+    backgroundColor: '#f9f9f9',
+  },
+  sendButton: {
+    backgroundColor: '#E0BBE4',
+    borderRadius: 20,
+    paddingVertical: 10,
+    paddingHorizontal: 15,
+    justifyContent: 'center',
+  },
+  sendButtonText: {
+    color: '#fff',
+    fontWeight: 'bold',
   },
   messageItem: {
     padding: 10,
@@ -219,33 +271,7 @@ const styles = StyleSheet.create({
     marginTop: 5,
     alignSelf: 'flex-end',
   },
-  inputContainer: {
-    flexDirection: 'row',
-    padding: 10,
-    borderTopWidth: 1,
-    borderColor: '#ddd',
-  },
-  input: {
-    flex: 1,
-    borderWidth: 1,
-    borderColor: '#ccc',
-    borderRadius: 20,
-    paddingHorizontal: 15,
-    paddingVertical: 5,
-    marginRight: 10,
-    backgroundColor: '#f9f9f9',
-  },
-  sendButton: {
-    backgroundColor: '#E0BBE4',
-    borderRadius: 20,
-    paddingVertical: 10,
-    paddingHorizontal: 15,
-    justifyContent: 'center',
-  },
-  sendButtonText: {
-    color: '#fff',
-    fontWeight: 'bold',
-  },
 });
+
 
 export default ChatPage;

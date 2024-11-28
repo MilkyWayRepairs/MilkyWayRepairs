@@ -24,7 +24,7 @@
     "@react-navigation/native": "^6.0.2",
     "@react-navigation/routers": "^7.0.0",
     "axios": "^1.7.7",
-    "expo": "^52.0.7",
+    "expo": "^52.0.11",
     "expo-constants": "~17.0.3",
     "expo-font": "~13.0.1",
     "expo-linking": "~7.0.2",

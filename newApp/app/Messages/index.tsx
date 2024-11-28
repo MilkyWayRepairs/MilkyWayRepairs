@@ -29,37 +29,12 @@ const Messages: React.FC = () => {
   const translateX = useSharedValue(400); // Start off-screen
   const [isOverlayVisible, setIsOverlayVisible] = useState(false);
   const [isSidebarVisible, setIsSidebarVisible] = useState(false);
-  const router = useRouter(); // Use router to navigate between pages
+  const router = useRouter(); 
 
   useEffect(() => {
     //fetchMessages();
     fetchUsers();
   }, [receiverId]);
-/*
-  const fetchMessages = async () => {
-    if (receiverId === null) return;
-    try {
-        const response = await axios.get('http://192.168.0.33:5000/messages', {
-            params: { sender_id: senderId, receiver_id: receiverId },
-        });
-        setMessages(response.data);
-    } catch (error) {
-        if (axios.isAxiosError(error)) {
-            // Handle Axios errors
-            console.error('Error fetching messages:', error.message);
-            if (error.response) {
-                console.error('Response data:', error.response.data);
-                console.error('Response status:', error.response.status);
-                console.error('Response headers:', error.response.headers);
-            } else if (error.request) {
-                console.error('No response received:', error.request);
-            }
-        } else {
-            // Handle non-Axios errors
-            console.error('Error setting up request:', (error as Error).message);
-        }
-    }
-};*/
 
 const fetchUsers = async () => {
     try {
@@ -84,6 +59,7 @@ const fetchUsers = async () => {
   }
     console.log("Starting chat with receiverId:", receiverId);
 
+    //debugging
     const receiverIdStr = `${selectedUser.id}`;
     const receiverNameStr = `${selectedUser.name}`;
 
