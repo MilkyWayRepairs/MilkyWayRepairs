@@ -169,9 +169,23 @@ const styles = StyleSheet.create({
         padding: 10,
         marginBottom: 20,
     },
-    buttonContainer: {
-        marginTop: 10,
-    },
+  fetchButtonText: {
+    color: '#fff',
+    fontWeight: 'bold',
+  },
+  timeList: {
+    paddingBottom: 20,
+  },
+  timeSlot: {
+    backgroundColor: '#f0f0f0',
+    padding: 15,
+    borderRadius: 5,
+    marginBottom: 10,
+  },
+  timeText: {
+    fontSize: 16,
+    textAlign: 'center',
+  },
 });
 
 export default AppointmentScheduler;
