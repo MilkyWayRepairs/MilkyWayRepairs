@@ -5,13 +5,16 @@ import axios from 'axios';
 import { useAnimatedStyle, useSharedValue, withTiming } from "react-native-reanimated";
 import Animated from "react-native-reanimated";
 import { SERVER_URL } from '@/config/config';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 
 interface Message {
   id: number;
   content: string;
   sender: string;
-  timestamp: any;
+  receiver_id: string;
+  sender_name?: string;
+  timestamp: string;
 }
 
 interface User {
@@ -26,62 +29,56 @@ const Messages: React.FC = () => {
   const [senderId] = useState(1); // Example sender ID
   const [receiverId, setReceiverId] = useState<number | null>(null); // Dynamic receiver ID
   const [users, setUsers] = useState<User[]>([]); // List of users
+  const [userId, setUserId] = useState<string | null>(null);
   const translateX = useSharedValue(400); // Start off-screen
   const [isOverlayVisible, setIsOverlayVisible] = useState(false);
   const [isSidebarVisible, setIsSidebarVisible] = useState(false);
   const router = useRouter(); // Use router to navigate between pages
 
   useEffect(() => {
-    //fetchMessages();
-    fetchUsers();
-  }, [receiverId]);
-/*
-  const fetchMessages = async () => {
-    if (receiverId === null) return;
-    try {
-        const response = await axios.get('http://192.168.0.33:5000/messages', {
-            params: { sender_id: senderId, receiver_id: receiverId },
-        });
-        setMessages(response.data);
-    } catch (error) {
-        if (axios.isAxiosError(error)) {
-            // Handle Axios errors
-            console.error('Error fetching messages:', error.message);
-            if (error.response) {
-                console.error('Response data:', error.response.data);
-                console.error('Response status:', error.response.status);
-                console.error('Response headers:', error.response.headers);
-            } else if (error.request) {
-                console.error('No response received:', error.request);
-            }
-        } else {
-            // Handle non-Axios errors
-            console.error('Error setting up request:', (error as Error).message);
-        }
-    }
-};*/
+    const initialize = async () => {
+      const storedUserId = await AsyncStorage.getItem('userId');
+      if (storedUserId) {
+        setUserId(storedUserId);
+        await fetchConversations(storedUserId);
+        await fetchUsers();
+      }
+    };
+    initialize();
+  }, []);
 
-const fetchUsers = async () => {
+  const fetchConversations = async (currentUserId: string) => {
     try {
-        const response = await axios.get(`${SERVER_URL}/users`, {
-          params: { current_user_id: senderId },
-        });
-        console.log("Fetched users:", response.data); // Log users for debugging
-        setUsers(response.data);
+      const response = await axios.get(`${SERVER_URL}/conversations`, {
+        params: { user_id: currentUserId }
+      });
+      console.log('Fetched conversations:', response.data);
+      setMessages(response.data);
     } catch (error) {
-        console.error('Error fetching users:', error);
+      console.error('Error fetching conversations:', error);
     }
-};
- 
+  };
+
+  const fetchUsers = async () => {
+    try {
+      const response = await axios.get(`${SERVER_URL}/users`, {
+        params: { current_user_id: senderId },
+      });
+      console.log("Fetched users:", response.data); // Log users for debugging
+      setUsers(response.data);
+    } catch (error) {
+      console.error('Error fetching users:', error);
+    }
+  };
+
   const startChatting = (receiverId: number) => {
     const selectedUser = users.find(user => user.id === receiverId);
-
 
     console.log("Selected User:", selectedUser); // Debug selected user
     if (!selectedUser) {
       console.error(`User with ID ${receiverId} not found`);
       return;
-  }
+    }
     console.log("Starting chat with receiverId:", receiverId);
 
     const receiverIdStr = `${selectedUser.id}`;
@@ -93,24 +90,39 @@ const fetchUsers = async () => {
         receiverId: receiverIdStr,
         receiverName: receiverNameStr,
       },
-      
-  });
-  console.log("Navigating to ChatPage with params:", {
-    receiverId: selectedUser.id,
-    receiverName: selectedUser.name,
-});
-
+    });
+    console.log("Navigating to ChatPage with params:", {
+      receiverId: selectedUser.id,
+      receiverName: selectedUser.name,
+    });
   };
 
-  const renderMessageItem = ({ item }: { item: Message }) => (
-    <View style={styles.messageItem}>
-      <Text style={styles.senderText}>
-        {item.sender === `User${senderId}` ? 'You' : `User${receiverId}`}:
-      </Text>
-      <Text style={styles.contentText}>{item.content}</Text>
-      <Text style={styles.timestampText}>{new Date(item.timestamp).toLocaleString()}</Text>
-    </View>
-  );
+  const renderConversation = ({ item }: { item: Message }) => {
+    if (!userId) return null;
+    
+    const isCurrentUser = item.sender === userId;
+    const displayName = isCurrentUser ? item.receiver_name : item.sender_name;
+    const otherUserId = isCurrentUser ? item.receiver_id : item.sender;
+    
+    return (
+      <TouchableOpacity 
+        style={styles.conversationItem}
+        onPress={() => startChatting(parseInt(otherUserId))}
+      >
+        <View>
+          <Text style={styles.conversationName}>
+            {displayName || 'Unknown User'}
+          </Text>
+          <Text style={styles.lastMessage} numberOfLines={1}>
+            {item.content}
+          </Text>
+          <Text style={styles.timestamp}>
+            {new Date(item.timestamp).toLocaleString()}
+          </Text>
+        </View>
+      </TouchableOpacity>
+    );
+  };
 
   const renderUserItem = ({ item }: { item: User }) => (
     <TouchableOpacity style={styles.userItem} onPress={() => startChatting(item.id)}>
@@ -150,21 +162,16 @@ const fetchUsers = async () => {
         <Text style={styles.headerText}>Messages</Text>
       </View>
 
-      {/* Chat List */}
-      {messages.length === 0 ? (
-        <View style={styles.noMessagesContainer}>
-          <Text style={styles.noMessagesText}>No messages found</Text>
-        </View>
-      ) : (
-        <FlatList
-          data={messages}
-          renderItem={renderMessageItem}
-          keyExtractor={(item) => item.id.toString()}
-          contentContainerStyle={styles.listContent}
-        />
-      )}
+      {/* Conversations List */}
+      <FlatList
+        data={messages}
+        renderItem={renderConversation}
+        keyExtractor={(item) => item.id.toString()}
+        style={styles.conversationsList}
+        contentContainerStyle={styles.conversationsContent}
+      />
 
-      {/* Start a New Chat Button */}
+      {/* Start Chat Button */}
       <TouchableOpacity style={styles.startChatButton} onPress={handleStartChatPress}>
         <Text style={styles.startChatButtonText}>Start a New Chat</Text>
       </TouchableOpacity>
@@ -400,6 +407,35 @@ const styles = StyleSheet.create({
   },
   userListContent: {
     paddingHorizontal: 16,
+  },
+  conversationsList: {
+    flex: 1,
+    width: '100%',
+  },
+  conversationsContent: {
+    padding: 10,
+  },
+  conversationItem: {
+    backgroundColor: '#fff',
+    padding: 15,
+    marginVertical: 5,
+    borderRadius: 10,
+    borderWidth: 1,
+    borderColor: '#eee',
+  },
+  conversationName: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    marginBottom: 5,
+  },
+  lastMessage: {
+    fontSize: 14,
+    color: '#666',
+    marginBottom: 3,
+  },
+  timestamp: {
+    fontSize: 12,
+    color: '#999',
   },
 });
 

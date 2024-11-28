@@ -9,6 +9,7 @@ from flask_bcrypt import Bcrypt
 from datetime import datetime, timedelta
 from models import db, User, Review, Message, Vehicle, Service, Job, Log, Appointments
 import os, re, dns.resolver, requests
+from sqlalchemy.sql import func
 
 # Sendbird Configuration
 SENDBIRD_API_TOKEN = os.getenv("SENDBIRD_API_TOKEN")
@@ -607,6 +608,44 @@ def logout_user():
     session.pop("id", None)
     return "200"
 
+@app.route('/conversations', methods=['GET'])
+def get_conversations():
+    try:
+        user_id = request.args.get('user_id')
+        if not user_id:
+            return jsonify({'error': 'Missing user_id parameter'}), 400
+
+        # Get all messages for this user
+        messages = Message.query.filter(
+            db.or_(
+                Message.sender_id == user_id,
+                Message.receiver_id == user_id
+            )
+        ).order_by(Message.timestamp.desc()).all()
+
+        # Create a dictionary to store the latest message for each conversation
+        latest_messages = {}
+        for msg in messages:
+            conversation_key = tuple(sorted([str(msg.sender_id), str(msg.receiver_id)]))
+            if conversation_key not in latest_messages:
+                other_user_id = str(msg.receiver_id if str(msg.sender_id) == user_id else msg.sender_id)
+                other_user = User.query.get(other_user_id)
+                
+                latest_messages[conversation_key] = {
+                    'id': msg.message_id,
+                    'content': msg.content,
+                    'sender': str(msg.sender_id),
+                    'receiver_id': str(msg.receiver_id),
+                    'sender_name': other_user.name if other_user else f'User {other_user_id}',
+                    'receiver_name': other_user.name if other_user else f'User {other_user_id}',
+                    'timestamp': msg.timestamp.isoformat()
+                }
+
+        return jsonify(list(latest_messages.values())), 200
+
+    except Exception as e:
+        print(f"Error fetching conversations: {str(e)}")
+        return jsonify({'error': str(e)}), 500
 
 if __name__ == '__main__':
     print("main")
