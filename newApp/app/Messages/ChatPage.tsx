@@ -127,26 +127,22 @@ const ChatPage: React.FC = () => {
   };
 
   return (
-    <KeyboardAvoidingView 
-      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-      style={styles.container}
-      keyboardVerticalOffset={Platform.OS === 'ios' ? 90 : 0}
-    >
-      <View style={styles.header}>
-        <Text style={styles.headerText}>{receiverName}</Text>
-      </View>
-      
-      <View style={styles.messagesWrapper}>
+    <View style={styles.container}>
+      <View style={styles.messagesContainer}>
         <FlatList
           data={messages}
           renderItem={renderMessage}
           keyExtractor={getMessageKey}
-          contentContainerStyle={styles.messagesContainer}
           inverted={false}
         />
       </View>
 
-      <View style={styles.inputWrapper}>
+      {/* Input Container */}
+      <KeyboardAvoidingView
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+        keyboardVerticalOffset={Platform.OS === 'ios' ? 90 : 0}
+        style={styles.inputWrapper}
+      >
         <View style={styles.inputContainer}>
           <TextInput
             style={styles.input}
@@ -154,8 +150,6 @@ const ChatPage: React.FC = () => {
             onChangeText={setNewMessage}
             placeholder="Type a message..."
             multiline
-            numberOfLines={1}
-            maxLength={1000}
           />
           <TouchableOpacity
             style={[styles.sendButton, !newMessage.trim() && styles.sendButtonDisabled]}
@@ -165,8 +159,8 @@ const ChatPage: React.FC = () => {
             <Text style={styles.sendButtonText}>Send</Text>
           </TouchableOpacity>
         </View>
-      </View>
-    </KeyboardAvoidingView>
+      </KeyboardAvoidingView>
+    </View>
   );
 };
 
@@ -175,24 +169,48 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: '#fff',
   },
-  header: {
-    padding: 15,
-    borderBottomWidth: 1,
-    borderBottomColor: '#ddd',
-    backgroundColor: '#fff',
-  },
-  headerText: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    color: '#000',
-  },
-  messagesWrapper: {
-    flex: 1,
-    marginBottom: 60,
-  },
   messagesContainer: {
+    flex: 1,
+    paddingHorizontal: 10,
+    paddingBottom: 10,
+  },
+  inputWrapper: {
+    borderTopWidth: 1,
+    borderColor: '#ddd',
+    backgroundColor: '#fff',
+    width: '100%',
+  },
+  inputContainer: {
+    flexDirection: 'row',
     padding: 10,
-    flexGrow: 1,
+    alignItems: 'center',
+  },
+  input: {
+    flex: 1,
+    borderWidth: 1,
+    borderColor: '#ddd',
+    borderRadius: 20,
+    paddingHorizontal: 15,
+    paddingVertical: 8,
+    marginRight: 10,
+    minHeight: 40,
+    maxHeight: 100,
+    backgroundColor: '#f9f9f9',
+  },
+  sendButton: {
+    backgroundColor: '#E0BBE4',
+    borderRadius: 20,
+    paddingVertical: 10,
+    paddingHorizontal: 20,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  sendButtonDisabled: {
+    backgroundColor: '#cccccc',
+  },
+  sendButtonText: {
+    color: '#fff',
+    fontWeight: 'bold',
   },
   messageItem: {
     padding: 10,
@@ -216,50 +234,6 @@ const styles = StyleSheet.create({
     fontSize: 12,
     color: '#666',
     marginTop: 5,
-  },
-  inputWrapper: {
-    borderTopWidth: 1,
-    borderColor: '#ddd',
-    backgroundColor: '#fff',
-    paddingBottom: Platform.OS === 'ios' ? 20 : 10,
-    position: 'relative',
-    zIndex: 1,
-  },
-  inputContainer: {
-    flexDirection: 'row',
-    padding: 10,
-    alignItems: 'center',
-    backgroundColor: '#fff',
-    minHeight: 60,
-    maxHeight: 120,
-  },
-  input: {
-    flex: 1,
-    borderWidth: 1,
-    borderColor: '#ddd',
-    borderRadius: 20,
-    paddingHorizontal: 15,
-    paddingVertical: 8,
-    marginRight: 10,
-    maxHeight: 100,
-    minHeight: 40,
-    backgroundColor: '#f9f9f9',
-    textAlignVertical: 'center',
-  },
-  sendButton: {
-    backgroundColor: '#E0BBE4',
-    borderRadius: 20,
-    paddingVertical: 10,
-    paddingHorizontal: 20,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  sendButtonDisabled: {
-    backgroundColor: '#cccccc',
-  },
-  sendButtonText: {
-    color: '#fff',
-    fontWeight: 'bold',
   },
 });
 

@@ -6,6 +6,7 @@ import { useAnimatedStyle, useSharedValue, withTiming } from "react-native-reani
 import Animated from "react-native-reanimated";
 import { SERVER_URL } from '@/config/config';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import BottomNav from '../bottomNavBar';
 
 
 interface Message {
@@ -157,12 +158,10 @@ const Messages: React.FC = () => {
 
   return (
     <View style={styles.container}>
-      {/* Header */}
       <View style={styles.header}>
         <Text style={styles.headerText}>Messages</Text>
       </View>
 
-      {/* Conversations List */}
       <FlatList
         data={messages}
         renderItem={renderConversation}
@@ -171,56 +170,11 @@ const Messages: React.FC = () => {
         contentContainerStyle={styles.conversationsContent}
       />
 
-      {/* Start Chat Button */}
       <TouchableOpacity style={styles.startChatButton} onPress={handleStartChatPress}>
         <Text style={styles.startChatButtonText}>Start a New Chat</Text>
       </TouchableOpacity>
 
-      {/* Navigation */}
-      <View style={styles.bottomNav}>
-        <TouchableOpacity style={styles.homeButtonContainer}>
-          <Link href="/userHomePage">
-            {"  "}
-            <Image
-              source={require('../../assets/images/homeLogo.png')}
-              style={styles.navIcon}
-            />
-            {"\n"}
-            <Text style={styles.navText}>Home</Text>
-          </Link>
-        </TouchableOpacity>
-
-        <TouchableOpacity style={styles.accountButtonContainer} onPress={handleAccountPress}>
-          <Image source={require('../../assets/images/accountLogo.png')} style={styles.navIcon} />
-          <Text style={styles.navText}>Account</Text>
-        </TouchableOpacity>
-      </View>
-
-      {/* Account Overlay */}
-      {isOverlayVisible && (
-        <TouchableOpacity style={styles.overlayBackground} activeOpacity={0} onPress={handleOverlayClose} />
-      )}
-      <Animated.View style={[styles.accountOverlayContainer, animatedStyles]}>
-        <View style={[styles.accountOverlayContent, styles.logoutContent]}>
-          <Text style={styles.accountOverlayText}>Logout</Text>
-        </View>
-        {/* Additional account options */}
-      </Animated.View>
-
-      {/* Sidebar for Selecting Users */}
-      {isSidebarVisible && (
-        <View style={styles.sidebarContainer}>
-          <TouchableOpacity style={styles.sidebarCloseButton} onPress={handleSidebarClose}>
-            <Text style={styles.sidebarCloseText}>Close</Text>
-          </TouchableOpacity>
-          <FlatList
-            data={users}
-            renderItem={renderUserItem}
-            keyExtractor={(item) => item.id.toString()}
-            contentContainerStyle={styles.userListContent}
-          />
-        </View>
-      )}
+      <BottomNav currentRoute="messages" />
     </View>
   );
 };
@@ -229,7 +183,7 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#fff',
-    justifyContent: 'space-between',
+    paddingBottom: 97, // Space for bottom nav
   },
   header: {
     backgroundColor: '#E0BBE4', // Light purple color (match with Figma)
