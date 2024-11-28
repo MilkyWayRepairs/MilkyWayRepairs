@@ -221,12 +221,6 @@ def get_reviews():
 #messages        
 @app.route('/chat', methods=['POST'])
 def get_or_create_chat():
-
-#messages   
-     
-# Update the Endpoint to Create or Fetch a Chat Channel
-@app.route('/chat', methods=['POST'])
-def get_or_create_chat():
     data = request.json
     sender_id = str(data['sender_id'])
     receiver_id = str(data['receiver_id'])
@@ -276,55 +270,7 @@ def start_chat():
 
 @app.route('/messages', methods=['POST'])
 def send_message():
-    ).first()
-
-    if existing_messages:
-        return jsonify({"message": "Chat already exists"}), 200
-
-    # Optionally, create an initial record indicating a new chat is started
-    new_message = Message(
-        sender_id=sender_id,
-        receiver_id=receiver_id,
-        content="Chat started",
-        timestamp=datetime.now()
-    )
-    db.session.add(new_message)
-    db.session.commit()
-
-    return jsonify({"message": "New chat started"}), 201
-
-# Fetch Messages from Sendbird
-@app.route('/messages/<channel_url>', methods=['GET'])
-def get_messages(channel_url):
-    # Fetch messages from the Sendbird channel
-    get_messages_url = f'https://api-{SENDBIRD_APP_ID}.sendbird.com/v3/group_channels/{channel_url}/messages'
-    response = requests.get(get_messages_url, headers=HEADERS)
-
-    if response.status_code == 200:
-        return jsonify(response.json()), 200
-    else:
-        return jsonify({'error': 'Failed to retrieve messages', 'details': response.json()}), 400
-
-
-
-@app.route('/messages', methods=['POST'])
-def send_message():
     data = request.json
-    sender_id = data['sender_id']
-    receiver_id = data['receiver_id']
-    content = data['content']
-
-    new_message = Message(sender_id=sender_id, receiver_id=receiver_id, content=content)
-    db.session.add(new_message)
-    db.session.commit()
-
-    return jsonify({
-        'message_id': new_message.message_id,
-        'sender_id': new_message.sender_id,
-        'receiver_id': new_message.receiver_id,
-        'content': new_message.content,
-        'timestamp': new_message.timestamp.isoformat()
-    }), 201
     sender_id = str(data['sender_id'])
     channel_url = data['channel_url']
     message_content = data['content']
@@ -343,6 +289,17 @@ def send_message():
     else:
         return jsonify({'error': 'Failed to send message', 'details': response.json()}), 400
 
+# Fetch Messages from Sendbird
+@app.route('/messages/<channel_url>', methods=['GET'])
+def get_messages(channel_url):
+    # Fetch messages from the Sendbird channel
+    get_messages_url = f'https://api-{SENDBIRD_APP_ID}.sendbird.com/v3/group_channels/{channel_url}/messages'
+    response = requests.get(get_messages_url, headers=HEADERS)
+
+    if response.status_code == 200:
+        return jsonify(response.json()), 200
+    else:
+        return jsonify({'error': 'Failed to retrieve messages', 'details': response.json()}), 400
 
 #select user to start chatting
 @app.route('/users', methods=['GET'])
@@ -503,8 +460,6 @@ def get_logs():
 def test():
     print("Test endpoint hit!")  # Debug print
     return jsonify({"message": "Server is working!"})
-
-        return jsonify({"message": "An error occurred in the backend", "error": str(e)}), 500
 
 @app.route("/logout", methods=["POST"])
 def logout_user():
