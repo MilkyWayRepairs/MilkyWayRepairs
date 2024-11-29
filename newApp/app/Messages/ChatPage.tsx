@@ -1,8 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';// npm install @react-native-async-storage/async-storage
-import { View, Text, StyleSheet, FlatList, TextInput, TouchableOpacity, KeyboardAvoidingView, Platform, SafeAreaView } from 'react-native';
+import { View,Image, Text, StyleSheet, FlatList, TextInput, TouchableOpacity, KeyboardAvoidingView, Platform, SafeAreaView, Keyboard, } from 'react-native';
 import axios from 'axios';
-import { useRouter } from 'expo-router';
+import { Link, useRouter } from 'expo-router';
 import { SERVER_URL } from '@/config/config';
 import SendBird from 'sendbird'; //npm install sendbird
 
@@ -24,8 +24,23 @@ const ChatPage: React.FC = () => {
   const [receiverName, setReceiverName] = useState<string | null>(null);
   const [channelUrl, setChannelUrl] = useState<string | null>(null);
   const router = useRouter();
+  const [keyboardVisible, setKeyboardVisible] = useState(false);
   const generateUniqueId = () => `${Date.now()}-${Math.floor(Math.random() * 1000)}`;
 
+  useEffect(() => {
+    // keyboard missing debug
+    const keyboardShowListener = Keyboard.addListener('keyboardDidShow', () => {
+      setKeyboardVisible(true);
+    });
+    const keyboardHideListener = Keyboard.addListener('keyboardDidHide', () => {
+      setKeyboardVisible(false);
+    });
+
+    return () => {
+      keyboardShowListener.remove();
+      keyboardHideListener.remove();
+    };
+  }, []);
 
   useEffect(() => {
     // Fetch userId from AsyncStorage
@@ -172,23 +187,33 @@ const renderMessageItem = ({ item }: { item: Message }) => (
 
 
 
-  return (
+return (
+  <KeyboardAvoidingView
+    style={{ flex: 1 }}
+    behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+    keyboardVerticalOffset={Platform.OS === 'ios' ? 100 : 0}
+  >
     <SafeAreaView style={styles.container}>
       <View style={styles.header}>
-        <TouchableOpacity onPress={() => router.push('./Messages')}>
-          <Text>{receiverName || 'Recipient'}</Text>
+        {/* Back Arrow */}
+        <TouchableOpacity style={styles.arrowBack} onPress={() => router.back()}>
+          <Image
+            source={require('../../assets/images/arrowBack.png')} // Adjust the path as per your project structure
+            style={styles.arrowBackIcon}
+          />
         </TouchableOpacity>
+        {/* Display Receiver Name */}
+        <Text style={styles.receiverName}>{receiverName || 'Recipient'}</Text>
       </View>
+
       <FlatList
         data={messages}
         renderItem={renderMessageItem}
-        keyExtractor={(item) => (item.id ? item.id.toString() : Math.random().toString())}
+        keyExtractor={(item) => item.id.toString()}
         contentContainerStyle={styles.messagesContainer}
+        keyboardShouldPersistTaps="always"
       />
-      <KeyboardAvoidingView
-        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-        style={styles.inputContainer}
-      >
+      <View style={[styles.inputContainer, keyboardVisible && { marginBottom: 10 }]}>
         <TextInput
           style={styles.input}
           value={newMessage}
@@ -198,9 +223,13 @@ const renderMessageItem = ({ item }: { item: Message }) => (
         <TouchableOpacity style={styles.sendButton} onPress={sendMessage}>
           <Text style={styles.sendButtonText}>Send</Text>
         </TouchableOpacity>
-      </KeyboardAvoidingView>
+      </View>
     </SafeAreaView>
-  );
+  </KeyboardAvoidingView>
+);
+
+
+
 };
 
 const styles = StyleSheet.create({
@@ -211,8 +240,19 @@ const styles = StyleSheet.create({
   header: {
     flexDirection: 'row',
     alignItems: 'center',
+    justifyContent: 'center', // Centers the content
+    padding: 10,
     backgroundColor: '#E0BBE4',
-    padding: 15,
+    position: 'relative', // Allows positioning of back arrow independently
+  },
+  arrowBackIcon: {
+    width: 24,
+    height: 24, // Adjust size for the back arrow icon
+  },
+  receiverName: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: '#000',
   },
   messagesContainer: {
     flexGrow: 1,
@@ -221,11 +261,11 @@ const styles = StyleSheet.create({
   },
   inputContainer: {
     flexDirection: 'row',
+    alignItems: 'center',
     padding: 10,
     borderTopWidth: 1,
     borderColor: '#ddd',
     backgroundColor: '#fff',
-    alignItems: 'center',
   },
   input: {
     flex: 1,
@@ -236,6 +276,12 @@ const styles = StyleSheet.create({
     paddingVertical: 5,
     marginRight: 10,
     backgroundColor: '#f9f9f9',
+  },
+  arrowBack: {
+    position: 'absolute', // Position the back arrow independently
+    left: 10, // Adjust distance from the left edge
+    top: '100%', // Center vertically
+    transform: [{ translateY: -12 }], // Fine-tune centering for the icon size
   },
   sendButton: {
     backgroundColor: '#E0BBE4',
