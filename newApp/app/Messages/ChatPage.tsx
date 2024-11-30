@@ -101,22 +101,11 @@ const ChatPage: React.FC = () => {
       return;
     }
     const messageData = {
-      sender_id: userId,
-      receiver_id: receiverId,
+      sender_id: parseInt(userId, 10), // Convert to integer
+      receiver_id: parseInt(receiverId, 10), // Convert to integer
       content: newMessage,
     };
-
-
-
-
-
-
-
-
-
-
-
-
+    
     try {
       // Add the message locally first
       const tempMessage = {

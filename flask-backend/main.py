@@ -241,8 +241,8 @@ def send_message():
         if not data:
             return jsonify({'error': 'No data received'}), 400
 
-        sender_id = data.get('sender_id')
-        receiver_id = data.get('receiver_id')
+        sender_id = int(data.get('sender_id', 0))  # Defaults to 0 if None or invalid
+        receiver_id = int(data.get('receiver_id', 0))
         content = data.get('content')
 
         if not sender_id or not receiver_id or not content:
@@ -258,6 +258,9 @@ def send_message():
         db.session.commit()
 
         return jsonify({'message_id': new_message.message_id}), 201
+    except Exception as ve:
+        print("ValueError:", ve)
+        return jsonify({'error': 'Invalid sender_id or receiver_id'}), 400
     except Exception as e:
         db.session.rollback()
         print("Error saving message1:", e)
