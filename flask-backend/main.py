@@ -1,4 +1,4 @@
-# Refer to README under flask-backend directory to setup backend 
+# Ref# Refer to README under flask-backend directory to setup backend 
 from flask import Flask, request, jsonify, session
 from flask_sqlalchemy import SQLAlchemy
 from dotenv import load_dotenv
@@ -15,9 +15,14 @@ import os, re, dns.resolver, requests, time, random
 
 
 
+
+
+
 load_dotenv()
 app = Flask(__name__)
 app.config.from_object(ApplicationConfig)
+
+
 
 
 bcrypt = Bcrypt(app)
@@ -26,21 +31,26 @@ db.init_app(app)
 #with app.app_context():
 #   db.create_all()
 
+
 # Configure the SQLAlchemy part of the application
 app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv("PERSONAL_URI")
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
+
 # Make sure that there is a secret key in your .env file to manage sessions
 app.secret_key = os.getenv("SECRET_KEY")
+
 
 # Initialize tables
 with app.app_context():
     db.create_all()
 
+
 # Creates personal session token for each user
 @app.route("/@me")
 def get_current_user():
     id = session.get("id")
+
 
     if not id:
         return jsonify({"error": "Unauthorized"}), 401
@@ -52,6 +62,8 @@ def get_current_user():
     }) 
 
 
+
+
 def doesEmailExists(email):
     users = User.query.all()
     for user in users:
@@ -60,6 +72,8 @@ def doesEmailExists(email):
             return True
     print("email not in use")
     return False
+
+
 
 
 def validateEmail(email):
@@ -82,6 +96,8 @@ def validatePassword(password):
     return re.match(validPassword, password) is not None
 
 
+
+
 @app.route('/register', methods=['POST'])
 def register():
     data = request.get_json()
@@ -89,6 +105,7 @@ def register():
     password = data.get('password')
     print("Recieved email: ", email)    #debugging
     print("Recieved password: ", password)  #debugging
+
 
     if (doesEmailExists(email)):
         return jsonify({
@@ -125,27 +142,34 @@ def register():
                 }), 400
 
 
+
+
 # Sever sided session login authentication
 @app.route("/login", methods=["POST"])
 def login_user():
     email = request.json["email"]
     password = request.json["password"]
 
+
     user = User.query.filter_by(email=email).first()
+
 
     if user is None:
         return jsonify({"error": "Unauthorized"}), 401
+
 
     if not bcrypt.check_password_hash(user.password_hash, password):
         return jsonify({"error": "Unauthorized"}), 401
     
     session["id"] = user.id
 
+
     return jsonify({
         "id": user.id,
         "email": user.email,
         "role": user.role
     })
+
 
 @app.route('/reviews', methods=['POST', 'GET'])
 def reviews():
@@ -155,11 +179,14 @@ def reviews():
         review_text = data.get('review')
         rating = data.get('rating')
 
+
         if not review_text or not rating:
             return jsonify({"error": "Review content and rating are required."}), 400
 
+
         if rating < 1 or rating > 5:
             return jsonify({"error": "Rating must be between 1 and 5."}), 400
+
 
         try:
             new_review = Review(text=review_text, user_id=id, num_of_stars=rating)
@@ -172,8 +199,10 @@ def reviews():
             print("Error: ", e)
             return jsonify({"error": "Failed to submit review", "details": str(e)}), 400
 
+
     elif request.method == 'GET':
         return get_reviews()
+
 
 def get_reviews():
     reviews = Review.query.all()
@@ -190,6 +219,8 @@ def get_reviews():
     return jsonify(reviews_list)
 
 
+
+
 #messages 
 @app.route('/users', methods=['GET'])
 def get_users():
@@ -200,19 +231,39 @@ def get_users():
         'email': user.email
     } for user in users]), 200
 
+
 @app.route('/messages', methods=['POST'])
 def send_message():
-    data = request.json
-    new_message = Message(
-        sender_id=data['sender_id'],
-        receiver_id=data['receiver_id'],
-        content=data['content'],
-        timestamp=datetime.utcnow()
-    )
-    db.session.add(new_message)
-    db.session.commit()
-    return jsonify({'message': 'Message sent successfully'}), 201
+    try:
+        data = request.json
+        print("Received data:", data)  # Log incoming data
 
+        if not data:
+            return jsonify({'error': 'No data received'}), 400
+
+        sender_id = data.get('sender_id')
+        receiver_id = data.get('receiver_id')
+        content = data.get('content')
+
+        if not sender_id or not receiver_id or not content:
+            return jsonify({'error': 'Missing sender_id, receiver_id, or content'}), 400
+
+        new_message = Message(
+            sender_id=sender_id,
+            receiver_id=receiver_id,
+            content=content,
+            timestamp=datetime.utcnow()
+        )
+        db.session.add(new_message)
+        db.session.commit()
+
+        return jsonify({'message_id': new_message.message_id}), 201
+    except Exception as e:
+        db.session.rollback()
+        print("Error saving message1:", e)
+        return jsonify({'error': 'Failed to save message', 'details': str(e)}), 500
+
+    
 @app.route('/chat_history', methods=['GET'])
 def get_chat_history():
     sender_id = request.args.get('sender_id')
@@ -222,7 +273,7 @@ def get_chat_history():
         ((Message.sender_id == receiver_id) & (Message.receiver_id == sender_id))
     ).order_by(Message.timestamp).all()
     return jsonify([{
-        'id': msg.id,
+        'id': msg.message_id,
         'sender_id': msg.sender_id,
         'receiver_id': msg.receiver_id,
         'content': msg.content,
@@ -240,16 +291,22 @@ def chat_list():
 
 
 
+
+
+
     
+
 
 @app.route("/logout", methods=["POST"])
 def logout_user():
     session.pop("id", None)
     return "200"
 
+
 @app.route('/get-vehicle-status', methods=['POST', 'GET'])
 def get_status():
     user_id = session.get("id")
+
 
     if not user_id:
         return jsonify({"error": "Unauthorized"}), 401
@@ -257,8 +314,10 @@ def get_status():
     try:
         vehicle = Vehicle.query.filter_by(user_id=user_id).first()
 
+
         if not vehicle:
             return jsonify({"error:" "No vehicle found for this user"}), 401
+
 
         vehicle_data = {
             "VIN": vehicle.VIN,
@@ -267,6 +326,7 @@ def get_status():
             "year": vehicle.year,
             "status": vehicle.status,
         }
+
 
         return jsonify(vehicle_data), 200
     except Exception as e:
@@ -281,8 +341,10 @@ def search_vehicle():
     year = data.get('year')
     vin = data.get('vin')
 
+
     try:
         query = Vehicle.query
+
 
         if make:
             query = query.filter(Vehicle.make.ilike(f"%{make}%"))
@@ -293,7 +355,9 @@ def search_vehicle():
         if vin:
             query = query.filter_by(vin=vin)
 
+
         vehicles = query.all()
+
 
         vehicle_list = [{
             "make": vehicle.make,
@@ -303,12 +367,15 @@ def search_vehicle():
             "status": vehicle.status
         } for vehicle in vehicles]
 
+
         return jsonify(vehicle_list), 200
+
 
     except Exception as e:
         app.logger.error(f"Error searching vehicles: {e}")
         return jsonify({"error": "Internal Server Error"}), 500
     from datetime import datetime, time, timedelta
+
 
 # finds conflicting times for appoinement scheduling 
 @app.route('/available-times', methods=['GET'])
@@ -318,35 +385,46 @@ def get_available_times():
         if not date:
             return jsonify({"error": "Date is required"}), 400
 
+
         query_date = datetime.strptime(date, '%Y-%m-%d').date()
+
 
         start_time = time(8, 0)  # 8:00 AM   
         end_time = time(17, 0)  # 5:00 PM
         time_interval = timedelta(minutes=30)  # 30-minute intervals
+
 
         # Query the database for services on the given date
         taken_slots = Service.query.filter(
             func.date(Service.time_date) == query_date
         ).all()
 
+
         # Extract taken times
         taken_times = [service.time_date.time() for service in taken_slots]
+
 
         # Generate all possible times within the working hours
         current_time = datetime.combine(query_date, start_time)
         end_datetime = datetime.combine(query_date, end_time)
         available_times = []
 
+
         while current_time <= end_datetime:
             if current_time.time() not in taken_times:
                 available_times.append(current_time.time().strftime('%H:%M'))
             current_time += time_interval
 
+
         return jsonify({"available_times": available_times}), 200
+
 
     except Exception as e:
         app.logger.error(f"Error fetching available times: {e}")
         return jsonify({"error": "An error occurred", "details": str(e)}), 500
+
+
+
 
 
 
@@ -357,17 +435,22 @@ def update_vehicle_status():
     new_status = data.get('status')
     print(data)
 
+
     try:
         print(f"Searching for vehicle with VIN: {vehicleVIN}")
         vehicle = Vehicle.query.filter_by(VIN=vehicleVIN).first()
 
+
         if not vehicle:
             return jsonify({"error": "Vehicle not found"}), 404
+
 
         vehicle.status = new_status
         db.session.commit()
 
+
         return jsonify({"message": "Vehicle status updated successfully"}), 200
+
 
     except Exception as e:
         app.logger.error(f"Error updating vehicle status: {e}")

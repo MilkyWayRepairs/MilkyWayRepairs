@@ -7,12 +7,14 @@ import axios from 'axios';
 import { useRouter } from 'expo-router';
 import { SERVER_URL } from '@/config/config';
 
+
 interface Message {
-  id: string;
+  id: number;
   content: string;
   sender: string;
   timestamp: string;
 }
+
 
 const ChatPage: React.FC = () => {
   const [messages, setMessages] = useState<Message[]>([]);
@@ -21,6 +23,10 @@ const ChatPage: React.FC = () => {
   const [receiverId, setReceiverId] = useState<string | null>(null);
   const [receiverName, setReceiverName] = useState<string | null>(null);
   const router = useRouter();
+  const generateUniqueId = () => `${Date.now()}-${Math.floor(Math.random() * 1000)}`;
+
+
+
 
   useEffect(() => {
     const getUserData = async () => {
@@ -28,6 +34,7 @@ const ChatPage: React.FC = () => {
         const storedUserId = await AsyncStorage.getItem('userId');
         const storedReceiverId = await AsyncStorage.getItem('receiverId');
         const storedReceiverName = await AsyncStorage.getItem('receiverName');
+
 
         if (storedUserId && storedReceiverId && storedReceiverName) {
           setUserId(storedUserId);
@@ -41,14 +48,17 @@ const ChatPage: React.FC = () => {
       }
     };
 
+
     getUserData();
   }, []);
+
 
   useEffect(() => {
     if (userId && receiverId) {
       fetchMessages();
     }
   }, [userId, receiverId]);
+
 
   // Polling mechanism to fetch new messages every 5 seconds
   useEffect(() => {
@@ -58,8 +68,11 @@ const ChatPage: React.FC = () => {
       }
     }, 5000);
 
+
     return () => clearInterval(interval); // Cleanup on unmount
   }, [userId, receiverId]);
+  
+
 
   const fetchMessages = async () => {
     try {
@@ -67,42 +80,79 @@ const ChatPage: React.FC = () => {
         params: { sender_id: userId, receiver_id: receiverId },
       });
       if (response.status === 200) {
-        setMessages(response.data.messages);
+        // Merge new messages from the server with local messages
+        setMessages((prev) => {
+          const serverMessages = response.data.messages || [];
+          const localMessages = prev.filter((msg) => !msg.id.toString().startsWith('temp-')); // Exclude temporary messages
+          return [...localMessages, ...serverMessages];
+        });
       }
     } catch (error) {
       console.error('Error fetching messages:', error);
     }
   };
+  
+
+
 
   const sendMessage = async () => {
     if (!newMessage.trim() || !userId || !receiverId) {
+      console.error("Cannot send message. Missing data.");
       return;
     }
+    const messageData = {
+      sender_id: userId,
+      receiver_id: receiverId,
+      content: newMessage,
+    };
+
+
+
+
+
+
+
+
+
+
+
 
     try {
-      const response = await axios.post(`${SERVER_URL}/messages`, {
-        sender_id: userId,
-        receiver_id: receiverId,
+      // Add the message locally first
+      const tempMessage = {
+        id: Date.now(), // Temporary unique ID
         content: newMessage,
-      });
-
-      if (response.status === 201) {
-        // Append the new message locally
-        setMessages((prevMessages) => [
-          ...prevMessages,
-          {
-            id: response.data.message_id,
-            content: newMessage,
-            sender: `User${userId}`,
-            timestamp: new Date().toISOString(),
-          },
-        ]);
-        setNewMessage('');
+        sender: `User${userId}`,
+        timestamp: new Date().toISOString(),
+      };
+  
+      setMessages((prev) => [...prev, tempMessage]); // Add locally
+  
+      // Send the message to the backend
+      const response = await axios.post(`${SERVER_URL}/messages`, messageData);
+  
+      if (response.status === 201 && response.data.message_id) {
+        // Replace the temporary message with the actual one from the server
+        setMessages((prev) =>
+          prev.map((msg) =>
+            msg.id === tempMessage.id
+              ? { ...tempMessage, id: response.data.message_id }
+              : msg
+          )
+        );
+      } else {
+        console.error('Unexpected response structure:', response.data);
       }
     } catch (error) {
       console.error('Error sending message:', error);
+  
+    } finally {
+      setNewMessage(''); // Clear input field
     }
   };
+ 
+ 
+
 
   const renderMessageItem = ({ item }: { item: Message }) => (
     <View
@@ -121,6 +171,11 @@ const ChatPage: React.FC = () => {
     </View>
   );
 
+  
+ 
+ 
+
+
   return (
     <KeyboardAvoidingView
       style={{ flex: 1 }}
@@ -137,14 +192,16 @@ const ChatPage: React.FC = () => {
           </TouchableOpacity>
           <Text style={styles.receiverName}>{receiverName || 'Recipient'}</Text>
         </View>
+        
 
         {/* Messages */}
         <FlatList
           data={messages}
           renderItem={renderMessageItem}
-          keyExtractor={(item) => item.id}
+          keyExtractor={(item) => item.id.toString()} // Ensure the key is a string
           contentContainerStyle={styles.messagesContainer}
         />
+
 
         {/* Input Box */}
         <View style={styles.inputContainer}>
@@ -162,6 +219,7 @@ const ChatPage: React.FC = () => {
     </KeyboardAvoidingView>
   );
 };
+
 
 const styles = StyleSheet.create({
   container: {
@@ -185,27 +243,29 @@ const styles = StyleSheet.create({
     marginLeft: 10,
   },
   messagesContainer: {
-    flexGrow: 1,
+    flexGrow: 2,
     paddingHorizontal: 10,
     paddingBottom: 10,
   },
   inputContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    padding: 10,
+    paddingHorizontal: 20,
+    paddingVertical: 25,
     borderTopWidth: 1,
     borderColor: '#ddd',
     backgroundColor: '#E5ECE4',
     position: 'absolute',
-    bottom: 0,
+    bottom:60,
     width: '100%',
   },
+ 
   input: {
     flex: 1,
     borderWidth: 1,
     borderColor: '#ccc',
-    borderRadius: 20,
-    paddingHorizontal: 15,
+    borderRadius: 40,
+    paddingHorizontal: 25,
     paddingVertical: 5,
     marginRight: 10,
     backgroundColor: '#f9f9f9',
@@ -246,4 +306,18 @@ const styles = StyleSheet.create({
   },
 });
 
+
 export default ChatPage;
+
+
+function generateTemporaryId(): string {
+  throw new Error('Function not implemented.');
+}
+function generateUniqueId() {
+  throw new Error('Function not implemented.');
+}
+
+
+
+
+
