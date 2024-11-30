@@ -191,29 +191,26 @@ return (
   <KeyboardAvoidingView
     style={{ flex: 1 }}
     behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-    keyboardVerticalOffset={Platform.OS === 'ios' ? 100 : 0}
   >
     <SafeAreaView style={styles.container}>
       <View style={styles.header}>
-        {/* Back Arrow */}
-        <TouchableOpacity style={styles.arrowBack} onPress={() => router.back()}>
+        <TouchableOpacity onPress={() => router.back()}>
           <Image
-            source={require('../../assets/images/arrowBack.png')} // Adjust the path as per your project structure
-            style={styles.arrowBackIcon}
+            source={require('../../assets/images/arrowBack.png')}
+            style={{ width: 24, height: 24 }}
           />
         </TouchableOpacity>
-        {/* Display Receiver Name */}
         <Text style={styles.receiverName}>{receiverName || 'Recipient'}</Text>
       </View>
-
       <FlatList
         data={messages}
         renderItem={renderMessageItem}
-        keyExtractor={(item) => item.id.toString()}
+        keyExtractor={(item) => item.id}
         contentContainerStyle={styles.messagesContainer}
-        keyboardShouldPersistTaps="always"
       />
-      <View style={[styles.inputContainer, keyboardVisible && { marginBottom: 10 }]}>
+
+      {/* Persistent Input Box Container */}
+      <View style={styles.inputContainer}>
         <TextInput
           style={styles.input}
           value={newMessage}
@@ -240,10 +237,8 @@ const styles = StyleSheet.create({
   header: {
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'center', // Centers the content
-    padding: 10,
     backgroundColor: '#E0BBE4',
-    position: 'relative', // Allows positioning of back arrow independently
+    padding: 15,
   },
   arrowBackIcon: {
     width: 24,
@@ -265,7 +260,10 @@ const styles = StyleSheet.create({
     padding: 10,
     borderTopWidth: 1,
     borderColor: '#ddd',
-    backgroundColor: '#fff',
+    backgroundColor: '#E5ECE4',
+    position: 'absolute',
+    bottom: 0, // Always stays at the bottom of the screen
+    width: '100%', // Takes full width
   },
   input: {
     flex: 1,
