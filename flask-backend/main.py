@@ -33,6 +33,10 @@ app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 # Make sure that there is a secret key in your .env file to manage sessions
 app.secret_key = os.getenv("SECRET_KEY")
 
+# Initialize tables
+with app.app_context():
+    db.create_all()
+
 # Creates personal session token for each user
 @app.route("/@me")
 def get_current_user():
@@ -231,27 +235,45 @@ def start_chat():
     data = request.json
     sender_id = data['sender_id']
     receiver_id = data['receiver_id']
-    
-    # Check if a chat already exists
-    existing_messages = Message.query.filter(
+
+    # Fetch all messages between the sender and receiver
+    messages = Message.query.filter(
         ((Message.sender_id == sender_id) & (Message.receiver_id == receiver_id)) |
         ((Message.sender_id == receiver_id) & (Message.receiver_id == sender_id))
-    ).first()
+    ).order_by(Message.timestamp).all()
 
-    if existing_messages:
-        return jsonify({"message": "Chat already exists"}), 200
+    message_list = [
+        {
+            'message_id': msg.message_id,
+            'sender_id': msg.sender_id,
+            'receiver_id': msg.receiver_id,
+            'content': msg.content,
+            'timestamp': msg.timestamp.isoformat()
+        } for msg in messages
+    ]
 
-    # Optionally, create an initial record indicating a new chat is started
-    new_message = Message(
-        sender_id=sender_id,
-        receiver_id=receiver_id,
-        content="Chat started",
-        timestamp=datetime.now()
-    )
-    db.session.add(new_message)
-    db.session.commit()
+    return jsonify({'messages': message_list}), 200
 
-    return jsonify({"message": "New chat started"}), 201
+@app.route('/messages', methods=['POST'])
+def send_message():
+    data = request.json
+    sender_id = str(data['sender_id'])
+    channel_url = data['channel_url']
+    message_content = data['content']
+
+    # Send a message via Sendbird
+    send_message_url = f'https://api-{SENDBIRD_APP_ID}.sendbird.com/v3/group_channels/{channel_url}/messages'
+    payload = {
+        'message_type': 'MESG',
+        'user_id': sender_id,
+        'message': message_content
+    }
+    response = requests.post(send_message_url, headers=HEADERS, json=payload)
+
+    if response.status_code == 200:
+        return jsonify({'message': 'Message sent successfully'}), 201
+    else:
+        return jsonify({'error': 'Failed to send message', 'details': response.json()}), 400
 
 
 
