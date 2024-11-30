@@ -200,30 +200,6 @@ def get_users():
         'email': user.email
     } for user in users]), 200
 
-@app.route('/chat_list', methods=['GET'])
-def chat_list():
-    user_id = request.args.get('user_id')
-    sent_messages = Message.query.filter_by(sender_id=user_id).distinct(Message.receiver_id).all()
-    received_messages = Message.query.filter_by(receiver_id=user_id).distinct(Message.sender_id).all()
-    participants = set(msg.receiver_id for msg in sent_messages) | set(msg.sender_id for msg in received_messages)
-    return jsonify(list(participants)), 200
-
-@app.route('/chat_history', methods=['GET'])
-def get_chat_history():
-    sender_id = request.args.get('sender_id')
-    receiver_id = request.args.get('receiver_id')
-    messages = Message.query.filter(
-        ((Message.sender_id == sender_id) & (Message.receiver_id == receiver_id)) |
-        ((Message.sender_id == receiver_id) & (Message.receiver_id == sender_id))
-    ).order_by(Message.timestamp).all()
-    return jsonify([{
-        'id': msg.message_id,
-        'sender_id': msg.sender_id,
-        'receiver_id': msg.receiver_id,
-        'content': msg.content,
-        'timestamp': msg.timestamp.isoformat()
-    } for msg in messages]), 200
-
 @app.route('/messages', methods=['POST'])
 def send_message():
     data = request.json
@@ -237,8 +213,30 @@ def send_message():
     db.session.commit()
     return jsonify({'message': 'Message sent successfully'}), 201
 
+@app.route('/chat_history', methods=['GET'])
+def get_chat_history():
+    sender_id = request.args.get('sender_id')
+    receiver_id = request.args.get('receiver_id')
+    messages = Message.query.filter(
+        ((Message.sender_id == sender_id) & (Message.receiver_id == receiver_id)) |
+        ((Message.sender_id == receiver_id) & (Message.receiver_id == sender_id))
+    ).order_by(Message.timestamp).all()
+    return jsonify([{
+        'id': msg.id,
+        'sender_id': msg.sender_id,
+        'receiver_id': msg.receiver_id,
+        'content': msg.content,
+        'timestamp': msg.timestamp.isoformat()
+    } for msg in messages]), 200
 
 
+@app.route('/chat_list', methods=['GET'])
+def chat_list():
+    user_id = request.args.get('user_id')
+    sent_messages = Message.query.filter_by(sender_id=user_id).distinct(Message.receiver_id).all()
+    received_messages = Message.query.filter_by(receiver_id=user_id).distinct(Message.sender_id).all()
+    participants = set(msg.receiver_id for msg in sent_messages) | set(msg.sender_id for msg in received_messages)
+    return jsonify(list(participants)), 200
 
 
 
