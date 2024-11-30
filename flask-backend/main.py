@@ -191,107 +191,57 @@ def get_reviews():
 
 
 #messages 
-HEADERS = ApplicationConfig.HEADERS
-SENDBIRD_APP_ID = ApplicationConfig.SENDBIRD_APP_ID
-    
-@app.route('/chat', methods=['POST'])
-def get_or_create_chat():
-    data = request.json
-    if 'sender_id' not in data or 'receiver_id' not in data:
-        return jsonify({'error': 'Missing sender_id or receiver_id'}), 400
+@app.route('/users', methods=['GET'])
+def get_users():
+    users = User.query.all()
+    return jsonify([{
+        'id': user.id,
+        'name': user.name,
+        'email': user.email
+    } for user in users]), 200
 
-    try:
-        sender_id = str(data['sender_id'])
-        receiver_id = str(data['receiver_id'])
-    except ValueError:
-        return jsonify({'error': 'Invalid sender_id or receiver_id'}), 400
+@app.route('/chat_list', methods=['GET'])
+def chat_list():
+    user_id = request.args.get('user_id')
+    sent_messages = Message.query.filter_by(sender_id=user_id).distinct(Message.receiver_id).all()
+    received_messages = Message.query.filter_by(receiver_id=user_id).distinct(Message.sender_id).all()
+    participants = set(msg.receiver_id for msg in sent_messages) | set(msg.sender_id for msg in received_messages)
+    return jsonify(list(participants)), 200
 
-    # Create or get a Sendbird group channel
-    create_channel_url = f'https://api-{SENDBIRD_APP_ID}.sendbird.com/v3/group_channels'
-    payload = {
-        'user_ids': [sender_id, receiver_id],
-        'is_distinct': True,
-        'name': f'Chat between {sender_id} and {receiver_id}',
-    }
-
-    response = requests.post(create_channel_url, headers=HEADERS, json=payload)
-
-    if response.status_code in [200, 201]:
-        response_data = response.json()
-        channel_url = response_data.get('channel_url')
-        app.logger.info(f"Channel created successfully: {response_data}")
-        return jsonify({'message': 'Chat created successfully', 'channel_url': channel_url}), 200
-    else:
-        app.logger.error(f"Failed to create chat. Response from Sendbird: {response.status_code}, {response.text}")
-        return jsonify({'error': 'Failed to create chat', 'details': response.json()}), 405
-
-
-
-
-     
-# Endpoint to create a new chat if it doesn't exist
-@app.route('/start_chat', methods=['POST'])
-def start_chat():
-    data = request.json
-    sender_id = data['sender_id']
-    receiver_id = data['receiver_id']
-
-    # Fetch all messages between the sender and receiver
+@app.route('/chat_history', methods=['GET'])
+def get_chat_history():
+    sender_id = request.args.get('sender_id')
+    receiver_id = request.args.get('receiver_id')
     messages = Message.query.filter(
         ((Message.sender_id == sender_id) & (Message.receiver_id == receiver_id)) |
         ((Message.sender_id == receiver_id) & (Message.receiver_id == sender_id))
     ).order_by(Message.timestamp).all()
-
-    message_list = [
-        {
-            'message_id': msg.message_id,
-            'sender_id': msg.sender_id,
-            'receiver_id': msg.receiver_id,
-            'content': msg.content,
-            'timestamp': msg.timestamp.isoformat()
-        } for msg in messages
-    ]
-
-    return jsonify({'messages': message_list}), 200
+    return jsonify([{
+        'id': msg.message_id,
+        'sender_id': msg.sender_id,
+        'receiver_id': msg.receiver_id,
+        'content': msg.content,
+        'timestamp': msg.timestamp.isoformat()
+    } for msg in messages]), 200
 
 @app.route('/messages', methods=['POST'])
 def send_message():
     data = request.json
-    sender_id = str(data['sender_id'])
-    channel_url = data['channel_url']
-    message_content = data['content']
-
-    # Send a message via Sendbird
-    send_message_url = f'https://api-{SENDBIRD_APP_ID}.sendbird.com/v3/group_channels/{channel_url}/messages'
-    payload = {
-        'message_type': 'MESG',
-        'user_id': sender_id,
-        'message': message_content
-    }
-    response = requests.post(send_message_url, headers=HEADERS, json=payload)
-
-    if response.status_code == 200:
-        return jsonify({'message': 'Message sent successfully'}), 201
-    else:
-        return jsonify({'error': 'Failed to send message', 'details': response.json()}), 400
+    new_message = Message(
+        sender_id=data['sender_id'],
+        receiver_id=data['receiver_id'],
+        content=data['content'],
+        timestamp=datetime.utcnow()
+    )
+    db.session.add(new_message)
+    db.session.commit()
+    return jsonify({'message': 'Message sent successfully'}), 201
 
 
 
-#select user to start chatting
-@app.route('/users', methods=['GET'])
-def get_users():
-    try:
-        # Fetch all users except the current logged-in user
-        users = User.query.all()
 
 
-        # Serialize user data
-        users_data = [{'id': user.id, 'name': user.name, 'email': user.email} for user in users]
 
-        return jsonify(users_data), 200
-    except Exception as e:
-        app.logger.error(f"Error fetching users: {e}")
-        return jsonify({'error': 'Internal Server Error'}), 500
     
 
 @app.route("/logout", methods=["POST"])

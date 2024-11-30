@@ -37,36 +37,52 @@ const Messages: React.FC = () => {
   const translateX = useSharedValue(400); // Start off-screen
   const [isOverlayVisible, setIsOverlayVisible] = useState(false);
   const [isSidebarVisible, setIsSidebarVisible] = useState(false);
+  const [userId] = useState(1); // Replace with actual logged-in user ID
   const router = useRouter(); 
 
   useEffect(() => {
-    //fetchMessages();
-    fetchUsers();
-  }, [receiverId]);
-  useEffect(() => {
     loadChatHistory();
+    fetchChatHistory();
     fetchUsers();
   }, []);
 
-  // Load chat history from local storage
-  const loadChatHistory = async () => {
-    try {
-      const storedHistory = await AsyncStorage.getItem('chatHistory');
-      if (storedHistory) {
-        setChatHistory(JSON.parse(storedHistory));
-      }
-    } catch (error) {
-      console.error('Error loading chat history:', error);
-    }
-  };
-    // Save chat history to local storage
-  const saveChatHistory = async (history: Chat[]) => {
+    // Load chat history from local storage
+    const loadChatHistory = async () => {
       try {
-        await AsyncStorage.setItem('chatHistory', JSON.stringify(history));
+        const storedHistory = await AsyncStorage.getItem('chatHistory');
+        if (storedHistory) {
+          setChatHistory(JSON.parse(storedHistory));
+        }
       } catch (error) {
-        console.error('Error saving chat history:', error);
+        console.error('Error loading chat history:', error);
       }
     };
+  
+
+  // Save chat history to local storage
+  const saveChatHistory = async (history: Chat[]) => {
+    try {
+      await AsyncStorage.setItem('chatHistory', JSON.stringify(history));
+    } catch (error) {
+      console.error('Error saving chat history:', error);
+    }
+  };
+
+    // Fetch chat history from the server
+    const fetchChatHistory = async () => {
+      try {
+        const response = await axios.get(`${SERVER_URL}/chat_list`, {
+          params: { user_id: 1 }, // Replace with the logged-in user's ID
+        });
+        if (response.status === 200) {
+          setChatHistory(response.data.chat_list);
+          saveChatHistory(response.data.chat_list);
+        }
+      } catch (error) {
+        console.error('Error fetching chat history:', error);
+      }
+    };
+
     const fetchUsers = async () => {
       try {
           const response = await axios.get(`${SERVER_URL}/users`, {
@@ -96,9 +112,7 @@ const Messages: React.FC = () => {
     timestamp: new Date().toISOString(),
   };
       // Update chat history
-      const updatedHistory = [...chatHistory.filter(chat => chat.id !== receiverId), newChat];
-      setChatHistory(updatedHistory);
-      saveChatHistory(updatedHistory);
+
     console.log("Starting chat with receiverId:", receiverId);
 
     //debugging
@@ -113,6 +127,27 @@ const Messages: React.FC = () => {
       },
       
   });
+
+    // Delete a chat from history
+    const deleteChat = (chatId: number) => {
+      Alert.alert('Delete Chat', 'Are you sure you want to delete this chat?', [
+        {
+          text: 'Cancel',
+          style: 'cancel',
+        },
+        {
+          text: 'Delete',
+          style: 'destructive',
+          onPress: () => {
+            const updatedHistory = chatHistory.filter(chat => chat.id !== chatId);
+            setChatHistory(updatedHistory);
+            saveChatHistory(updatedHistory);
+          },
+        },
+      ]);
+    };
+
+
   console.log("Navigating to ChatPage with params:", {
     receiverId: selectedUser.id,
     receiverName: selectedUser.name,
@@ -120,23 +155,6 @@ const Messages: React.FC = () => {
 
   };
 
-  const deleteChat = async (chatId: number) => {
-    Alert.alert('Delete Chat', 'Are you sure you want to delete this chat?', [
-      {
-        text: 'Cancel',
-        style: 'cancel',
-      },
-      {
-        text: 'Delete',
-        style: 'destructive',
-        onPress: () => {
-          const updatedHistory = chatHistory.filter((chat) => chat.id !== chatId);
-          setChatHistory(updatedHistory);
-          saveChatHistory(updatedHistory);
-        },
-      },
-    ]);
-  };
   const renderChatItem = ({ item }: { item: Chat }) => (
     <TouchableOpacity
       style={styles.chatItem}
@@ -164,7 +182,10 @@ const Messages: React.FC = () => {
   );
 
   const renderUserItem = ({ item }: { item: User }) => (
-    <TouchableOpacity style={styles.userItem} onPress={() => startChatting(item.id)}>
+    <TouchableOpacity
+      style={styles.userItem}
+      onPress={() => startChatting(item.id)}
+    >
       <Text style={styles.userName}>{item.name}</Text>
       <Text style={styles.userEmail}>{item.email}</Text>
     </TouchableOpacity>
@@ -209,18 +230,13 @@ const Messages: React.FC = () => {
       </View>
 
       {/* Chat List */}
-      {messages.length === 0 ? (
-        <View style={styles.noMessagesContainer}>
-          <Text style={styles.noMessagesText}>No messages found</Text>
-        </View>
-      ) : (
-        <FlatList
-          data={messages}
-          renderItem={renderMessageItem}
-          keyExtractor={(item) => item.id.toString()}
-          contentContainerStyle={styles.listContent}
-        />
-      )}
+      <FlatList
+        data={chatHistory}
+        renderItem={renderChatItem}
+        keyExtractor={(item) => item.id.toString()} // Ensure item.id is unique
+        contentContainerStyle={styles.listContent}
+/>
+
 
       {/* Start a New Chat Button */}
       <TouchableOpacity style={styles.startChatButton} onPress={handleStartChatPress}>
@@ -303,6 +319,17 @@ const styles = StyleSheet.create({
     padding: 15,
     borderBottomWidth: 1,
     borderColor: '#ccc',
+  },
+    chatInfo: {
+    flex: 1,
+  },
+  chatName: {
+    fontSize: 16,
+    fontWeight: 'bold',
+  },
+  chatLastMessage: {
+    fontSize: 14,
+    color: '#666',
   },
   noMessagesContainer: {
     flex: 1,
@@ -469,17 +496,6 @@ const styles = StyleSheet.create({
     borderLeftWidth: 1,
     borderColor: '#ccc',
   },
-  chatLastMessage: {
-    fontSize: 14,
-    color: '#666',
-  },
-  chatInfo: {
-    flex: 1,
-  },
-  chatName: {
-    fontSize: 16,
-    fontWeight: 'bold',
-  },
   sidebarCloseButton: {
     padding: 10,
     alignSelf: 'flex-end',
@@ -495,3 +511,7 @@ const styles = StyleSheet.create({
 });
 
 export default Messages;
+
+function deleteChat(id: number): void {
+  throw new Error('Function not implemented.');
+}
