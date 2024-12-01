@@ -26,6 +26,12 @@ const ChatPage: React.FC = () => {
 
   const sb = new SendBird({ appId: '5D0726A7-302C-4867-867E-ED5500933EC8' });
 
+  const [pollingInterval, setPollingInterval] = useState<NodeJS.Timeout | null>(null);
+  const POLLING_INTERVAL = 3000; // 3 seconds
+
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
   useEffect(() => {
     const getUserId = async () => {
       try {
@@ -52,24 +58,40 @@ const ChatPage: React.FC = () => {
       if (!userId || !receiverId) return;
       
       try {
-        console.log(`Fetching messages between ${userId} and ${receiverId}`);
         const response = await axios.get(`${SERVER_URL}/messages`, {
           params: {
             sender_id: userId,
             receiver_id: receiverId
           }
         });
-        console.log('Received messages:', response.data);
-        setMessages(response.data);
+
+        // Sort messages by timestamp
+        const sortedMessages = [...response.data].sort((a: Message, b: Message) => {
+          const timeA = new Date(a.timestamp).getTime();
+          const timeB = new Date(b.timestamp).getTime();
+          return timeA - timeB;
+        });
+
+        // Only update if there are changes
+        const currentMessagesString = JSON.stringify(messages);
+        const newMessagesString = JSON.stringify(sortedMessages);
+        
+        if (currentMessagesString !== newMessagesString) {
+          console.log('Updating messages with new data');
+          setMessages(sortedMessages);
+        }
       } catch (error) {
         console.error('Error fetching messages:', error);
       }
     };
 
+    // Initial fetch
     fetchMessages();
-    // Set up an interval to fetch messages periodically
-    const interval = setInterval(fetchMessages, 3000);
 
+    // Set up polling
+    const interval = setInterval(fetchMessages, POLLING_INTERVAL);
+
+    // Cleanup
     return () => clearInterval(interval);
   }, [userId, receiverId]);
 
@@ -80,15 +102,13 @@ const ChatPage: React.FC = () => {
       const payload = {
         sender_id: userId,
         receiver_id: receiverId,
-        content: newMessage.trim()
+        content: newMessage.trim(),
+        timestamp: new Date().toISOString()
       };
 
-      console.log("Attempting to send message...");
-      console.log("Sending payload:", payload);
-
       const response = await axios.post(`${SERVER_URL}/messages`, payload);
-      console.log("Message sent successfully:", response.data);
-
+      
+      // Add new message to existing messages
       const newMsg: Message = {
         id: response.data.id,
         message_id: response.data.id,
@@ -96,7 +116,15 @@ const ChatPage: React.FC = () => {
         sender: userId,
         timestamp: response.data.timestamp || new Date().toISOString()
       };
-      setMessages(prev => [...prev, newMsg]);
+
+      // Update messages array with new message
+      setMessages(prevMessages => {
+        const updatedMessages = [...prevMessages, newMsg];
+        return updatedMessages.sort((a, b) => 
+          new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime()
+        );
+      });
+
       setNewMessage('');
     } catch (error) {
       console.error('Error sending message:', error);
@@ -154,6 +182,11 @@ const ChatPage: React.FC = () => {
           renderItem={renderMessage}
           keyExtractor={getMessageKey}
           contentContainerStyle={styles.messagesContainer}
+          inverted={false}
+          maintainVisibleContentPosition={{
+            minIndexForVisible: 0,
+            autoscrollToTopThreshold: 100,
+          }}
         />
       </View>
 
@@ -205,6 +238,7 @@ const styles = StyleSheet.create({
   messagesContainer: {
     padding: 10,
     flexGrow: 1,
+    justifyContent: 'flex-start',
   },
   messageItem: {
     padding: 10,
