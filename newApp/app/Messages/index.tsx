@@ -6,15 +6,16 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useAnimatedStyle, useSharedValue, withTiming } from "react-native-reanimated";
 import Animated from "react-native-reanimated";
 import { SERVER_URL } from '@/config/config';
-
-
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 
 interface Message {
   id: number;
   content: string;
   sender: string;
-  timestamp: any;
+  receiver_id: string;
+  sender_name?: string;
+  timestamp: string;
 }
 interface Chat {
   id: number; // Chat ID
@@ -38,6 +39,7 @@ const Messages: React.FC = () => {
   const [senderId] = useState(1); // Example sender ID
   const [receiverId, setReceiverId] = useState<number | null>(null); // Dynamic receiver ID
   const [users, setUsers] = useState<User[]>([]); // List of users
+  const [userId, setUserId] = useState<string | null>(null);
   const translateX = useSharedValue(400); // Start off-screen
   const [isOverlayVisible, setIsOverlayVisible] = useState(false);
   const [isSidebarVisible, setIsSidebarVisible] = useState(false);
@@ -45,69 +47,49 @@ const Messages: React.FC = () => {
 
 
   useEffect(() => {
-    //fetchMessages();
-    fetchUsers();
-  }, [receiverId]);
-  useEffect(() => {
-    loadChatHistory();
-    fetchUsers();
-  }, []);
-
-
-  // Load chat history from local storage
-  const loadChatHistory = async () => {
-    try {
-      const storedHistory = await AsyncStorage.getItem('chatHistory');
-      if (storedHistory) {
-        setChatHistory(JSON.parse(storedHistory));
-      }
-    } catch (error) {
-      console.error('Error loading chat history:', error);
-    }
-  };
-    // Save chat history to local storage
-  const saveChatHistory = async (history: Chat[]) => {
-      try {
-        await AsyncStorage.setItem('chatHistory', JSON.stringify(history));
-      } catch (error) {
-        console.error('Error saving chat history:', error);
+    const initialize = async () => {
+      const storedUserId = await AsyncStorage.getItem('userId');
+      if (storedUserId) {
+        setUserId(storedUserId);
+        await fetchConversations(storedUserId);
+        await fetchUsers();
       }
     };
-    const fetchUsers = async () => {
-      try {
-          const response = await axios.get(`${SERVER_URL}/users`, {
-            params: { current_user_id: senderId },
-          });
-          console.log("Fetched users:", response.data); // Log users for debugging
-          setUsers(response.data);
-      } catch (error) {
-          console.error('Error fetching users:', error);
-      }
+    initialize();
+  }, []);
+
+  const fetchConversations = async (currentUserId: string) => {
+    try {
+      const response = await axios.get(`${SERVER_URL}/conversations`, {
+        params: { user_id: currentUserId }
+      });
+      console.log('Fetched conversations:', response.data);
+      setMessages(response.data);
+    } catch (error) {
+      console.error('Error fetching conversations:', error);
+    }
   };
 
+  const fetchUsers = async () => {
+    try {
+      const response = await axios.get(`${SERVER_URL}/users`, {
+        params: { current_user_id: senderId },
+      });
+      console.log("Fetched users:", response.data); // Log users for debugging
+      setUsers(response.data);
+    } catch (error) {
+      console.error('Error fetching users:', error);
+    }
+  };
 
-   
   const startChatting = (receiverId: number) => {
     const selectedUser = users.find(user => user.id === receiverId);
-
-
-
 
     console.log("Selected User:", selectedUser); // Debug selected user
     if (!selectedUser) {
       console.error(`User with ID ${receiverId} not found`);
       return;
-  }
-  const newChat: Chat = {
-    id: receiverId,
-    name: selectedUser.name,
-    lastMessage: 'Start chatting now!',
-    timestamp: new Date().toISOString(),
-  };
-      // Update chat history
-      const updatedHistory = [...chatHistory.filter(chat => chat.id !== receiverId), newChat];
-      setChatHistory(updatedHistory);
-      saveChatHistory(updatedHistory);
+    }
     console.log("Starting chat with receiverId:", receiverId);
 
 
@@ -122,14 +104,11 @@ const Messages: React.FC = () => {
         receiverId: receiverIdStr,
         receiverName: receiverNameStr,
       },
-     
-  });
-  console.log("Navigating to ChatPage with params:", {
-    receiverId: selectedUser.id,
-    receiverName: selectedUser.name,
-});
-
-
+    });
+    console.log("Navigating to ChatPage with params:", {
+      receiverId: selectedUser.id,
+      receiverName: selectedUser.name,
+    });
   };
 
 
@@ -167,21 +146,36 @@ const Messages: React.FC = () => {
   );
 
 
-  const renderMessageItem = ({ item }: { item: Message }) => (
-    <View style={styles.messageItem}>
-      <Text style={styles.senderText}>
-        {item.sender === `User${senderId}` ? 'You' : `User${receiverId}`}:
-      </Text>
-      <Text style={styles.contentText}>{item.content}</Text>
-      <Text style={styles.timestampText}>{new Date(item.timestamp).toLocaleString()}</Text>
-    </View>
-  );
-
+  const renderConversation = ({ item }: { item: Message }) => {
+    if (!userId) return null;
+    
+    const isCurrentUser = item.sender === userId;
+    const displayName = isCurrentUser ? item.receiver_name : item.sender_name;
+    const otherUserId = isCurrentUser ? item.receiver_id : item.sender;
+    
+    return (
+      <TouchableOpacity 
+        style={styles.conversationItem}
+        onPress={() => startChatting(parseInt(otherUserId))}
+      >
+        <View>
+          <Text style={styles.conversationName}>
+            {displayName || 'Unknown User'}
+          </Text>
+          <Text style={styles.lastMessage} numberOfLines={1}>
+            {item.content}
+          </Text>
+          <Text style={styles.timestamp}>
+            {new Date(item.timestamp).toLocaleString()}
+          </Text>
+        </View>
+      </TouchableOpacity>
+    );
+  };
 
   const renderUserItem = ({ item }: { item: User }) => (
     <TouchableOpacity style={styles.userItem} onPress={() => startChatting(item.id)}>
       <Text style={styles.userName}>{item.name}</Text>
-      <Text style={styles.userEmail}>{item.email}</Text>
     </TouchableOpacity>
   );
 
@@ -216,7 +210,7 @@ const Messages: React.FC = () => {
 
 
   return (
-    <View style={styles.container}>
+    <View style={styles.container}> 
       {/* Header */}
       <View style={styles.header}>
         <Text style={styles.headerText}>Messages</Text>
@@ -230,22 +224,16 @@ const Messages: React.FC = () => {
       </View>
 
 
-      {/* Chat List */}
-      {messages.length === 0 ? (
-        <View style={styles.noMessagesContainer}>
-          <Text style={styles.noMessagesText}>No messages found</Text>
-        </View>
-      ) : (
-        <FlatList
-          data={messages}
-          renderItem={renderMessageItem}
-          keyExtractor={(item) => item.id.toString()}
-          contentContainerStyle={styles.listContent}
-        />
-      )}
+      {/* Conversations List */}
+      <FlatList
+        data={messages}
+        renderItem={renderConversation}
+        keyExtractor={(item) => item.id.toString()}
+        style={styles.conversationsList}
+        contentContainerStyle={styles.conversationsContent}
+      />
 
-
-      {/* Start a New Chat Button */}
+      {/* Start Chat Button */}
       <TouchableOpacity style={styles.startChatButton} onPress={handleStartChatPress}>
         <Text style={styles.startChatButtonText}>Start a New Chat</Text>
       </TouchableOpacity>
@@ -258,8 +246,7 @@ const Messages: React.FC = () => {
             {"  "}
             <Image
               source={require('../../assets/images/homeLogo.png')}
-              style={styles.navIcon}
-            />
+              style={styles.navIcon}/>
             {"\n"}
             <Text style={styles.navText}>Home</Text>
           </Link>
@@ -299,6 +286,32 @@ const Messages: React.FC = () => {
           />
         </View>
       )}
+            <Animated.View style={[styles.accountOverlayContainer, animatedStyles]}
+      onStartShouldSetResponder={() => true}
+        onTouchEnd={(e) => e.stopPropagation()}>
+        <View style={[styles.accountOverlayContent, styles.logoutContent]}>
+          <Link href="/login" >
+            <Text style={styles.accountOverlayText}>
+              Logout
+            </Text>
+          </Link>
+        </View>
+        <View style={[styles.accountOverlayContent, styles.performanceContent]}>
+          <Text style={styles.accountOverlayText}>
+            Car Information
+          </Text>
+        </View>
+        <View style={[styles.accountOverlayContent, styles.upcomingAppointmentsContent]}>
+          <Text style={styles.accountOverlayText}>
+            Upcoming Appointments
+          </Text>
+        </View>
+        <View style={[styles.accountOverlayContent, styles.accountInformationContent]}>
+          <Text style={styles.accountOverlayText}>
+            Account Information
+          </Text>
+        </View>
+      </Animated.View> 
     </View>
   );
 };
@@ -336,6 +349,9 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
+    borderWidth: 3,
+    borderRadius: 20,
+    borderColor: '#c3e7c0',
   },
   noMessagesText: {
     textAlign: 'center',
@@ -371,11 +387,11 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     paddingVertical: 10,
-    backgroundColor: '#f5f0fa', // Updated to match Figma design
+    backgroundColor: '#fff', // Updated to match Figma design
   },
   homeButtonContainer: {
     flex: 1,
-    backgroundColor: '#E0BBE4',
+    backgroundColor: '#EBE4EC',
     alignItems: 'center',
     paddingVertical: 15,
     borderTopLeftRadius: 50,
@@ -394,9 +410,7 @@ const styles = StyleSheet.create({
     height: 30,
   },
   navText: {
-    fontSize: 14,
-    color: '#000',
-    marginTop: 10,
+    color: 'black',
   },
   accountOverlayContainer: {  // Everything below is the overlay
     position: 'absolute',
@@ -455,27 +469,25 @@ const styles = StyleSheet.create({
     alignSelf: 'center', // Center the button horizontally
   },
   startChatButtonText: {
-    color: '#fff',
+    color: 'black',
     fontSize: 18,
     fontWeight: 'bold',
   },
-  arrowBack: {
-    position: 'absolute',
-    top: 8,
-    left: 0,
-    // Ensure the container has dimensions
-    width: 48,
-    height: 48,
-    justifyContent: 'center',
-    alignItems: 'center',
+  upcomingAppointmentsContent: {
+    top: 190, //Adjust this value to position the third box
+  },
+  accountInformationContent: {
+    top: 280, //Adjust this value to position the fourth box
   },
   userItem: {
     padding: 15,
     marginVertical: 8,
-    backgroundColor: '#f9f9f9',
+    backgroundColor: '#cebdd1',
     borderRadius: 10,
     width: '90%',
     alignSelf: 'center',
+    borderWidth: 1,
+    borderColor: 'black',
   },
   userName: {
     fontSize: 16,
@@ -488,25 +500,18 @@ const styles = StyleSheet.create({
   sidebarContainer: {
     position: 'absolute',
     top: 0,
-    right: 0,
-    width: '50%', // Set the width to 50% of the screen
+    right: -3, // Adjusted to align with the right side of the screen
+    width: 185,
     height: '100%',
-    backgroundColor: '#fff',
-    zIndex: 3,
-    paddingTop: 20,
-    borderLeftWidth: 1,
-    borderColor: '#ccc',
-  },
-  chatLastMessage: {
-    fontSize: 14,
-    color: '#666',
-  },
-  chatInfo: {
-    flex: 1,
-  },
-  chatName: {
-    fontSize: 16,
-    fontWeight: 'bold',
+    backgroundColor: "#EBE4EC", 
+    zIndex: 2,
+    overflow: 'visible',
+    justifyContent: 'center',
+    alignItems: 'center',
+    transform: [{ translateX: 0 }],
+    borderWidth: 3,
+    borderRadius: 20,
+    borderColor: 'black',
   },
   sidebarCloseButton: {
     padding: 10,
@@ -519,6 +524,45 @@ const styles = StyleSheet.create({
   },
   userListContent: {
     paddingHorizontal: 16,
+  },
+  conversationsList: {
+    flex: 1,
+    width: '100%',
+  },
+  conversationsContent: {
+    padding: 10,
+  },
+  conversationItem: {
+    backgroundColor: '#fff',
+    padding: 15,
+    marginVertical: 5,
+    borderRadius: 10,
+    borderWidth: 3,
+    borderColor: 'black',
+  },
+  conversationName: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    marginBottom: 5,
+  },
+  arrowBack: {
+    position: 'absolute',
+    top: 8,
+    left: 0,
+    // Ensure the container has dimensions
+    width: 48,
+    height: 48,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  lastMessage: {
+    fontSize: 14,
+    color: '#666',
+    marginBottom: 3,
+  },
+  timestamp: {
+    fontSize: 12,
+    color: '#999',
   },
 });
 
