@@ -9,7 +9,7 @@ from config import ApplicationConfig
 from flask_bcrypt import Bcrypt
 from datetime import datetime, timedelta
 from models import db, User, Review, Message, Vehicle, Service, Job, Log, Appointments
-import os, re, dns.resolver, requests
+import os, re, dns.resolver, requests, time, random
 from sqlalchemy.sql import func
 
 # Sendbird Configuration
@@ -64,9 +64,6 @@ def get_current_user():
         "email": user.email
     }) 
 
-
-
-
 def doesEmailExists(email):
     users = User.query.all()
     for user in users:
@@ -75,8 +72,6 @@ def doesEmailExists(email):
             return True
     print("email not in use")
     return False
-
-
 
 
 def validateEmail(email):
@@ -380,33 +375,13 @@ def get_users():
         app.logger.error(f"Error fetching users: {e}")
         return jsonify({'error': 'Internal Server Error'}), 500
     
-# makes sure that time being sent is not conflicting with other appointments
-# might not add
-'''
-def is_conflicting(date, time):
-    # Convert the time to a datetime object for easier comparison
-    start_time = (datetime.combine(date, time) - timedelta(minutes=30)).time()
-    end_time = (datetime.combine(date, time) + timedelta(minutes=30)).time()
+    
+@app.route("/logout", methods=["POST"])
+def logout_user():
+    session.pop("id", None)
+    return "200"
 
-    print(f"Checking conflicts for date: {date}, time: {time}")
-    print(f"Time range: {start_time} - {end_time}")
 
-    try:
-        # Query the database for overlapping appointments
-        conflict = Appointments.query.filter(
-            Appointments.date == date,
-            Appointments.time >= start_time,
-            Appointments.time <= end_time
-        ).first()
-
-        print("Query executed successfully")
-        print(f"Conflict result: {conflict}")
-
-        return conflict is not None
-    except Exception as e:
-        print("Error during conflict check:", e)
-        return False
-'''
 @app.route('/get-vehicle-status', methods=['POST', 'GET'])
 def get_status():
     user_id = session.get("id")
@@ -476,8 +451,10 @@ def search_vehicle():
     year = data.get('year')
     vin = data.get('vin')
 
+
     try:
         query = Vehicle.query
+
 
         if make:
             query = query.filter(Vehicle.make.ilike(f"%{make}%"))
@@ -488,7 +465,9 @@ def search_vehicle():
         if vin:
             query = query.filter_by(vin=vin)
 
+
         vehicles = query.all()
+
 
         vehicle_list = [{
             "make": vehicle.make,
@@ -498,11 +477,67 @@ def search_vehicle():
             "status": vehicle.status
         } for vehicle in vehicles]
 
+
         return jsonify(vehicle_list), 200
+
 
     except Exception as e:
         app.logger.error(f"Error searching vehicles: {e}")
         return jsonify({"error": "Internal Server Error"}), 500
+    from datetime import datetime, time, timedelta
+
+
+# finds conflicting times for appoinement scheduling 
+@app.route('/available-times', methods=['GET'])
+def get_available_times():
+    try:
+        date = request.args.get('date')
+        if not date:
+            return jsonify({"error": "Date is required"}), 400
+
+
+        query_date = datetime.strptime(date, '%Y-%m-%d').date()
+
+
+        start_time = time(8, 0)  # 8:00 AM   
+        end_time = time(17, 0)  # 5:00 PM
+        time_interval = timedelta(minutes=30)  # 30-minute intervals
+
+
+        # Query the database for services on the given date
+        taken_slots = Service.query.filter(
+            func.date(Service.time_date) == query_date
+        ).all()
+
+
+        # Extract taken times
+        taken_times = [service.time_date.time() for service in taken_slots]
+
+
+        # Generate all possible times within the working hours
+        current_time = datetime.combine(query_date, start_time)
+        end_datetime = datetime.combine(query_date, end_time)
+        available_times = []
+
+
+        while current_time <= end_datetime:
+            if current_time.time() not in taken_times:
+                available_times.append(current_time.time().strftime('%H:%M'))
+            current_time += time_interval
+
+
+        return jsonify({"available_times": available_times}), 200
+
+
+    except Exception as e:
+        app.logger.error(f"Error fetching available times: {e}")
+        return jsonify({"error": "An error occurred", "details": str(e)}), 500
+
+
+
+
+
+
     
 @app.route('/update-vehicle-status', methods=['POST'])
 def update_vehicle_status():
@@ -608,11 +643,6 @@ def get_logs():
 def test():
     print("Test endpoint hit!")  # Debug print
     return jsonify({"message": "Server is working!"})
-
-@app.route("/logout", methods=["POST"])
-def logout_user():
-    session.pop("id", None)
-    return "200"
 
 @app.route('/conversations', methods=['GET'])
 def get_conversations():
