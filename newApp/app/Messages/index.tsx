@@ -189,8 +189,7 @@ const Messages: React.FC = () => {
             {"  "}
             <Image
               source={require('../../assets/images/homeLogo.png')}
-              style={styles.navIcon}
-            />
+              style={styles.navIcon}/>
             {"\n"}
             <Text style={styles.navText}>Home</Text>
           </Link>
@@ -227,6 +226,32 @@ const Messages: React.FC = () => {
           />
         </View>
       )}
+            <Animated.View style={[styles.accountOverlayContainer, animatedStyles]}
+      onStartShouldSetResponder={() => true}
+        onTouchEnd={(e) => e.stopPropagation()}>
+        <View style={[styles.accountOverlayContent, styles.logoutContent]}>
+          <Link href="/login" >
+            <Text style={styles.accountOverlayText}>
+              Logout
+            </Text>
+          </Link>
+        </View>
+        <View style={[styles.accountOverlayContent, styles.performanceContent]}>
+          <Text style={styles.accountOverlayText}>
+            Car Information
+          </Text>
+        </View>
+        <View style={[styles.accountOverlayContent, styles.upcomingAppointmentsContent]}>
+          <Text style={styles.accountOverlayText}>
+            Upcoming Appointments
+          </Text>
+        </View>
+        <View style={[styles.accountOverlayContent, styles.accountInformationContent]}>
+          <Text style={styles.accountOverlayText}>
+            Account Information
+          </Text>
+        </View>
+      </Animated.View> 
     </View>
   );
 };
@@ -251,6 +276,9 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
+    borderWidth: 3,
+    borderRadius: 20,
+    borderColor: '#c3e7c0',
   },
   noMessagesText: {
     textAlign: 'center',
@@ -286,11 +314,11 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     paddingVertical: 10,
-    backgroundColor: '#f5f0fa', // Updated to match Figma design
+    backgroundColor: '#fff', // Updated to match Figma design
   },
   homeButtonContainer: {
     flex: 1,
-    backgroundColor: '#E0BBE4',
+    backgroundColor: '#EBE4EC',
     alignItems: 'center',
     paddingVertical: 15,
     borderTopLeftRadius: 50,
@@ -309,9 +337,7 @@ const styles = StyleSheet.create({
     height: 30,
   },
   navText: {
-    fontSize: 14,
-    color: '#000',
-    marginTop: 10,
+    color: 'black',
   },
   accountOverlayContainer: {  // Everything below is the overlay
     position: 'absolute',
@@ -370,9 +396,15 @@ const styles = StyleSheet.create({
     alignSelf: 'center', // Center the button horizontally
   },
   startChatButtonText: {
-    color: '#fff',
+    color: 'black',
     fontSize: 18,
     fontWeight: 'bold',
+  },
+  upcomingAppointmentsContent: {
+    top: 190, //Adjust this value to position the third box
+  },
+  accountInformationContent: {
+    top: 280, //Adjust this value to position the fourth box
   },
   userItem: {
     padding: 15,
@@ -381,6 +413,8 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     width: '90%',
     alignSelf: 'center',
+    borderWidth: 1,
+    borderColor: 'black',
   },
   userName: {
     fontSize: 16,
@@ -430,8 +464,8 @@ const styles = StyleSheet.create({
     padding: 15,
     marginVertical: 5,
     borderRadius: 10,
-    borderWidth: 1,
-    borderColor: '#eee',
+    borderWidth: 3,
+    borderColor: 'black',
   },
   conversationName: {
     fontSize: 16,

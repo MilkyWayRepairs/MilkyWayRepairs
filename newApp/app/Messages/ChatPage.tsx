@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';//npm install @react-native-async-storage/async-storage
-import { View, Text, StyleSheet, FlatList, TextInput, TouchableOpacity, KeyboardAvoidingView, Platform } from 'react-native';
+import { View, Text, StyleSheet, FlatList, Image, TextInput, TouchableOpacity, KeyboardAvoidingView, Platform } from 'react-native';
 import axios from 'axios';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { SERVER_URL } from '@/config/config';
@@ -132,9 +132,18 @@ const ChatPage: React.FC = () => {
       style={styles.container}
       keyboardVerticalOffset={Platform.OS === 'ios' ? 90 : 0}
     >
-      <View style={styles.header}>
-        <Text style={styles.headerText}>{receiverName}</Text>
-      </View>
+<View style={styles.header}>
+  {/* Back Arrow */}
+  <TouchableOpacity style={styles.arrowBack} onPress={() => router.back()}>
+    <Image
+      source={require('../../assets/images/arrowBack.png')} // Ensure the correct path to your arrow image
+      style={styles.arrowIcon} // Style for the arrow icon
+    />
+  </TouchableOpacity>
+
+  {/* Header Title */}
+  <Text style={styles.headerText}>{receiverName}</Text>
+</View>
       
       <View style={styles.messagesWrapper}>
         <FlatList
@@ -173,15 +182,18 @@ const styles = StyleSheet.create({
     backgroundColor: '#fff',
   },
   header: {
-    padding: 15,
-    borderBottomWidth: 1,
-    borderBottomColor: '#ddd',
-    backgroundColor: '#55d2bb',
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: '#E0BBE4', // Adjust background color
+    paddingVertical: 10,
+    paddingHorizontal: 15,
   },
   headerText: {
     fontSize: 18,
     fontWeight: 'bold',
-    color: '#000',
+    color: '#333',
+    textAlign: 'center',
   },
   messagesWrapper: {
     flex: 1,
@@ -198,7 +210,7 @@ const styles = StyleSheet.create({
   },
   myMessage: {
     alignSelf: 'flex-end',
-    backgroundColor: '#E0BBE4',
+    backgroundColor: '#7cc4ff',
   },
   theirMessage: {
     alignSelf: 'flex-start',
@@ -226,15 +238,15 @@ const styles = StyleSheet.create({
     paddingVertical: 25,
     borderTopWidth: 1,
     borderColor: '#ddd',
-    backgroundColor: '#c3e7c0',
+    backgroundColor: '#E5ECE4',
     position: 'absolute',
     bottom:55,
     width: '100%',
   },
   input: {
     flex: 1,
-    borderWidth: 1,
-    borderColor: '#ddd',
+    borderWidth: 2,
+    borderColor: '#c4cec3',
     borderRadius: 20,
     paddingHorizontal: 15,
     paddingVertical: 8,
@@ -257,6 +269,16 @@ const styles = StyleSheet.create({
   sendButtonText: {
     color: '#fff',
     fontWeight: 'bold',
+  },
+  arrowBack: {
+    position: 'absolute',
+    left: 15, // Position the arrow to the left
+    zIndex: 1,
+  },
+  arrowIcon: {
+    width: 24, // Adjust size
+    height: 24, // Adjust size
+    tintColor: '#333', // Optional: adjust color if the icon supports tinting
   },
 });
 
