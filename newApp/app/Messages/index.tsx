@@ -127,7 +127,6 @@ const Messages: React.FC = () => {
   const renderUserItem = ({ item }: { item: User }) => (
     <TouchableOpacity style={styles.userItem} onPress={() => startChatting(item.id)}>
       <Text style={styles.userName}>{item.name}</Text>
-      <Text style={styles.userEmail}>{item.email}</Text>
     </TouchableOpacity>
   );
 
@@ -156,10 +155,17 @@ const Messages: React.FC = () => {
   };
 
   return (
-    <View style={styles.container}>
+    <View style={styles.container}> 
       {/* Header */}
       <View style={styles.header}>
         <Text style={styles.headerText}>Messages</Text>
+        <TouchableOpacity style={styles.arrowBack}>
+          <Link href="..">
+            <Image
+            source={require('../../assets/images/arrowBack.png')}
+            style={styles.arrowBack}/>
+          </Link>
+        </TouchableOpacity>  
       </View>
 
       {/* Conversations List */}
@@ -371,7 +377,7 @@ const styles = StyleSheet.create({
   userItem: {
     padding: 15,
     marginVertical: 8,
-    backgroundColor: '#f9f9f9',
+    backgroundColor: '#cebdd1',
     borderRadius: 10,
     width: '90%',
     alignSelf: 'center',
@@ -387,14 +393,18 @@ const styles = StyleSheet.create({
   sidebarContainer: {
     position: 'absolute',
     top: 0,
-    right: 0,
-    width: '70%',
+    right: -3, // Adjusted to align with the right side of the screen
+    width: 185,
     height: '100%',
-    backgroundColor: '#fff',
-    zIndex: 3,
-    paddingTop: 20,
-    borderLeftWidth: 1,
-    borderColor: '#ccc',
+    backgroundColor: "#EBE4EC", 
+    zIndex: 2,
+    overflow: 'visible',
+    justifyContent: 'center',
+    alignItems: 'center',
+    transform: [{ translateX: 0 }],
+    borderWidth: 3,
+    borderRadius: 20,
+    borderColor: 'black',
   },
   sidebarCloseButton: {
     padding: 10,
@@ -427,6 +437,16 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: 'bold',
     marginBottom: 5,
+  },
+  arrowBack: {
+    position: 'absolute',
+    top: 8,
+    left: 0,
+    // Ensure the container has dimensions
+    width: 48,
+    height: 48,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   lastMessage: {
     fontSize: 14,

@@ -176,7 +176,7 @@ const styles = StyleSheet.create({
     padding: 15,
     borderBottomWidth: 1,
     borderBottomColor: '#ddd',
-    backgroundColor: '#fff',
+    backgroundColor: '#55d2bb',
   },
   headerText: {
     fontSize: 18,
@@ -221,8 +221,15 @@ const styles = StyleSheet.create({
   },
   inputContainer: {
     flexDirection: 'row',
-    padding: 10,
     alignItems: 'center',
+    paddingHorizontal: 20,
+    paddingVertical: 25,
+    borderTopWidth: 1,
+    borderColor: '#ddd',
+    backgroundColor: '#c3e7c0',
+    position: 'absolute',
+    bottom:55,
+    width: '100%',
   },
   input: {
     flex: 1,
@@ -245,7 +252,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   sendButtonDisabled: {
-    backgroundColor: '#cccccc',
+    backgroundColor: '#E0BBE4',
   },
   sendButtonText: {
     color: '#fff',
