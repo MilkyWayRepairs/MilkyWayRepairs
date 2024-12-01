@@ -6,7 +6,6 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useAnimatedStyle, useSharedValue, withTiming } from "react-native-reanimated";
 import Animated from "react-native-reanimated";
 import { SERVER_URL } from '@/config/config';
-import AsyncStorage from '@react-native-async-storage/async-storage';
 
 
 interface Message {
