@@ -561,7 +561,46 @@ def update_vehicle_status():
     except Exception as e:
         app.logger.error(f"Error updating vehicle status: {e}")
         return jsonify({"error": "Internal Server Error"}), 500
+
+@app.route('/get-vehicle-list', methods=['GET'])
+def get_vehicles():
+    try:
+        vehicles = Vehicle.query.filter_by(user_id=session.get("id")).all()
+        vehicle_list = [{
+            "VIN": vehicle.VIN,
+            "make": vehicle.make,
+            "model": vehicle.model,
+            "year": vehicle.year,
+            "status": vehicle.status,
+        } for vehicle in vehicles]
+        return jsonify(vehicle_list), 200
+    except Exception as e:
+        app.logger.error(f"Error fetching vehicles: {e}")
+        return jsonify({"error": "Internal Server Error"}), 500
     
+@app.route('/display_vehicle_logs/<vehicle_VIN>', methods=['GET'])
+def display_logs(vehicle_VIN):
+    try:
+        vehicle = Vehicle.query.filter_by(VIN=vehicle_VIN).first()
+        if not vehicle:
+            return jsonify({"error": "Vehicle not found"}), 404
+        
+        vehicle_logs = Log.query.filter_by(VIN=vehicle_VIN).all()
+        
+        logs_data = [f"\n\nDate: {log.date}\n Mileage: {log.mileage}\n Job Title: {log.job_title}\n Job Notes:\n {log.job_notes}\n" for log in vehicle_logs]
+                     
+        vehicle_data = {
+            "VIN": vehicle.VIN,
+            "make": vehicle.make,
+            "model": vehicle.model,
+            "year": vehicle.year,
+            "status": vehicle.status,
+            "logs": logs_data
+        }
+        return jsonify(vehicle_data), 200
+    except Exception as e:
+        app.logger.error(f"Error fetching vehicle details: {e}")
+        return jsonify({"error": "Internal Server Error"}), 500
     
 @app.route('/jobs', methods=['GET'])
 def get_jobs():
@@ -609,7 +648,7 @@ def submit_log():
         new_log = Log(
             date=data['date'],
             mileage=data['mileage'],
-            vin=data['vin'],
+            VIN=data['VIN'],
             job_title=data['jobTitle'],  # This is now the job_id
             job_notes=data['jobNotes'],
             user_id=str(session.get("id"))
