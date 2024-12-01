@@ -722,6 +722,14 @@ def get_conversations():
         print(f"Error fetching conversations: {str(e)}")
         return jsonify({'error': str(e)}), 500
 
+# returns a list of all services / repairs provided by the company
+def servicesList(): 
+    return jsonify
+
+# returns a list of all services / repairs provided by the company
+def servicesList(): 
+    return jsonify
+
 if __name__ == '__main__':
     print("main")
     app.run(host="0.0.0.0", port=5001, debug=True)
