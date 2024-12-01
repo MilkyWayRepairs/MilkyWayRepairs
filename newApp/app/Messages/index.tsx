@@ -1,12 +1,11 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, StyleSheet, FlatList, TouchableOpacity, TextInput, Button, Image, Alert } from 'react-native';
+import { View, Text, StyleSheet, FlatList, TouchableOpacity, TextInput, Button, Image, Alert, RefreshControl } from 'react-native';
 import { Link, useRouter } from 'expo-router';
 import axios from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useAnimatedStyle, useSharedValue, withTiming } from "react-native-reanimated";
 import Animated from "react-native-reanimated";
 import { SERVER_URL } from '@/config/config';
-import AsyncStorage from '@react-native-async-storage/async-storage';
 
 
 interface Message {
@@ -44,7 +43,7 @@ const Messages: React.FC = () => {
   const [isOverlayVisible, setIsOverlayVisible] = useState(false);
   const [isSidebarVisible, setIsSidebarVisible] = useState(false);
   const router = useRouter();
-
+  const POLLING_INTERVAL = 2000; // Poll every 2 seconds - adjust as needed
 
   useEffect(() => {
     const initialize = async () => {
@@ -56,15 +55,37 @@ const Messages: React.FC = () => {
       }
     };
     initialize();
-  }, []);
+
+    // Set up polling for conversations
+    const pollInterval = setInterval(async () => {
+      const currentUserId = await AsyncStorage.getItem('userId');
+      if (currentUserId) {
+        await fetchConversations(currentUserId);
+      }
+    }, POLLING_INTERVAL);
+
+    // Cleanup
+    return () => {
+      clearInterval(pollInterval);
+    };
+  }, []); // Empty dependency array since we want this to run once on mount
 
   const fetchConversations = async (currentUserId: string) => {
     try {
       const response = await axios.get(`${SERVER_URL}/conversations`, {
         params: { user_id: currentUserId }
       });
-      console.log('Fetched conversations:', response.data);
-      setMessages(response.data);
+      
+      // Sort messages by timestamp before updating state
+      const sortedMessages = response.data.sort((a: Message, b: Message) => {
+        return new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime();
+      });
+      
+      // Only update if there are changes
+      if (JSON.stringify(messages) !== JSON.stringify(sortedMessages)) {
+        console.log('Updating conversations:', sortedMessages);
+        setMessages(sortedMessages);
+      }
     } catch (error) {
       console.error('Error fetching conversations:', error);
     }
@@ -208,6 +229,16 @@ const Messages: React.FC = () => {
     setIsSidebarVisible(false);
   };
 
+  // Add a refresh control for manual updates
+  const [refreshing, setRefreshing] = useState(false);
+
+  const onRefresh = React.useCallback(async () => {
+    setRefreshing(true);
+    if (userId) {
+      await fetchConversations(userId);
+    }
+    setRefreshing(false);
+  }, [userId]);
 
   return (
     <View style={styles.container}> 
@@ -231,6 +262,13 @@ const Messages: React.FC = () => {
         keyExtractor={(item) => item.id.toString()}
         style={styles.conversationsList}
         contentContainerStyle={styles.conversationsContent}
+        refreshControl={
+          <RefreshControl
+            refreshing={refreshing}
+            onRefresh={onRefresh}
+            colors={['#E0BBE4']} // Match your theme color
+          />
+        }
       />
 
       {/* Start Chat Button */}
