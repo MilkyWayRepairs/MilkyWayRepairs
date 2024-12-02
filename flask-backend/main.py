@@ -442,6 +442,41 @@ def schedule_appointment():
     except Exception as e:
         app.logger.error(f"Error updating vehicle status: {e}")
         return jsonify({"error": "Internal Server Error"}), 500
+
+## get appointment data from database
+@app.route('/GetAppointment', methods=['GET'])
+def get_user_appointments():
+    try:
+        # Get the current date
+        current_date = datetime.utcnow().date()
+
+        # Fetch upcoming and past appointments
+        upcoming_appointments = Appointments.query.filter(Appointments.date >= current_date).all()
+        past_appointments = Appointments.query.filter(Appointments.date < current_date).all()
+
+        # Format data for JSON response
+        def format_appointment(appt):
+            return {
+                'id': appt.id,  # Use appointment_id as the unique identifier
+                'name': appt.name,
+                'date': appt.date.isoformat() if appt.date else None,
+                'time': appt.time.strftime('%H:%M:%S') if appt.time else None,
+            }
+
+        response = {
+            'upcomingAppointments': [format_appointment(appt) for appt in upcoming_appointments],
+            'pastAppointments': [format_appointment(appt) for appt in past_appointments],
+        }
+
+        return jsonify(response), 200
+    except Exception as e:
+        print(f"Error: {e}")  # Log the error
+        return jsonify({'error': str(e)}), 500
+
+
+
+    
+
     
 @app.route('/search-vehicle', methods=['POST'])
 def search_vehicle():

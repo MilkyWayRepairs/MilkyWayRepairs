@@ -323,12 +323,6 @@ const styles = StyleSheet.create({
 export default ChatPage;
 
 
-function generateTemporaryId(): string {
-  throw new Error('Function not implemented.');
-}
-function generateUniqueId() {
-  throw new Error('Function not implemented.');
-}
 
 
 
