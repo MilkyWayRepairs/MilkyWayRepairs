@@ -1,5 +1,14 @@
 import React, { useEffect, useState } from "react";
-import { View, Text, StyleSheet, FlatList,TouchableOpacity, ScrollView } from "react-native";
+import { 
+  View, 
+  Text, 
+  StyleSheet, 
+  FlatList,
+  TouchableOpacity, 
+  Image,
+  TouchableWithoutFeedback,
+  Keyboard
+} from "react-native";
 import { Link } from "expo-router";
 import axios from "axios";
 import { SERVER_URL } from "@/config/config";
@@ -41,105 +50,98 @@ const AppointmentPage = () => {
   }, []);
 
   return (
-    <ScrollView style={styles.container}>
-      {/* Title */}
-      <View style={styles.titleContainer}>
-        <TouchableOpacity>
-          <Text style={styles.backArrow}>←</Text> {/* Replace with an icon if desired */}
-        </TouchableOpacity>
-        <Text style={styles.title}>Appointments</Text>
-      </View>
+    <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+      <View style={styles.container}>
+        {/* Back Arrow and Header */}
+        <View style={styles.header}>
+          <TouchableOpacity style={styles.arrowBackContainer}>
+            <Link href="..">
+              <Image
+                source={require('../../assets/images/arrowBack.png')}
+                style={styles.arrowBack}
+              />
+            </Link>
+          </TouchableOpacity>
+          <Text style={styles.headerTitle}>Appointments</Text>
+        </View>
 
-      {/* Top bar */}
-      <View style={styles.topBar}>
-        <Link href="/scheduleAppointment" style={styles.link}>
-          <Text style={styles.buttonText}>Need to Schedule Appointment</Text>
-        </Link>
-      </View>
-
-      {/* Upcoming Appointments */}
-      <Text style={styles.sectionTitle}>Upcoming Appointments</Text>
-      <View style={styles.appointmentsContainer}>
-        {upcomingAppointments.length > 0 ? (
-          <FlatList
-            data={upcomingAppointments}
-            keyExtractor={(item) => item.id.toString()}
-            renderItem={({ item }) => (
-              <View style={styles.appointmentCard}>
-                <Text style={styles.appointmentDetails}>{item.name}</Text>
-                <Text style={styles.appointmentDate}>
-                  {new Date(item.date).toLocaleDateString()} at {item.time}
-                </Text>
-              </View>
+        {/* Main Content */}
+        <View style={styles.content}>
+          {/* Upcoming Appointments */}
+          <Text style={styles.sectionTitle}>Upcoming Appointments</Text>
+          <View style={styles.appointmentsContainer}>
+            {upcomingAppointments.length > 0 ? (
+              <FlatList
+                data={upcomingAppointments}
+                keyExtractor={(item) => item.id.toString()}
+                renderItem={({ item }) => (
+                  <View style={styles.appointmentCard}>
+                    <Text style={styles.appointmentDetails}>{item.name}</Text>
+                    <Text style={styles.appointmentDate}>
+                      {new Date(item.date).toLocaleDateString()} at {item.time}
+                    </Text>
+                  </View>
+                )}
+                style={styles.flatList}
+              />
+            ) : (
+              <Text>No upcoming appointments.</Text>
             )}
-            style={styles.flatList}
-          />
-        ) : (
-          <Text>No upcoming appointments.</Text>
-        )}
-      </View>
+          </View>
 
-      {/* Past Appointments */}
-      <Text style={styles.sectionTitle}>Past Appointments</Text>
-      <View style={styles.appointmentsContainer}>
-        {pastAppointments.length > 0 ? (
-          <FlatList
-            data={pastAppointments}
-            keyExtractor={(item) => item.id.toString()}
-            renderItem={({ item }) => (
-              <View style={styles.appointmentCard}>
-                <Text style={styles.appointmentDetails}>{item.name}</Text>
-                <Text style={styles.appointmentDate}>
-                  {new Date(item.date).toLocaleDateString()} at {item.time}
-                </Text>
-              </View>
+          {/* Past Appointments */}
+          <Text style={styles.sectionTitle}>Past Appointments</Text>
+          <View style={styles.appointmentsContainer}>
+            {pastAppointments.length > 0 ? (
+              <FlatList
+                data={pastAppointments}
+                keyExtractor={(item) => item.id.toString()}
+                renderItem={({ item }) => (
+                  <View style={styles.appointmentCard}>
+                    <Text style={styles.appointmentDetails}>{item.name}</Text>
+                    <Text style={styles.appointmentDate}>
+                      {new Date(item.date).toLocaleDateString()} at {item.time}
+                    </Text>
+                  </View>
+                )}
+                style={styles.flatList}
+              />
+            ) : (
+              <Text>No past appointments.</Text>
             )}
-            style={styles.flatList}
-          />
-        ) : (
-          <Text>No past appointments.</Text>
-        )}
+          </View>
+        </View>
       </View>
-    </ScrollView>
+    </TouchableWithoutFeedback>
   );
 };
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    padding: 16,
     backgroundColor: "#fff",
   },
-  titleContainer: {
-    flexDirection: "row",
-    alignItems: "center",
-    marginBottom: 16,
+  content: {
+    flex: 1,
+    padding: 16,
   },
-  backArrow: {
-    fontSize: 24,
-    marginRight: 10,
+  header: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    padding: 16,
+    backgroundColor: 'lavenderblush',
   },
-  title: {
-    fontSize: 22,
-    fontWeight: "bold",
-    color: "#333",
+  headerTitle: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    marginLeft: 16,
   },
-  topBar: {
-    backgroundColor: "#007BFF",
-    paddingVertical: 10,
-    paddingHorizontal: 16,
-    borderRadius: 8,
-    marginBottom: 16,
-    alignItems: "center",
-    justifyContent: "center",
+  arrowBackContainer: {
+    padding: 8,
   },
-  link: {
-    textDecorationLine: "none",
-  },
-  buttonText: {
-    color: "white",
-    fontSize: 16,
-    fontWeight: "bold",
+  arrowBack: {
+    width: 24,
+    height: 24,
   },
   sectionTitle: {
     fontSize: 18,
@@ -147,7 +149,7 @@ const styles = StyleSheet.create({
     marginVertical: 8,
   },
   appointmentsContainer: {
-    maxHeight: 250, // Limit the height of each section
+    height: 250,
     marginBottom: 16,
   },
   flatList: {
@@ -166,8 +168,6 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: "#666",
   },
-
-
 });
 
 export default AppointmentPage;
