@@ -474,9 +474,14 @@ def get_user_appointments():
         # Get the current date
         current_date = datetime.utcnow().date()
 
+        user_id = session.get("id")
         # Fetch upcoming and past appointments
-        upcoming_appointments = Appointments.query.filter(Appointments.date >= current_date).all()
-        past_appointments = Appointments.query.filter(Appointments.date < current_date).all()
+        upcoming_appointments = Appointments.query.filter(
+            Appointments.date >= current_date,
+            Appointments.user_id == user_id).all()
+        past_appointments = Appointments.query.filter(
+            Appointments.date < current_date,
+            Appointments.user_id == user_id).all()
 
         # Format data for JSON response
         def format_appointment(appt):
