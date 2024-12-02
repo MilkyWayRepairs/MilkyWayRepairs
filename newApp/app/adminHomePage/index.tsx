@@ -68,16 +68,18 @@ const homeAndAdminOverlay = () => {
 
   {/* Messages Button */}
   <TouchableOpacity style={styles2.scrollButtonContainer}>
+    <Link href="/Messages">
     <Image
       source={require('../../assets/images/Messages.png')}
       style={styles2.homeScreenButton}
     />
+    </Link>
     <Text style={styles2.homeScreenButtonText}>Messages</Text>
   </TouchableOpacity>
 
   {/* Review Button */}
   <TouchableOpacity style={styles2.scrollButtonContainer}>
-  <Link href="/adminPerformanceEvaluation">  <Image
+  <Link href="/reviews">  <Image
       source={require('../../assets/images/Review.png')}
       style={styles2.homeScreenButton}
     />
@@ -88,19 +90,23 @@ const homeAndAdminOverlay = () => {
 
   {/* Status Button */}
   <TouchableOpacity style={styles2.scrollButtonContainer}>
+    <Link href="/status/employee">
     <Image
       source={require('../../assets/images/Status.png')}
       style={styles2.homeScreenButton}
     />
+    </Link>
     <Text style={styles2.homeScreenButtonText}>Update Status</Text>
   </TouchableOpacity>
 
   {/* Logs Button */}
   <TouchableOpacity style={styles2.scrollButtonContainer}>
+    <Link href="/logs">
     <Image
       source={require('../../assets/images/employeeLogs.png')}
       style={styles2.homeScreenButton}
     />
+    </Link>
     <Text style={styles2.homeScreenButtonText}>Add Log</Text>
   </TouchableOpacity>
 
@@ -114,28 +120,11 @@ const homeAndAdminOverlay = () => {
 
   </TouchableOpacity>
   
-      {/* Account Button */}
-      <TouchableOpacity 
-        style={styles.accountButtonContainer}
-        onPress={handleAccountPress}>
-        <Text>
-          {"                                 "}
-          <Image
-          source={require('../../assets/images/accountLogo.png')}
-          style={styles.homeAndAccountButton}/>
-          {"\n    "}
-          <Text style={styles.homeAndAccountText}>
-            Account
-          </Text>
-        </Text>
-      </TouchableOpacity>
       </ScrollView>
 
-
-    
       {/* Home Button */}
       <TouchableOpacity style={styles.homeButtonContainer}>
-        <Link href="/homeAndAdminOverlay">
+        <Link href="/adminHomePage">
           {"  "}
           <Image
           source={require('../../assets/images/homeLogo.png')}
@@ -147,8 +136,23 @@ const homeAndAdminOverlay = () => {
         </Link>
       </TouchableOpacity>
 
+      {/* Account Button */}
+      <TouchableOpacity 
+        style={styles.accountButtonContainer}
+        onPress={handleAccountPress}>
+        <Text>
+          {"                                 "}
+          <Image
+          source={require('../../assets/images/accountLogo.png')}
+          style={styles.homeAndAccountButton}/>
+          {"\n                             "}
+          <Text style={styles.homeAndAccountText}>
+            Account
+          </Text>
+        </Text>
+      </TouchableOpacity>
 
-
+    
       {/* Account Overlay */}
       {isOverlayVisible && (
         <TouchableOpacity 
@@ -170,7 +174,7 @@ const homeAndAdminOverlay = () => {
         <View style={[styles.accountOverlayContent, styles.performanceContent]}>
           <Link href="/adminPerformanceEvaluation">
             <Text style={styles.accountOverlayText}>
-              Update Employee Status
+              Performance Evaluation
             </Text>
           </Link>
         </View>
@@ -293,6 +297,7 @@ const styles = StyleSheet.create({
     borderRadius: 50,
     justifyContent: 'center',
     alignItems: 'center',
+    zIndex: 2,
   },
   homeAndAccountButton: {
     height: 30,
@@ -315,6 +320,7 @@ const styles = StyleSheet.create({
     marginBottom: 0,
     marginLeft: 0,
     marginRight: 0,
+    zIndex: 1,
   },
   accountOverlayContainer: {  // Everything below is the overlay
     position: 'absolute',
@@ -341,7 +347,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     borderWidth: 1,
     borderColor: 'black',
-    backgroundColor: '#CEBDD1',
+    backgroundColor: '#CEBDD1', // Lavender color
   },
   logoutContent: {
     top: 10, // Adjust this value to position the first box
