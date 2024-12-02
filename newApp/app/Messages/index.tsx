@@ -335,19 +335,25 @@ const Messages: React.FC = () => {
           </Link>
         </View>
         <View style={[styles.accountOverlayContent, styles.performanceContent]}>
+          <Link href="/carInformation">
           <Text style={styles.accountOverlayText}>
             Car Information
           </Text>
+          </Link>
         </View>
         <View style={[styles.accountOverlayContent, styles.upcomingAppointmentsContent]}>
+          <Link href="/upcomingAppointments">
           <Text style={styles.accountOverlayText}>
             Upcoming Appointments
           </Text>
+          </Link>
         </View>
         <View style={[styles.accountOverlayContent, styles.accountInformationContent]}>
+          <Link href="/userAccountInformationPage">
           <Text style={styles.accountOverlayText}>
             Account Information
           </Text>
+          </Link>
         </View>
       </Animated.View> 
     </View>
