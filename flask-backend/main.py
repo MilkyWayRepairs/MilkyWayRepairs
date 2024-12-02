@@ -12,6 +12,29 @@ from models import db, User, Review, Message, Vehicle, Service, Job, Log, Appoin
 import os, re, dns.resolver, requests, time, random
 from sqlalchemy.sql import func
 
+load_dotenv()
+
+class SingletonFlask:
+    _instance = None
+
+    def __new__(cls, *args, **kwargs):
+        if not cls._instance:
+            cls._instance = super(SingletonFlask, cls).__new__(cls)
+            cls._instance.app = Flask(__name__)
+        return cls._instance
+
+flask_app = SingletonFlask()
+app = flask_app.app
+
+app.config.from_object(ApplicationConfig)
+app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv("PERSONAL_URI")
+app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+app.secret_key = os.getenv("SECRET_KEY")
+
+bcrypt = Bcrypt(app)
+CORS(app, supports_credentials=True)
+db.init_app(app)
+
 # Sendbird Configuration
 SENDBIRD_API_TOKEN = os.getenv("SENDBIRD_API_TOKEN")
 SENDBIRD_APP_ID = os.getenv("SENDBIRD_APP_ID")
