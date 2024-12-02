@@ -27,14 +27,8 @@ const UserHomePage = () => {
           </Link>
         </TouchableOpacity>
 
-<<<<<<< HEAD
         {/* Messages Button */}  
         <Link href="/Messages" style={styles.messagesButtonContainer}>
-=======
-      {/* Schedule Appointment Button */}
-      <TouchableOpacity style={styles.scheduleAppointmentButtonContainer}>
-        <Link href="/userHomePage/customerScheduling">
->>>>>>> 3c84291f1b01f513dbdd8389b1e36536f4d0173a
           <Image
             source={require('../../assets/images/Messages.png')}
             style={styles.homeScreenButton}
@@ -51,15 +45,6 @@ const UserHomePage = () => {
           </Link>
         </TouchableOpacity>
 
-<<<<<<< HEAD
-        {/* Review Button */}
-        <TouchableOpacity style={styles.reviewButtonContainer}>
-          <Link href="/reviews">
-            <Image
-              source={require('../../assets/images/Review.png')}
-              style={styles.homeScreenButton}
-            />
-=======
       {/* Review Button */}
       <TouchableOpacity style={styles.reviewButtonContainer}>
           <Link href="/reviews/submittedReviews">
@@ -67,7 +52,6 @@ const UserHomePage = () => {
                   source={require('../../assets/images/Review.png')}
                   style={styles.homeScreenButton}
               />
->>>>>>> 3c84291f1b01f513dbdd8389b1e36536f4d0173a
           </Link>
         </TouchableOpacity>
 
