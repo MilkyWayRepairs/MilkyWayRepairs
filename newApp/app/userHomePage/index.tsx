@@ -27,7 +27,7 @@ const UserHomePage = () => {
           </Link>
         </TouchableOpacity>
 
-<<<<<<< HEAD
+
         {/* Messages Button */}  
         <TouchableOpacity style={styles.messagesButtonContainer}>
           <Link href="/Messages">
