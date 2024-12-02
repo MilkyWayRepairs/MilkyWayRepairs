@@ -212,6 +212,14 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',        
   },
+    homeScreenButtonText: {
+    color: 'black',
+    fontSize: 14,
+  },
+    homeScreenButton: {
+    width: 78,
+    height: 78,
+  },    
 });
   
 export default userHomePage;  
