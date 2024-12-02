@@ -3,7 +3,7 @@ import NewPageTemplate from "../newPageTemplate";
 
 const UserAccountInformationPage = () => {
   return (
-    <NewPageTemplate>
+    <NewPageTemplate title="Account Information">
       {/* Your account information content here */}
     </NewPageTemplate>
   );
