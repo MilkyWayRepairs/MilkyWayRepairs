@@ -8,7 +8,7 @@ from sqlalchemy import func
 from config import ApplicationConfig
 from flask_bcrypt import Bcrypt
 from datetime import datetime, timedelta
-from models import db, User, Review, Message, Vehicle, Service, Job, Log, Appointments
+from models import db, User, Review, Message, Vehicle, Service, Job, Log, Appointments, PerformanceEvaluation
 import os, re, dns.resolver, requests, time, random
 from sqlalchemy.sql import func
 
@@ -722,6 +722,51 @@ def get_conversations():
         print(f"Error fetching conversations: {str(e)}")
         return jsonify({'error': str(e)}), 500
 
+@app.route('/performance-evaluation', methods=['Post'])
+def submit_performance_evaluation():
+    try:
+        # Parse the JSON request body
+        data = request.get_json()
+        employee_name = data.get('employeeName')
+        employee_id = int(data.get('employeeID'))
+        expected_time = float(data.get('expectedTime'))
+        actual_time = float(data.get('actualTime'))
+
+        # Validate input
+        if not all([employee_name, employee_id, expected_time, actual_time]):
+            return jsonify({"error": "All fields are required!"}), 400
+
+        if not isinstance(expected_time, (int, float)) or not isinstance(actual_time, (int, float)):
+            return jsonify({"error": "Expected time and actual time must be numbers!"}), 400
+        
+        # Check if the user exists in the User table
+        user = User.query.filter_by(id=employee_id, name=employee_name, role="employee").first()
+        if not user:
+            return jsonify({"error": "Employee not found or user is not an employee!"}), 404
+
+        # Calculate performance metrics (example: performance ratio)
+        performance_ratio = (actual_time / expected_time) * 100 if expected_time > 0 else 0
+
+        # Simulate saving the evaluation
+        evaluation = PerformanceEvaluation(
+            name=employee_name,
+            employee_id=employee_id,
+            expected_hours=expected_time,
+            actual_hours=actual_time,
+            performance_ratio=performance_ratio
+        )
+        db.session.add(evaluation)
+        db.session.commit()
+
+        # Return a success response
+        return jsonify({
+            "message": "Evaluation submitted successfully!",
+            "evaluation": evaluation
+        }), 200
+
+    except Exception as e:
+        # Handle any unexpected errors
+        return jsonify({"error": "An error occurred while processing the evaluation.", "details": str(e)}), 500
 # returns a list of all services / repairs provided by the company
 def servicesList(): 
     return jsonify

@@ -49,12 +49,13 @@ class Vehicle(db.Model):
     year = db.Column(db.String(6))
 
 class PerformanceEvaluation(db.Model):
-    __tablename__ = 'performance evaluation'
-    evaluation_id = db.Column(db.Integer, primary_key=True)
+    __tablename__ = 'performanceevaluation'
+    id = db.Column(db.Integer, primary_key=True)
     name = User.name
     employee_id = User.id
     expected_hours = db.Column(db.Double, nullable=False)
     actual_hours = db.Column(db.Double, nullable=False)
+    performance_ratio = db.Column(db.Double, nullable=False)
 
 class Appointments(db.Model):
     __tablename__ = 'appointments'
