@@ -807,6 +807,51 @@ def servicesList():
 def servicesList(): 
     return jsonify
 
+# Add this new route to your Flask backend
+@app.route('/user/<int:user_id>', methods=['GET'])
+def get_user(user_id):
+    try:
+        user = User.query.get(user_id)
+        if user is None:
+            return jsonify({"error": "User not found"}), 404
+            
+        return jsonify({
+            "id": user.id,
+            "name": user.name,
+            "email": user.email,
+            "phone_number": user.phone_number,
+            "notification_preference": "email"  # Default value until you add this to your model
+        }), 200
+        
+    except Exception as e:
+        print(f"Error fetching user: {str(e)}")
+        return jsonify({"error": "Internal server error"}), 500
+
+# Add this route for updating notification preferences
+@app.route('/user/<int:user_id>/preferences', methods=['PUT'])
+def update_user_preferences(user_id):
+    try:
+        user = User.query.get(user_id)
+        if user is None:
+            return jsonify({"error": "User not found"}), 404
+            
+        data = request.json
+        notification_preference = data.get('notification_preference')
+        
+        # Update the user's preference (you'll need to add this column to your User model)
+        user.notification_preference = notification_preference
+        db.session.commit()
+        
+        return jsonify({
+            "message": "Preferences updated successfully",
+            "notification_preference": notification_preference
+        }), 200
+        
+    except Exception as e:
+        print(f"Error updating preferences: {str(e)}")
+        db.session.rollback()
+        return jsonify({"error": "Internal server error"}), 500
+
 if __name__ == '__main__':
     print("main")
     app.run(host="0.0.0.0", port=5001, debug=True)
