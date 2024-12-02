@@ -86,34 +86,31 @@ const customerStatusPage = () => {
 
   return (
     <View style={styles.container}>
-        {/* Logo */}
-        <Image 
-        source={require('../../assets/images/MilkyWayRepair.png')} 
-        style={styles.logo}
-        />
+      {/* Logo */}
+      <Image 
+      source={require('../../assets/images/MilkyWayRepair.png')} 
+      style={styles.logo}
+      />
 
-        {/* Top text */}
-        <Text style={styles.topText}>Your vehicle's status:
+      {/* Top text */}
+      <Text style={styles.topText}>Your vehicle's status:</Text>
 
-        </Text>
+      {/* Back Arrow */}
+      <TouchableOpacity style={styles.arrowBackContainer}>
+        <Link href="..">
+          <Image 
+          source={require('../../assets/images/arrowBack.png')} 
+          style={styles.arrowBack}/>
+        </Link>
+      </TouchableOpacity>
 
-        {/* Back Arrow */}
-        <TouchableOpacity style={styles.arrowBackContainer}>
-            <Link href="..">
-                <Image 
-                source={require('../../assets/images/arrowBack.png')} 
-                style={styles.arrowBack}
-                />
-            </Link>
-        </TouchableOpacity>
+      {/* Status Text */}
+      <Text style={styles.progressText}>{currentStatus.text}</Text>
 
-        {/* Status Text */}
-        <Text style={styles.progressText}>{currentStatus.text}</Text>
-
-        {/* Circular Progress */}
-         <View style={styles.progressContainer}>
-           <CircularProgress progress={currentStatus.progress} color={currentStatus.color} />
-         </View>
+      {/* Circular Progress */}
+      <View style={styles.progressContainer}>
+        <CircularProgress progress={currentStatus.progress} color={currentStatus.color} />
+      </View>
     </View>
   );
 };
@@ -121,17 +118,17 @@ const customerStatusPage = () => {
 // Styling
 const styles = StyleSheet.create({
 container: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: '#fff',
-    paddingHorizontal: 20,
-  },
+  flex: 1,
+  justifyContent: 'center',
+  alignItems: 'center',
+  backgroundColor: '#fff',
+  paddingHorizontal: 20,
+},
 progressContainer: {
     justifyContent: 'center',
     alignItems: 'center',
     position: 'absolute',
-    paddingBottom: 40,
+    paddingBottom: 50,
   },
 CircularProgress: {
     position: 'absolute',

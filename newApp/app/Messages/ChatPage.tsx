@@ -1,17 +1,21 @@
 import React, { useEffect, useState } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';//npm install @react-native-async-storage/async-storage
-import { View, Text, StyleSheet, FlatList, TextInput, TouchableOpacity } from 'react-native';
+import { View, Text, StyleSheet, FlatList, Image, TextInput, TouchableOpacity, KeyboardAvoidingView, Platform } from 'react-native';
 import axios from 'axios';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { SERVER_URL } from '@/config/config';
 import SendBird from 'sendbird';
 
+
+
 interface Message {
-  id: number;
+  id?: number;
+  message_id?: number;
   content: string;
   sender: string;
-  timestamp: any;
+  timestamp: string;
 }
+
 
 const ChatPage: React.FC = () => {
   const [messages, setMessages] = useState<Message[]>([]);
@@ -19,22 +23,20 @@ const ChatPage: React.FC = () => {
   const { receiverId, receiverName } = useLocalSearchParams();
   const router = useRouter();
   const [userId, setUserId] = useState<string | null>(null);
-  const [receiverDataReady, setReceiverDataReady] = useState(false);
 
   const sb = new SendBird({ appId: '5D0726A7-302C-4867-867E-ED5500933EC8' });
 
-  //debugging
-  useEffect(() => {
-    console.log("Debug: Extracted receiverId:", receiverId);
-    console.log("Debug: Extracted receiverName:", receiverName);
-  }, []);
+  const [pollingInterval, setPollingInterval] = useState<NodeJS.Timeout | null>(null);
+  const POLLING_INTERVAL = 3000; // 3 seconds
+
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    const connectToSendbird = async () => {
+    const getUserId = async () => {
       try {
         const storedUserId = await AsyncStorage.getItem('userId');
         if (storedUserId) {
-          console.log("Retrieved userId from AsyncStorage:", storedUserId);  // Add logging here to confirm retrieval
           setUserId(storedUserId);
           sb.connect(storedUserId, (user, error) => {
             if (error) {
@@ -43,133 +45,173 @@ const ChatPage: React.FC = () => {
               console.log('Connected to Sendbird:', user);
             }
           });
-        } else {
-          console.error("userId not found in AsyncStorage");
         }
       } catch (error) {
-        console.error('Error accessing AsyncStorage:', error);
+        console.error('Error getting userId:', error);
       }
     };
-  
-    connectToSendbird();
+    getUserId();
   }, []);
-  
 
   useEffect(() => {
-    console.log("Receiver ID:", receiverId); // Debugging
-    console.log("Receiver Name:", receiverName); // Debugging
-    if (receiverId) {
-      setReceiverDataReady(true);
-    }
-  }, [receiverId]);
+    const fetchMessages = async () => {
+      if (!userId || !receiverId) return;
+      
+      try {
+        const response = await axios.get(`${SERVER_URL}/messages`, {
+          params: {
+            sender_id: userId,
+            receiver_id: receiverId
+          }
+        });
 
-  useEffect(() => {
-    if (receiverDataReady) {
-      fetchOrCreateChat();
-    }
-  }, [receiverDataReady]);
+        // Sort messages by timestamp
+        const sortedMessages = [...response.data].sort((a: Message, b: Message) => {
+          const timeA = new Date(a.timestamp).getTime();
+          const timeB = new Date(b.timestamp).getTime();
+          return timeA - timeB;
+        });
 
-  const fetchOrCreateChat = async () => {
-    if (!receiverId) {
-      console.error("Receiver ID is missing, redirecting to default page...");
-      router.push('../Messages'); // Redirect to a safe fallback route
-      return null;
-    }
+        // Only update if there are changes
+        const currentMessagesString = JSON.stringify(messages);
+        const newMessagesString = JSON.stringify(sortedMessages);
+        
+        if (currentMessagesString !== newMessagesString) {
+          console.log('Updating messages with new data');
+          setMessages(sortedMessages);
+        }
+      } catch (error) {
+        console.error('Error fetching messages:', error);
+      }
+    };
+
+    // Initial fetch
+    fetchMessages();
+
+    // Set up polling
+    const interval = setInterval(fetchMessages, POLLING_INTERVAL);
+
+    // Cleanup
+    return () => clearInterval(interval);
+  }, [userId, receiverId]);
+
+  const sendMessage = async () => {
+    if (!newMessage.trim() || !userId || !receiverId) return;
 
     try {
-      const response = await axios.post(`${SERVER_URL}/chat`, {
+      const payload = {
         sender_id: userId,
         receiver_id: receiverId,
+        content: newMessage.trim(),
+        timestamp: new Date().toISOString()
+      };
+
+      const response = await axios.post(`${SERVER_URL}/messages`, payload);
+      
+      // Add new message to existing messages
+      const newMsg: Message = {
+        id: response.data.id,
+        message_id: response.data.id,
+        content: newMessage.trim(),
+        sender: userId,
+        timestamp: response.data.timestamp || new Date().toISOString()
+      };
+
+      // Update messages array with new message
+      setMessages(prevMessages => {
+        const updatedMessages = [...prevMessages, newMsg];
+        return updatedMessages.sort((a, b) => 
+          new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime()
+        );
       });
 
-      if (response.status === 200) {
-        // Existing chat
-        setMessages(response.data.messages);
-      } else if (response.status === 201) {
-        // New chat created
-        setMessages([{ id: Math.random(), content: "Chat started", sender: `User${userId}`, timestamp: new Date().toISOString() }]);
-      }
+      setNewMessage('');
     } catch (error) {
-      console.error('Error fetching or creating chat:', error);
+      console.error('Error sending message:', error);
     }
   };
 
-  const sendMessage = async () => {
-    console.log("Attempting to send message...");
-    if (!newMessage.trim()) {
-      console.error("Message is empty, not sending.");
-      return;
-    }
-  
-    if (!userId) {
-      console.error("userId is not set, cannot send message.");
-      return;
-    }
-  
-    if (!receiverId) {
-      console.error("receiverId is not set, cannot send message.");
-      return;
-    }
-  
-    const payload = {
-      sender_id: userId,
-      receiver_id: receiverId,
-      content: newMessage,
-    };
-  
-    console.log("Sending payload:", payload);  // Log the payload for debugging
-  
-    try {
-      const response = await axios.post(`${SERVER_URL}/messages`, payload);
-      if (response.status === 201) {
-        console.log("Message sent successfully:", response.data);
-        setMessages((prev) => [...prev, response.data]);
-        setNewMessage('');
-      } else {
-        console.error("Unexpected response status:", response.status);
-      }
-    } catch (error) {
-        console.error('Error sending message:', error);
-    }
-};
+  const getMessageKey = (message: Message): string => {
+    if (message.message_id) return message.message_id.toString();
+    if (message.id) return message.id.toString();
+    return `${message.sender}-${message.timestamp}-${message.content}`;
+  };
 
-  
-
-  const renderMessageItem = ({ item }: { item: Message }) => (
-    <View style={[styles.messageItem, item.sender === `User${userId}` ? styles.myMessage : styles.theirMessage]}>
-      <Text style={styles.messageContent}>{item.content}</Text>
-      <Text style={styles.timestamp}>{new Date(item.timestamp).toLocaleTimeString()}</Text>
-    </View>
-  );
+  const renderMessage = ({ item }: { item: Message }) => {
+    const isMyMessage = item.sender === userId;
+    const key = getMessageKey(item);
+    
+    return (
+      <View 
+        key={key}
+        style={[
+          styles.messageItem, 
+          isMyMessage ? styles.myMessage : styles.theirMessage
+        ]}
+      >
+        <Text style={styles.messageContent}>{item.content}</Text>
+        <Text style={styles.timestamp}>
+          {new Date(item.timestamp).toLocaleTimeString()}
+        </Text>
+      </View>
+    );
+  };
 
   return (
-    <View style={styles.container}>
-      <View style={styles.header}>
-        <TouchableOpacity onPress={() => router.push('./Messages')}>
-          <Text>{receiverName || 'Mechanic'}</Text>
-          <Text>{receiverName || 'Mechanic'}</Text>
-        </TouchableOpacity>
-      </View>
-      <FlatList
-        data={messages}
-        renderItem={renderMessageItem}
-        keyExtractor={(item) => item.id.toString()}
-        contentContainerStyle={styles.messagesContainer}
-      />
-      <View style={styles.inputContainer}>
-        <TextInput
-          style={styles.input}
-          value={newMessage}
-          onChangeText={setNewMessage}
-          placeholder="Type a message..."
+    <KeyboardAvoidingView 
+      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+      style={styles.container}
+      keyboardVerticalOffset={Platform.OS === 'ios' ? 90 : 0}
+    >
+<View style={styles.header}>
+  {/* Back Arrow */}
+  <TouchableOpacity style={styles.arrowBack} onPress={() => router.back()}>
+    <Image
+      source={require('../../assets/images/arrowBack.png')} // Ensure the correct path to your arrow image
+      style={styles.arrowIcon} // Style for the arrow icon
+    />
+  </TouchableOpacity>
+
+  {/* Header Title */}
+  <Text style={styles.headerText}>{receiverName}</Text>
+</View>
+      
+      <View style={styles.messagesWrapper}>
+        <FlatList
+          data={messages}
+          renderItem={renderMessage}
+          keyExtractor={getMessageKey}
+          contentContainerStyle={styles.messagesContainer}
+          inverted={false}
+          maintainVisibleContentPosition={{
+            minIndexForVisible: 0,
+            autoscrollToTopThreshold: 100,
+          }}
         />
-        <TouchableOpacity style={styles.sendButton} onPress={sendMessage}>
-          <Text style={styles.sendButtonText}>Send</Text>
-        </TouchableOpacity>
       </View>
-    </View>
+
+      <View style={styles.inputWrapper}>
+        <View style={styles.inputContainer}>
+          <TextInput
+            style={styles.input}
+            value={newMessage}
+            onChangeText={setNewMessage}
+            placeholder="Type a message..."
+            multiline
+          />
+          <TouchableOpacity
+            style={[styles.sendButton, !newMessage.trim() && styles.sendButtonDisabled]}
+            onPress={sendMessage}
+            disabled={!newMessage.trim()}
+          >
+            <Text style={styles.sendButtonText}>Send</Text>
+          </TouchableOpacity>
+        </View>
+      </View>
+    </KeyboardAvoidingView>
   );
 };
+
 
 const styles = StyleSheet.create({
   container: {
@@ -179,73 +221,110 @@ const styles = StyleSheet.create({
   header: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#E0BBE4',
-    padding: 15,
-  },
-  backButton: {
-    color: '#fff',
-    fontSize: 16,
-    marginRight: 10,
+    justifyContent: 'center',
+    backgroundColor: '#E0BBE4', // Adjust background color
+    paddingVertical: 10,
+    paddingHorizontal: 15,
   },
   headerText: {
-    fontSize: 20,
+    fontSize: 18,
     fontWeight: 'bold',
-    color: '#fff',
+    color: '#333',
+    textAlign: 'center',
+  },
+  messagesWrapper: {
+    flex: 1,
   },
   messagesContainer: {
-    paddingHorizontal: 10,
-    paddingBottom: 20,
+    padding: 10,
+    flexGrow: 1,
+    justifyContent: 'flex-start',
   },
   messageItem: {
     padding: 10,
     marginVertical: 5,
-    borderRadius: 10,
     maxWidth: '80%',
+    borderRadius: 10,
   },
   myMessage: {
-    backgroundColor: '#E0BBE4',
     alignSelf: 'flex-end',
+    backgroundColor: '#7cc4ff',
   },
   theirMessage: {
-    backgroundColor: '#f0f0f0',
     alignSelf: 'flex-start',
+    backgroundColor: '#f0f0f0',
   },
   messageContent: {
     fontSize: 16,
+    color: '#000',
   },
   timestamp: {
-    fontSize: 10,
-    color: '#888',
+    fontSize: 12,
+    color: '#666',
     marginTop: 5,
-    alignSelf: 'flex-end',
+  },
+  inputWrapper: {
+    borderTopWidth: 1,
+    borderColor: '#ddd',
+    backgroundColor: '#fff',
+    paddingBottom: Platform.OS === 'ios' ? 20 : 10,
   },
   inputContainer: {
     flexDirection: 'row',
-    padding: 10,
+    alignItems: 'center',
+    paddingHorizontal: 20,
+    paddingVertical: 25,
     borderTopWidth: 1,
     borderColor: '#ddd',
+    backgroundColor: '#E5ECE4',
+    position: 'absolute',
+    bottom:55,
+    width: '100%',
   },
   input: {
     flex: 1,
-    borderWidth: 1,
-    borderColor: '#ccc',
+    borderWidth: 2,
+    borderColor: '#c4cec3',
     borderRadius: 20,
     paddingHorizontal: 15,
-    paddingVertical: 5,
+    paddingVertical: 8,
     marginRight: 10,
+    maxHeight: 100,
+    minHeight: 40,
     backgroundColor: '#f9f9f9',
   },
   sendButton: {
     backgroundColor: '#E0BBE4',
     borderRadius: 20,
     paddingVertical: 10,
-    paddingHorizontal: 15,
+    paddingHorizontal: 20,
     justifyContent: 'center',
+    alignItems: 'center',
+  },
+  sendButtonDisabled: {
+    backgroundColor: '#E0BBE4',
   },
   sendButtonText: {
     color: '#fff',
     fontWeight: 'bold',
   },
+  arrowBack: {
+    position: 'absolute',
+    left: 15, // Position the arrow to the left
+    zIndex: 1,
+  },
+  arrowIcon: {
+    width: 24, // Adjust size
+    height: 24, // Adjust size
+    tintColor: '#333', // Optional: adjust color if the icon supports tinting
+  },
 });
 
 export default ChatPage;
+
+
+
+
+
+
+

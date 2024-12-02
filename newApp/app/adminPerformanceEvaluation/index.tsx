@@ -11,39 +11,46 @@ const adminPerformanceEvaluation = () => {
   const[actualTime, setActualTime] = useState("");
   
   const handleCalculate = async () => {
-    if(!employeeName.trim() || !employeeID.trim() || !expectedTime.trim() || !actualTime.trim()){
-      alert("All fields are required!");
-      return;
+    if (!employeeName.trim() || !employeeID.trim() || !expectedTime.trim() || !actualTime.trim()) {
+        alert("All fields are required!");
+        return;
     }
 
-    try{
-      const response = await fetch(`${SERVER_URL}/performanceEvaluation`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          employeeName,
-          employeeID,
-          expectedTime: parseFloat(expectedTime),
-          actualTime: parseFloat(actualTime),
-        }),
-      });
+    // Validate numeric inputs
+    if (isNaN(parseFloat(expectedTime)) || isNaN(parseFloat(actualTime))) {
+        alert("Expected time and actual time must be valid numbers!");
+        return;
+    }
 
-      if(response.ok){
+    try {
+        const response = await fetch(`${SERVER_URL}/performanceEvaluation`, {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+                employeeName,
+                employeeID,
+                expectedTime: parseFloat(expectedTime),
+                actualTime: parseFloat(actualTime),
+            }),
+        });
+
         const data = await response.json();
-        alert("Evaluation submitted successfully!");
-        console.log("Server Response:", data);
-        setEmployeeName("");
-        setEmployeeID("");
-        setExpectedTime("");
-        setActualTime("");
-      } else{
-        alert("Failed to submit evaluation. Please try again.");
-      }
-    } catch(error){
-      console.error("Error submitting evaluation", error);
-      alert("An error occured. Please try again.");
+
+        if (response.ok) {
+            alert(`Evaluation submitted successfully!\nPerformance Ratio: ${data.performance_ratio.toFixed(2)}%`);
+            // Clear form
+            setEmployeeName("");
+            setEmployeeID("");
+            setExpectedTime("");
+            setActualTime("");
+        } else {
+            alert(`Error: ${data.error || 'Failed to submit evaluation'}`);
+        }
+    } catch (error) {
+        console.error("Error submitting evaluation:", error);
+        alert("Network error. Please check your connection and try again.");
     }
   };
 

@@ -46,6 +46,6 @@ $ pip install Flask flask_sqlalchemy pymysql python-dotenv flask-cors dnspython
  ```
  PERSONAL_URI='mysql+pymysql://sqlusername:sqlpassword@ipaddress:3306/milkywayrepairs'
  SECRET_KEY='literallyAnyStringICreatedMineRandomlyAsA24BitStringInPython'
- SENDBIRD_API_TOKEN = "your_sendbird_api_token_here"
+ SENDBIRD_API_TOKEN = '535316c4d3c3642958f0a25ffc8f6e6021489437'
  SENDBIRD_APP_ID = "5D0726A7-302C-4867-867E-ED5500933EC8"
  ```

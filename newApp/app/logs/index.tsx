@@ -9,7 +9,7 @@ import { Picker } from '@react-native-picker/picker';
 interface LogFormData {
   date: string;
   mileage: string;
-  vin: string;
+  VIN: string;
   jobTitle: string;
   jobNotes: string;
 }
@@ -25,7 +25,7 @@ const AddLogs = () => {
   const [formData, setFormData] = useState<LogFormData>({
     date: '',
     mileage: '',
-    vin: '',
+    VIN: '',
     jobTitle: '',
     jobNotes: ''
   });
@@ -54,7 +54,7 @@ const AddLogs = () => {
     switch(field) {
       case 'date': return 'Enter date (MM/DD/YYYY)';
       case 'mileage': return 'Enter current mileage';
-      case 'vin': return 'Enter 17-character VIN';
+      case 'VIN': return 'Enter 17-character VIN';
       case 'jobTitle': return 'Enter job title (min. 3 characters)';
       case 'jobNotes': return 'Enter detailed job notes (min. 10 characters)';
       default: return `Enter ${field}`;
@@ -83,14 +83,14 @@ const AddLogs = () => {
       Alert.alert("Error", "Please enter a valid mileage number");
       return;
     }
-    if (!formData.vin || formData.vin.length !== 17) {
-      Alert.alert("Error", "Please enter a valid 17-character VIN");
-      return;
-    }
-    if (!formData.jobTitle) {
-      Alert.alert("Error", "Please select a job");
-      return;
-    }
+    // if (!formData.vin || formData.vin.length !== 17) {
+    //   Alert.alert("Error", "Please enter a valid 17-character VIN");
+    //   return;
+    // }
+    // if (!formData.jobTitle) {
+    //   Alert.alert("Error", "Please select a job");
+    //   return;
+    // }
     if (!formData.jobNotes || formData.jobNotes.length < 10) {
       Alert.alert("Error", "Please enter detailed job notes (minimum 10 characters)");
       return;
@@ -107,7 +107,7 @@ const AddLogs = () => {
         body: JSON.stringify({
           date: formData.date,
           mileage: formData.mileage,
-          vin: formData.vin,
+          VIN: formData.VIN,
           jobTitle: formData.jobTitle,
           jobNotes: formData.jobNotes
         }),
@@ -117,7 +117,7 @@ const AddLogs = () => {
 
       if (response.ok) {
         Alert.alert("Success", "Logs submitted successfully!");
-        setFormData({ date: '', mileage: '', vin: '', jobTitle: '', jobNotes: '' });
+        setFormData({ date: '', mileage: '', VIN: '', jobTitle: '', jobNotes: '' });
         router.push("/logs/submittedLogs");
       } else {
         Alert.alert("Error", data.error || "Failed to submit logs. Please try again.");
@@ -147,7 +147,7 @@ const AddLogs = () => {
         {/* Container for Input Fields and Submit Button */}
         <View style={styles.inputSection}>
           {/* Input Fields */}
-          {['date', 'mileage', 'vin', 'jobTitle', 'jobNotes'].map((field, index) => (
+          {['date', 'mileage', 'VIN', 'jobTitle', 'jobNotes'].map((field, index) => (
             <View style={styles.inputContainer} key={index}>
               <Text style={styles.inputLabel}>
                 {field.charAt(0).toUpperCase() + field.slice(1).replace(/([A-Z])/g, ' $1')}
@@ -186,15 +186,20 @@ const AddLogs = () => {
           </TouchableOpacity>
         </View>
 
-        {/* Bottom Navigation Bar */}
+        {/* Bottom Navigation */}
         <View style={styles.bottomNav}>
-          <TouchableOpacity style={styles.navButton}>
+          <TouchableOpacity style={styles.homeButtonContainer}>
             <Link href="/userHomePage">
-              <Image source={require('../../assets/images/homeLogo.png')} style={styles.navIcon} />
+              {"  "}
+              <Image
+                source={require('../../assets/images/homeLogo.png')}
+                style={styles.navIcon}/>
+              {"\n"}
               <Text style={styles.navText}>Home</Text>
             </Link>
           </TouchableOpacity>
-          <TouchableOpacity style={styles.navButton} onPress={handleAccountPress}>
+
+          <TouchableOpacity style={styles.accountButtonContainer} onPress={handleAccountPress}>
             <Image source={require('../../assets/images/accountLogo.png')} style={styles.navIcon} />
             <Text style={styles.navText}>Account</Text>
           </TouchableOpacity>
@@ -276,12 +281,25 @@ const styles = StyleSheet.create({
   },
   bottomNav: {
     flexDirection: 'row',
-    justifyContent: 'space-around',
+    justifyContent: 'space-between',
     paddingVertical: 10,
-    backgroundColor: '#f0f0f0',
+    backgroundColor: '#fff',
   },
-  navButton: {
+  homeButtonContainer: {
+    flex: 1,
+    backgroundColor: '#EBE4EC',
     alignItems: 'center',
+    paddingVertical: 15,
+    borderTopLeftRadius: 50,
+    borderBottomLeftRadius: 50,
+  },
+  accountButtonContainer: {
+    flex: 1,
+    backgroundColor: '#E5ECE4',
+    alignItems: 'center',
+    paddingVertical: 15,
+    borderTopRightRadius: 50,
+    borderBottomRightRadius: 50,
   },
   navIcon: {
     width: 30,
@@ -293,7 +311,7 @@ const styles = StyleSheet.create({
   },
   picker: {
     width: '100%',
-    height: 40,
+    height: 50,
     backgroundColor: '#f9f9f9',
     borderColor: '#ccc',
     borderWidth: 1,
