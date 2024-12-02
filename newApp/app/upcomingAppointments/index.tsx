@@ -1,13 +1,12 @@
-import React from "react";
-import newPageTemplate from "../newPageTemplate";
-import { View } from "react-native";
+import React from 'react';
+import NewPageTemplate from "../newPageTemplate";
 
-const upcomingAppointments = () => {
-    return (
-        <View>
-            {newPageTemplate()}
-        </View>
-    );
+const upcomingAppointmentsPage = () => {
+  return (
+    <NewPageTemplate title="upcomingAppointments">
+      {/* Your account information content here */}
+    </NewPageTemplate>
+  );
 };
 
-export default upcomingAppointments;
+export default upcomingAppointmentsPage;

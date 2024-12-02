@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { View, Text, FlatList, TouchableOpacity, StyleSheet } from 'react-native';
 import axios from 'axios';
 import { SERVER_URL } from '@/config/config';
-import { Link, } from "expo-router"
+import NewPageTemplate from "../newPageTemplate"
 
 const VehicleList = () => {
   const [vehicles, setVehicles] = useState([]);
@@ -31,7 +31,8 @@ const VehicleList = () => {
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>Vehicles</Text>
+      <NewPageTemplate title="Vehicle Information">
+      </NewPageTemplate>
       <FlatList
         data={vehicles}
         keyExtractor={item => item.VIN}
@@ -59,11 +60,30 @@ const VehicleList = () => {
 };
 
 const styles = StyleSheet.create({
-  container: { flex: 1, padding: 20 },
-  title: { fontSize: 24, fontWeight: 'bold', marginBottom: 20 },
-  item: { fontSize: 18, padding: 10, borderBottomWidth: 1, borderBottomColor: '#ccc' },
-  details: { marginTop: 20, padding: 10, backgroundColor: '#f9f9f9', borderRadius: 5 },
-  detailText: { fontSize: 16, marginBottom: 5 }
+  container: {
+    flex: 1,
+    flexDirection: 'column',
+    backgroundColor: '#fff',
+  },
+  item: { 
+    fontSize: 18,
+    borderBottomWidth: 1,
+    borderBottomColor: '#ccc',
+    borderTopWidth: 1,
+    padding: 10 
+  },
+  details: {
+    marginTop: 5,
+    padding: 0,
+    backgroundColor: '#f9f9f9',
+    borderRadius: 10,
+    bottom: 150,
+    maxHeight: 300
+  },
+  detailText: {
+    fontSize: 16,
+    marginBottom: 5,
+  }
 });
 
 export default VehicleList;
