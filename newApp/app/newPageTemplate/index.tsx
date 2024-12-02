@@ -6,7 +6,12 @@ import { SlideOutRight, withDelay, withTiming } from "react-native-reanimated";
 import { useAnimatedStyle, withSpring, useSharedValue } from "react-native-reanimated";
 import Animated from "react-native-reanimated";
 
-const newPageTemplate = () => {
+interface NewPageTemplateProps {
+  title?: string;
+  children?: React.ReactNode;
+}
+
+const newPageTemplate: React.FC<NewPageTemplateProps> = ({ title = "Template", children }) => {
   const translateX = useSharedValue(400); // Start off-screen
   const [isOverlayVisible, setIsOverlayVisible] = React.useState(false);
   
@@ -30,7 +35,7 @@ const newPageTemplate = () => {
       {/* Title Text and Back Arrow*/}
       <View style={[styles.titleTextContainer, {backgroundColor: "lavenderblush"}]}>
         <Text style={styles.titleText}>
-          Template
+          {title}
         </Text>
         <TouchableOpacity style={styles.arrowBack}>
           <Link href="..">
