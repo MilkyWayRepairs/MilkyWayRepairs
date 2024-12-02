@@ -30,32 +30,33 @@ const VehicleList = () => {
   };
 
   return (
-    <View style={styles.container}>
-      <NewPageTemplate title="Vehicle Information">
-      </NewPageTemplate>
-      <FlatList
-        data={vehicles}
-        keyExtractor={item => item.VIN}
-        renderItem={({ item }) => (
-          <TouchableOpacity onPress={() => fetchVehicleDetails(item.VIN)}>
-            <Text style={styles.item}>{item.year} {item.make} {item.model}</Text>
-          </TouchableOpacity>
-        )}
-      />
-      {selectedVehicle && (
+
+    <NewPageTemplate title="Vehicle Information">
+      <View style={styles.container}>
         <FlatList
-        data={Object.entries(selectedVehicle).sort(([keyA], [keyB]) => {
-            const order = ['VIN', 'year', 'make', 'model', 'logs'];
-            return order.indexOf(keyA) - order.indexOf(keyB);
-        })}
-        keyExtractor={([key]) => key.toString()}
-        renderItem={({ item: [key, value] }) => (
-            <Text style={styles.detailText}>{key.charAt(0).toUpperCase() + key.slice(1)}: {value}</Text>
-        )}
-          style={styles.details}
+            data={vehicles}
+            keyExtractor={item => item.VIN}
+            renderItem={({ item }) => (
+            <TouchableOpacity onPress={() => fetchVehicleDetails(item.VIN)}>
+                <Text style={styles.item}>{item.year} {item.make} {item.model}</Text>
+            </TouchableOpacity>
+            )}
         />
-      )}
-    </View>
+        {selectedVehicle && (
+            <FlatList
+            data={Object.entries(selectedVehicle).sort(([keyA], [keyB]) => {
+                const order = ['VIN', 'year', 'make', 'model', 'logs'];
+                return order.indexOf(keyA) - order.indexOf(keyB);
+            })}
+            keyExtractor={([key]) => key.toString()}
+            renderItem={({ item: [key, value] }) => (
+                <Text style={styles.detailText}>{key.charAt(0).toUpperCase() + key.slice(1)}: {value}</Text>
+            )}
+            style={styles.details}
+            />
+        )}
+        </View>
+    </NewPageTemplate>
   );
 };
 
