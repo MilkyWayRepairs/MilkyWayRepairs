@@ -101,6 +101,7 @@ def register():
     data = request.get_json()
     email = data.get('email')
     password = data.get('password')
+    phone_number = data.get('phoneNumber')
     print("Recieved email: ", email)    #debugging
     print("Recieved password: ", password)  #debugging
 
@@ -123,7 +124,7 @@ def register():
         try:
             # Add user to database
             hashed_password = bcrypt.generate_password_hash(password).decode('utf-8')
-            new_user = User(email=email, password_hash=hashed_password, phone_number='N/A', name='none', role='user')
+            new_user = User(email=email, password_hash=hashed_password, phone_number=phone_number, name='none', role='user')
             db.session.add(new_user)
             db.session.commit()
             print("User successfully registered.")  #debugging
