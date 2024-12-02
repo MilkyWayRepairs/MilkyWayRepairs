@@ -388,7 +388,7 @@ def get_messages():
 def get_users():
     try:
         # Fetch all users except the current logged-in user
-        users = User.query
+        users = User.query.filter(User.role != "user").all()
 
 
         # Serialize user data
