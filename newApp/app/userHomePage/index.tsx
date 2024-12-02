@@ -45,10 +45,20 @@ const UserHomePage = () => {
           </Link>
         </TouchableOpacity>
 
+        {/* Review Button */}
+        <TouchableOpacity style={styles.reviewButtonContainer}>
+          <Link href="/reviews">
+            <Image
+              source={require('../../assets/images/Review.png')}
+              style={styles.homeScreenButton}
+            />
+          </Link>
+        </TouchableOpacity>
+
         {/* All the text containers for buttons */}
         <View style={styles.scheduleAppointmentTextContainer}>
           <Text style={styles.homeScreenButtonText}>
-            Schedule {"\n"}
+            {"  "} Schedule {"\n"}
             Appointment
           </Text>
         </View>
@@ -64,6 +74,12 @@ const UserHomePage = () => {
             Status
           </Text>
         </View>
+
+        <View style={styles.reviewTextContainer}>
+          <Text style={styles.homeScreenButtonText}>
+            Reviews
+          </Text>
+        </View>
       </View>
     </NewPageTemplate>
   );
@@ -73,10 +89,12 @@ const UserHomePage = () => {
 const styles = StyleSheet.create({
   contentContainer: {
     flex: 1,
-    marginTop: 80,
+    marginLeft: 10,
+    marginTop: 100,
     alignItems: 'center',
     width: '100%',
     position: 'relative',
+    backgroundColor: 'white',
   },
   logo: {
     width: 357,
@@ -85,7 +103,7 @@ const styles = StyleSheet.create({
   },
   scheduleAppointmentButtonContainer: {
     position: 'absolute',
-    top: 220,
+    top: 240,
     left: 76,
     width: 78,
     height: 78,
@@ -94,7 +112,7 @@ const styles = StyleSheet.create({
   },
   messagesButtonContainer: {
     position: 'absolute',
-    top: 220,
+    top: 240,
     left: 240,
     width: 78,
     height: 78,
@@ -103,8 +121,8 @@ const styles = StyleSheet.create({
   },
   reviewButtonContainer: {
     position: 'absolute',
-    top: 580,
-    left: 85,
+    top: 400,
+    left: 75,
     width: 78,
     height: 78,
     justifyContent: 'center',
@@ -112,7 +130,7 @@ const styles = StyleSheet.create({
   },
   statusButtonContainer: {
     position: 'absolute',
-    top: 380,
+    top: 400,
     left: 240,
     width: 78,
     height: 78,
@@ -121,16 +139,16 @@ const styles = StyleSheet.create({
   },
   scheduleAppointmentTextContainer:{
     position: 'absolute',
-    top: 310,
-    left: 78,
-    width: 92,
-    height: 36,
+    top: 325,
+    left: 63,
+    width: 112,
+    height: 56,
     justifyContent: 'center',
     alignItems: 'center',        
   },
   messagesTextContainer:{
     position: 'absolute',
-    top: 310,
+    top: 330,
     left: 240,
     width: 78,
     height: 19,
@@ -139,8 +157,8 @@ const styles = StyleSheet.create({
   },
   reviewTextContainer:{
     position: 'absolute',
-    top: 660,
-    left: 83,
+    top: 480,
+    left: 76,
     width: 76,
     height: 19,
     justifyContent: 'center',
@@ -148,7 +166,7 @@ const styles = StyleSheet.create({
   },
   statusTextContainer:{
     position: 'absolute',
-    top: 460,
+    top: 480,
     left: 240,
     width: 78,
     height: 20,

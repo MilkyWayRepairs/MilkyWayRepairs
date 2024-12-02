@@ -37,11 +37,14 @@ const newPageTemplate: React.FC<NewPageTemplateProps> = ({ title = "Template", c
         <Text style={styles.titleText}>
           {title}
         </Text>
-        <TouchableOpacity style={styles.arrowBack}>
+        <TouchableOpacity 
+          style={styles.arrowBackButton}
+          activeOpacity={0.7}>
           <Link href="..">
             <Image 
               source={require('../../assets/images/arrowBack.png')}
-              style={styles.arrowBack}/>
+              style={styles.arrowBackImage}
+            />
           </Link>
         </TouchableOpacity>        
       </View>
@@ -131,6 +134,7 @@ const styles = StyleSheet.create({
     flex: 1,
     flexDirection: 'column',
     alignItems: 'center',
+    backgroundColor: 'white',
   },
   button: {
     width: 150,
@@ -153,7 +157,7 @@ const styles = StyleSheet.create({
     fontSize: 23,
     textAlign: 'center',
   },
-  arrowBack: {
+  arrowBackButton: {
     position: 'absolute',
     top: 8,
     left: 0,
@@ -162,6 +166,11 @@ const styles = StyleSheet.create({
     height: 48,
     justifyContent: 'center',
     alignItems: 'center',
+    zIndex: 1,
+  },
+  arrowBackImage: {
+    width: 48,
+    height: 48,
   },
   titleTextContainer: {
     position: 'absolute',
@@ -270,8 +279,8 @@ const styles = StyleSheet.create({
   },
   mainContent: {
     flex: 1,
-    width: '90%',
-    paddingTop: 0, // Height of the title bar
+    width: '100%',
+    paddingTop: 64, // Height of the title bar
     zIndex: 0, // Ensure content is below the overlay
   },
 
