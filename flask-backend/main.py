@@ -433,7 +433,7 @@ def schedule_appointment():
         '''
 
         # save the appointment to the database
-        new_appointment = Appointments(date=appointment_date, time=appointment_time, name=name)
+        new_appointment = Appointments(date=appointment_date, time=appointment_time, name=name, user_id=session.get("id"))
         db.session.add(new_appointment)
         db.session.commit()
 
