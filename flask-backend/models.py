@@ -51,8 +51,8 @@ class Vehicle(db.Model):
 class PerformanceEvaluation(db.Model):
     __tablename__ = 'performanceevaluation'
     id = db.Column(db.Integer, primary_key=True)
-    name = User.name
-    employee_id = User.id
+    name = db.Column(db.String(45), nullable=False)
+    employee_id = db.Column(db.Integer, nullable=False)
     expected_hours = db.Column(db.Double, nullable=False)
     actual_hours = db.Column(db.Double, nullable=False)
     performance_ratio = db.Column(db.Double, nullable=False)

@@ -757,51 +757,48 @@ def get_conversations():
         print(f"Error fetching conversations: {str(e)}")
         return jsonify({'error': str(e)}), 500
 
-@app.route('/performance-evaluation', methods=['Post'])
+@app.route('/performanceEvaluation', methods=['POST'])
 def submit_performance_evaluation():
     try:
-        # Parse the JSON request body
         data = request.get_json()
-        employee_name = data.get('employeeName')
-        employee_id = int(data.get('employeeID'))
-        expected_time = float(data.get('expectedTime'))
-        actual_time = float(data.get('actualTime'))
-
-        # Validate input
-        if not all([employee_name, employee_id, expected_time, actual_time]):
-            return jsonify({"error": "All fields are required!"}), 400
-
-        if not isinstance(expected_time, (int, float)) or not isinstance(actual_time, (int, float)):
-            return jsonify({"error": "Expected time and actual time must be numbers!"}), 400
         
-        # Check if the user exists in the User table
-        user = User.query.filter_by(id=employee_id, name=employee_name, role="employee").first()
-        if not user:
-            return jsonify({"error": "Employee not found or user is not an employee!"}), 404
+        # Add input validation
+        if not all(key in data for key in ['employeeName', 'employeeID', 'expectedTime', 'actualTime']):
+            return jsonify({"error": "Missing required fields"}), 400
 
-        # Calculate performance metrics (example: performance ratio)
+        # Convert string inputs to appropriate types
+        try:
+            employee_id = int(data['employeeID'])
+            expected_time = float(data['expectedTime'])
+            actual_time = float(data['actualTime'])
+        except ValueError:
+            return jsonify({"error": "Invalid number format"}), 400
+
+        # Calculate performance ratio
         performance_ratio = (actual_time / expected_time) * 100 if expected_time > 0 else 0
 
-        # Simulate saving the evaluation
+        # Create new evaluation
         evaluation = PerformanceEvaluation(
-            name=employee_name,
+            name=data['employeeName'],
             employee_id=employee_id,
             expected_hours=expected_time,
             actual_hours=actual_time,
             performance_ratio=performance_ratio
         )
+
         db.session.add(evaluation)
         db.session.commit()
 
-        # Return a success response
         return jsonify({
-            "message": "Evaluation submitted successfully!",
-            "evaluation": evaluation
+            "message": "Evaluation submitted successfully",
+            "performance_ratio": performance_ratio
         }), 200
 
     except Exception as e:
-        # Handle any unexpected errors
-        return jsonify({"error": "An error occurred while processing the evaluation.", "details": str(e)}), 500
+        db.session.rollback()
+        print(f"Error in performance evaluation: {str(e)}")
+        return jsonify({"error": str(e)}), 500
+
 # returns a list of all services / repairs provided by the company
 def servicesList(): 
     return jsonify
