@@ -1,12 +1,14 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, FlatList, TouchableOpacity, StyleSheet } from 'react-native';
+import { useRouter } from "expo-router";
+import { View, Text, FlatList, TouchableOpacity, StyleSheet, Button } from 'react-native';
 import axios from 'axios';
 import { SERVER_URL } from '@/config/config';
-import NewPageTemplate from "../newPageTemplate"
+import NewPageTemplate from "../newPageTemplate";
 
 const VehicleList = () => {
   const [vehicles, setVehicles] = useState([]);
   const [selectedVehicle, setSelectedVehicle] = useState(null);
+  const router = useRouter();
 
   useEffect(() => {
     const fetchVehicles = async () => {
@@ -31,8 +33,7 @@ const VehicleList = () => {
 
   return (
     <View style={styles.container}>
-      <NewPageTemplate title="Vehicle Information">
-      </NewPageTemplate>
+      <NewPageTemplate title="Vehicle Information" />
       <FlatList
         data={vehicles}
         keyExtractor={item => item.VIN}
@@ -44,17 +45,21 @@ const VehicleList = () => {
       />
       {selectedVehicle && (
         <FlatList
-        data={Object.entries(selectedVehicle).sort(([keyA], [keyB]) => {
+          data={Object.entries(selectedVehicle).sort(([keyA], [keyB]) => {
             const order = ['VIN', 'year', 'make', 'model', 'logs'];
             return order.indexOf(keyA) - order.indexOf(keyB);
-        })}
-        keyExtractor={([key]) => key.toString()}
-        renderItem={({ item: [key, value] }) => (
+          })}
+          keyExtractor={([key]) => key.toString()}
+          renderItem={({ item: [key, value] }) => (
             <Text style={styles.detailText}>{key.charAt(0).toUpperCase() + key.slice(1)}: {value}</Text>
-        )}
+          )}
           style={styles.details}
         />
       )}
+      {/* Add Vehicle Button */}
+      <TouchableOpacity style={styles.addButton} onPress={() => router.push('./carInformation/add-vehicle')}>
+        <Text style={styles.addButtonText}>Add Vehicle</Text>
+      </TouchableOpacity>
     </View>
   );
 };
@@ -83,7 +88,20 @@ const styles = StyleSheet.create({
   detailText: {
     fontSize: 16,
     marginBottom: 5,
-  }
+  },
+  addButton: {
+    backgroundColor: '#007BFF',
+    padding: 8,
+    borderRadius: 10,
+    margin: 10,
+    alignItems: 'center',
+    bottom: 100,
+  },
+  addButtonText: {
+    color: '#fff',
+    fontSize: 16,
+    fontWeight: 'bold',
+  },
 });
 
 export default VehicleList;
