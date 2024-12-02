@@ -52,10 +52,12 @@ const userHomePage = () => {
 
       {/* Schedule Appointment Button */}
       <TouchableOpacity style={styles.scheduleAppointmentButtonContainer}>
+        <Link href="/scheduleAppointment">
         <Image
           source={require('../../assets/images/ScheduleAppointment.png')}
           style={styles.homeScreenButton}
         />
+        </Link>
       </TouchableOpacity>
 
       {/* Messages Button */}  
@@ -175,14 +177,18 @@ const userHomePage = () => {
       onStartShouldSetResponder={() => true}
         onTouchEnd={(e) => e.stopPropagation()}>
         <View style={[styles.accountOverlayContent, styles.logoutContent]}>
+          <Link href="/login">
           <Text style={styles.accountOverlayText}>
             Logout
           </Text>
+          </Link>
         </View>
         <View style={[styles.accountOverlayContent, styles.performanceContent]}>
+          <Link href="/employeePerformanceEvaluation">
           <Text style={styles.accountOverlayText}>
             Performance Evaluation
           </Text>
+          </Link>
         </View>
       </Animated.View>
     </View>
