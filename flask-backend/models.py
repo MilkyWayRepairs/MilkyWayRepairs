@@ -63,7 +63,7 @@ class Appointments(db.Model):
     date = db.Column(db.Date, nullable=True)
     time = db.Column(db.Time, nullable=True)
     name = db.Column(db.String(100), nullable=True)
-
+    user_id = db.Column(db.Integer)
 '''
 class adminControls(db.Model): 
     __tablename__ = "Admin Controls "

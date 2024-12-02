@@ -12,6 +12,29 @@ from models import db, User, Review, Message, Vehicle, Service, Job, Log, Appoin
 import os, re, dns.resolver, requests, time, random
 from sqlalchemy.sql import func
 
+load_dotenv()
+
+class SingletonFlask:
+    _instance = None
+
+    def __new__(cls, *args, **kwargs):
+        if not cls._instance:
+            cls._instance = super(SingletonFlask, cls).__new__(cls)
+            cls._instance.app = Flask(__name__)
+        return cls._instance
+
+flask_app = SingletonFlask()
+app = flask_app.app
+
+app.config.from_object(ApplicationConfig)
+app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv("PERSONAL_URI")
+app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+app.secret_key = os.getenv("SECRET_KEY")
+
+bcrypt = Bcrypt(app)
+CORS(app, supports_credentials=True)
+db.init_app(app)
+
 # Sendbird Configuration
 SENDBIRD_API_TOKEN = os.getenv("SENDBIRD_API_TOKEN")
 SENDBIRD_APP_ID = os.getenv("SENDBIRD_APP_ID")
@@ -101,6 +124,7 @@ def register():
     data = request.get_json()
     email = data.get('email')
     password = data.get('password')
+    phone_number = data.get('phoneNumber')
     print("Recieved email: ", email)    #debugging
     print("Recieved password: ", password)  #debugging
 
@@ -123,7 +147,7 @@ def register():
         try:
             # Add user to database
             hashed_password = bcrypt.generate_password_hash(password).decode('utf-8')
-            new_user = User(email=email, password_hash=hashed_password, phone_number='N/A', name='none', role='user')
+            new_user = User(email=email, password_hash=hashed_password, phone_number=phone_number, name='none', role='user')
             db.session.add(new_user)
             db.session.commit()
             print("User successfully registered.")  #debugging
@@ -364,7 +388,7 @@ def get_messages():
 def get_users():
     try:
         # Fetch all users except the current logged-in user
-        users = User.query
+        users = User.query.filter(User.role != "user").all()
 
 
         # Serialize user data
@@ -432,7 +456,7 @@ def schedule_appointment():
         '''
 
         # save the appointment to the database
-        new_appointment = Appointments(date=appointment_date, time=appointment_time, name=name)
+        new_appointment = Appointments(date=appointment_date, time=appointment_time, name=name, user_id=session.get("id"))
         db.session.add(new_appointment)
         db.session.commit()
 
@@ -450,9 +474,14 @@ def get_user_appointments():
         # Get the current date
         current_date = datetime.utcnow().date()
 
+        user_id = session.get("id")
         # Fetch upcoming and past appointments
-        upcoming_appointments = Appointments.query.filter(Appointments.date >= current_date).all()
-        past_appointments = Appointments.query.filter(Appointments.date < current_date).all()
+        upcoming_appointments = Appointments.query.filter(
+            Appointments.date >= current_date,
+            Appointments.user_id == user_id).all()
+        past_appointments = Appointments.query.filter(
+            Appointments.date < current_date,
+            Appointments.user_id == user_id).all()
 
         # Format data for JSON response
         def format_appointment(appt):
