@@ -186,15 +186,20 @@ const AddLogs = () => {
           </TouchableOpacity>
         </View>
 
-        {/* Bottom Navigation Bar */}
+        {/* Bottom Navigation */}
         <View style={styles.bottomNav}>
-          <TouchableOpacity style={styles.navButton}>
+          <TouchableOpacity style={styles.homeButtonContainer}>
             <Link href="/userHomePage">
-              <Image source={require('../../assets/images/homeLogo.png')} style={styles.navIcon} />
+              {"  "}
+              <Image
+                source={require('../../assets/images/homeLogo.png')}
+                style={styles.navIcon}/>
+              {"\n"}
               <Text style={styles.navText}>Home</Text>
             </Link>
           </TouchableOpacity>
-          <TouchableOpacity style={styles.navButton} onPress={handleAccountPress}>
+
+          <TouchableOpacity style={styles.accountButtonContainer} onPress={handleAccountPress}>
             <Image source={require('../../assets/images/accountLogo.png')} style={styles.navIcon} />
             <Text style={styles.navText}>Account</Text>
           </TouchableOpacity>
@@ -276,12 +281,25 @@ const styles = StyleSheet.create({
   },
   bottomNav: {
     flexDirection: 'row',
-    justifyContent: 'space-around',
+    justifyContent: 'space-between',
     paddingVertical: 10,
-    backgroundColor: '#f0f0f0',
+    backgroundColor: '#fff',
   },
-  navButton: {
+  homeButtonContainer: {
+    flex: 1,
+    backgroundColor: '#EBE4EC',
     alignItems: 'center',
+    paddingVertical: 15,
+    borderTopLeftRadius: 50,
+    borderBottomLeftRadius: 50,
+  },
+  accountButtonContainer: {
+    flex: 1,
+    backgroundColor: '#E5ECE4',
+    alignItems: 'center',
+    paddingVertical: 15,
+    borderTopRightRadius: 50,
+    borderBottomRightRadius: 50,
   },
   navIcon: {
     width: 30,
@@ -293,7 +311,7 @@ const styles = StyleSheet.create({
   },
   picker: {
     width: '100%',
-    height: 40,
+    height: 50,
     backgroundColor: '#f9f9f9',
     borderColor: '#ccc',
     borderWidth: 1,
