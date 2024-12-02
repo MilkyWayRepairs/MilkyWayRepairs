@@ -37,7 +37,7 @@ const UserHomePage = () => {
 
         {/* Status Button */}
         <TouchableOpacity style={styles.statusButtonContainer}>
-          <Link href="/status/customerChooseVehicle">
+          <Link href="/status/customerChoseVehicle">
             <Image
               source={require('../../assets/images/Status.png')}
               style={styles.homeScreenButton}
