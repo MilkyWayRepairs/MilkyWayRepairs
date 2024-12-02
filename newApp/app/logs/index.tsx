@@ -9,7 +9,7 @@ import { Picker } from '@react-native-picker/picker';
 interface LogFormData {
   date: string;
   mileage: string;
-  vin: string;
+  VIN: string;
   jobTitle: string;
   jobNotes: string;
 }
@@ -25,7 +25,7 @@ const AddLogs = () => {
   const [formData, setFormData] = useState<LogFormData>({
     date: '',
     mileage: '',
-    vin: '',
+    VIN: '',
     jobTitle: '',
     jobNotes: ''
   });
@@ -54,7 +54,7 @@ const AddLogs = () => {
     switch(field) {
       case 'date': return 'Enter date (MM/DD/YYYY)';
       case 'mileage': return 'Enter current mileage';
-      case 'vin': return 'Enter 17-character VIN';
+      case 'VIN': return 'Enter 17-character VIN';
       case 'jobTitle': return 'Enter job title (min. 3 characters)';
       case 'jobNotes': return 'Enter detailed job notes (min. 10 characters)';
       default: return `Enter ${field}`;
@@ -83,14 +83,14 @@ const AddLogs = () => {
       Alert.alert("Error", "Please enter a valid mileage number");
       return;
     }
-    if (!formData.vin || formData.vin.length !== 17) {
-      Alert.alert("Error", "Please enter a valid 17-character VIN");
-      return;
-    }
-    if (!formData.jobTitle) {
-      Alert.alert("Error", "Please select a job");
-      return;
-    }
+    // if (!formData.vin || formData.vin.length !== 17) {
+    //   Alert.alert("Error", "Please enter a valid 17-character VIN");
+    //   return;
+    // }
+    // if (!formData.jobTitle) {
+    //   Alert.alert("Error", "Please select a job");
+    //   return;
+    // }
     if (!formData.jobNotes || formData.jobNotes.length < 10) {
       Alert.alert("Error", "Please enter detailed job notes (minimum 10 characters)");
       return;
@@ -107,7 +107,7 @@ const AddLogs = () => {
         body: JSON.stringify({
           date: formData.date,
           mileage: formData.mileage,
-          vin: formData.vin,
+          VIN: formData.VIN,
           jobTitle: formData.jobTitle,
           jobNotes: formData.jobNotes
         }),
@@ -117,7 +117,7 @@ const AddLogs = () => {
 
       if (response.ok) {
         Alert.alert("Success", "Logs submitted successfully!");
-        setFormData({ date: '', mileage: '', vin: '', jobTitle: '', jobNotes: '' });
+        setFormData({ date: '', mileage: '', VIN: '', jobTitle: '', jobNotes: '' });
         router.push("/logs/submittedLogs");
       } else {
         Alert.alert("Error", data.error || "Failed to submit logs. Please try again.");
@@ -147,7 +147,7 @@ const AddLogs = () => {
         {/* Container for Input Fields and Submit Button */}
         <View style={styles.inputSection}>
           {/* Input Fields */}
-          {['date', 'mileage', 'vin', 'jobTitle', 'jobNotes'].map((field, index) => (
+          {['date', 'mileage', 'VIN', 'jobTitle', 'jobNotes'].map((field, index) => (
             <View style={styles.inputContainer} key={index}>
               <Text style={styles.inputLabel}>
                 {field.charAt(0).toUpperCase() + field.slice(1).replace(/([A-Z])/g, ' $1')}
