@@ -95,14 +95,18 @@ const newPageTemplate: React.FC<NewPageTemplateProps> = ({ title = "Template", c
           </Link>
         </View>
         <View style={[styles.accountOverlayContent, styles.performanceContent]}>
-          <Text style={styles.accountOverlayText}>
-            Car Information
-          </Text>
+          <Link href="/carInformation">
+            <Text style={styles.accountOverlayText}>
+              Car Information
+            </Text>
+          </Link>
         </View>
         <View style={[styles.accountOverlayContent, styles.upcomingAppointmentsContent]}>
+          <Link href="/upcomingAppointments">
           <Text style={styles.accountOverlayText}>
             Upcoming Appointments
           </Text>
+          </Link>
         </View>
         <View style={[styles.accountOverlayContent, styles.accountInformationContent]}>
           <Link href="/userAccountInformationPage">
