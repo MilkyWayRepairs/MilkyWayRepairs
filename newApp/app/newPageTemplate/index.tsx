@@ -46,6 +46,11 @@ const newPageTemplate: React.FC<NewPageTemplateProps> = ({ title = "Template", c
         </TouchableOpacity>        
       </View>
 
+      {/* Main Content */}
+      <View style={styles.mainContent}>
+        {children}
+      </View>
+
       {/* Account Button */}
       <TouchableOpacity 
         style={styles.accountButtonContainer}
@@ -262,6 +267,12 @@ const styles = StyleSheet.create({
   homeScreenButtonText: {
     color: 'black',
     fontSize: 14,
+  },
+  mainContent: {
+    flex: 1,
+    width: '90%',
+    paddingTop: 0, // Height of the title bar
+    zIndex: 0, // Ensure content is below the overlay
   },
 
 });
