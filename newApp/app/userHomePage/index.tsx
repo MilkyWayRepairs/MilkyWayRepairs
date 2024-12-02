@@ -27,6 +27,7 @@ const UserHomePage = () => {
           </Link>
         </TouchableOpacity>
 
+<<<<<<< HEAD
         {/* Messages Button */}  
         <TouchableOpacity style={styles.messagesButtonContainer}>
           <Link href="/Messages">
@@ -39,7 +40,7 @@ const UserHomePage = () => {
 
         {/* Status Button */}
         <TouchableOpacity style={styles.statusButtonContainer}>
-          <Link href="/status/customer">
+          <Link href="/status/customerChoseVehicle">
             <Image
               source={require('../../assets/images/Status.png')}
               style={styles.homeScreenButton}
