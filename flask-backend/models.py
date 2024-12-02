@@ -98,8 +98,8 @@ class Log(db.Model):
     timestamp = db.Column(db.DateTime, default=func.current_timestamp())
     date = db.Column(db.String(45))
     mileage = db.Column(db.String(45))
-    vin = db.Column(db.String(45))
+    VIN = db.Column(db.String(45))
     job_notes = db.Column(db.String(45))
     user_id = db.Column(db.String(45))
-    
+
     job = db.relationship('Job', backref=db.backref('logs', lazy=True))
