@@ -3,6 +3,7 @@ import { View, Text, TextInput, TouchableOpacity, StyleSheet } from 'react-nativ
 import axios from 'axios';
 import { SERVER_URL } from '@/config/config';
 import { useRouter } from "expo-router";
+import { Ionicons } from '@expo/vector-icons'; // Import for back arrow icon
 
 const AddVehicle = () => {
   const [formData, setFormData] = useState({
@@ -24,7 +25,7 @@ const AddVehicle = () => {
         status: 0, // Default status
       });
       alert('Vehicle added successfully!');
-      router.push('/carInformation');
+      router.push('/carInformation'); // Navigate back to the vehicle information page
     } catch (error) {
       console.error('Error adding vehicle:', error);
       alert('Failed to add vehicle.');
@@ -33,7 +34,14 @@ const AddVehicle = () => {
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>Add Vehicle</Text>
+      {/* Header with Back Arrow and Title */}
+      <View style={styles.header}>
+        <TouchableOpacity onPress={() => router.push('/carInformation')} style={styles.backButton}>
+          <Ionicons name="arrow-back" size={24} color="black" />
+        </TouchableOpacity>
+        <Text style={styles.title}>Add Vehicle</Text>
+      </View>
+      {/* Form */}
       <TextInput
         style={styles.input}
         placeholder="VIN"
@@ -69,14 +77,20 @@ const AddVehicle = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    justifyContent: 'center',
     padding: 20,
     backgroundColor: '#fff',
   },
+  header: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 20,
+  },
+  backButton: {
+    marginRight: 10,
+  },
   title: {
     fontSize: 24,
-    marginBottom: 20,
-    textAlign: 'center',
+    fontWeight: 'bold',
   },
   input: {
     borderWidth: 1,
@@ -84,12 +98,14 @@ const styles = StyleSheet.create({
     padding: 10,
     borderRadius: 5,
     marginBottom: 15,
+    fontSize: 16,
   },
   addButton: {
     backgroundColor: '#007BFF',
     padding: 15,
     borderRadius: 10,
     alignItems: 'center',
+    marginTop: 10,
   },
   addButtonText: {
     color: '#fff',

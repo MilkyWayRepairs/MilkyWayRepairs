@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useRouter } from "expo-router";
-import { View, Text, FlatList, TouchableOpacity, StyleSheet, Button } from 'react-native';
+import { View, Text, FlatList, TouchableOpacity, StyleSheet } from 'react-native';
 import axios from 'axios';
 import { SERVER_URL } from '@/config/config';
 import NewPageTemplate from "../newPageTemplate";
@@ -12,22 +12,22 @@ const VehicleList = () => {
 
   useEffect(() => {
     const fetchVehicles = async () => {
-        try {
-            const resp = await axios.get(`${SERVER_URL}/get-vehicle-list`);
-            setVehicles(resp.data);
-        } catch (error) {
-            console.error('Error fetching vehicles:', error);
-        }
+      try {
+        const resp = await axios.get(`${SERVER_URL}/get-vehicle-list`);
+        setVehicles(resp.data);
+      } catch (error) {
+        console.error('Error fetching vehicles:', error);
+      }
     };
     fetchVehicles();
-}, []);
+  }, []);
 
   const fetchVehicleDetails = async (vehicle_VIN) => {
     try {
-        const resp = await axios.get(`${SERVER_URL}/display_vehicle_logs/${vehicle_VIN}`);
-        setSelectedVehicle(resp.data);
+      const resp = await axios.get(`${SERVER_URL}/display_vehicle_logs/${vehicle_VIN}`);
+      setSelectedVehicle(resp.data);
     } catch (error) {
-        console.error('Error fetching vehicle information:', error);
+      console.error('Error fetching vehicle information:', error);
     }
   };
 
@@ -36,12 +36,15 @@ const VehicleList = () => {
       <NewPageTemplate title="Vehicle Information" />
       <FlatList
         data={vehicles}
-        keyExtractor={item => item.VIN}
+        keyExtractor={(item) => item.VIN}
         renderItem={({ item }) => (
           <TouchableOpacity onPress={() => fetchVehicleDetails(item.VIN)}>
             <Text style={styles.item}>{item.year} {item.make} {item.model}</Text>
           </TouchableOpacity>
         )}
+        ListEmptyComponent={
+          <Text style={styles.emptyMessage}>No vehicle found</Text>
+        }
       />
       {selectedVehicle && (
         <FlatList
@@ -75,7 +78,7 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
     borderBottomColor: '#ccc',
     borderTopWidth: 1,
-    padding: 10 
+    padding: 10,
   },
   details: {
     marginTop: 5,
@@ -83,7 +86,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#f9f9f9',
     borderRadius: 10,
     bottom: 150,
-    maxHeight: 300
+    maxHeight: 300,
   },
   detailText: {
     fontSize: 16,
@@ -101,6 +104,12 @@ const styles = StyleSheet.create({
     color: '#fff',
     fontSize: 16,
     fontWeight: 'bold',
+  },
+  emptyMessage: {
+    textAlign: 'center',
+    marginTop: 20,
+    fontSize: 18,
+    color: '#888',
   },
 });
 
