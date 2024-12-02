@@ -50,7 +50,7 @@ const vehicleStatuses: Record<number, VehicleStatus> = {
   2: { progress: 50, text: "Work has begun on your vehicle.", color: "#FFC300" },
   3: { progress: 75, text: "Your vehicle is being put back together.", color: "#DAF7A6" },
   4: { progress: 100, text: "Work is complete! Time to pick up your vehicle.", color: "#28B463" },
-  5: { progress: 100, text: "Vehicle picked up.", color: "#0000FF" }
+  5: { progress: 100, text: "Vehicle picked up.", color: "#CEBDD1" }
 };
 
 const customerStatusPage = () => {
@@ -111,6 +111,14 @@ const customerStatusPage = () => {
       <View style={styles.progressContainer}>
         <CircularProgress progress={currentStatus.progress} color={currentStatus.color} />
       </View>
+            {/* Review Button */}
+            {currentStatus.progress === 100 && (
+        <TouchableOpacity style={styles.reviewButton}>
+        <Link href={'/reviews'}>
+          <Text style={styles.reviewButtonText}>Please leave us a review!</Text>
+          </Link>
+        </TouchableOpacity>
+      )}
     </View>
   );
 };
@@ -168,7 +176,18 @@ progressText: {
     fontSize: 20,
     color: '#333',
     textAlign: 'center',
-  }
+  },
+  reviewButton: {
+    marginTop: 20,
+    padding: 10,
+    backgroundColor: '#CEBDD1',
+    borderRadius: 5,
+  },
+  reviewButtonText: {
+    color: '#000',
+    fontSize: 16,
+    textAlign: 'center',
+  },
 });
 
 export default customerStatusPage;

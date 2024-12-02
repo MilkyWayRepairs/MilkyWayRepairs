@@ -41,7 +41,7 @@ const userHomePage = () => {
 
       {/* Review Button */}
       <TouchableOpacity style={styles.reviewButtonContainer}>
-          <Link href="/reviews">
+          <Link href="/reviews/submittedReviews">
               <Image
                   source={require('../../assets/images/Review.png')}
                   style={styles.homeScreenButton}
