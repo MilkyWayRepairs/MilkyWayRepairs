@@ -91,13 +91,22 @@ const Messages: React.FC = () => {
 
   const fetchUsers = async () => {
     try {
-      const response = await axios.get(`${SERVER_URL}/users`, {
-        params: { current_user_id: senderId },
-      });
-      console.log("Fetched users:", response.data); // Log users for debugging
-      setUsers(response.data);
+      console.log("Fetching users..."); // Debug log
+      const response = await axios.get(`${SERVER_URL}/users`);
+      console.log("Response data:", response.data); // Debug log
+      
+      if (Array.isArray(response.data)) {
+        setUsers(response.data);
+        console.log("Users state updated:", response.data); // Debug log
+      } else {
+        console.error("Invalid response format:", response.data);
+      }
     } catch (error) {
       console.error('Error fetching users:', error);
+      if (axios.isAxiosError(error)) {
+        console.error('Response:', error.response?.data);
+        console.error('Status:', error.response?.status);
+      }
     }
   };
 
@@ -218,8 +227,15 @@ const Messages: React.FC = () => {
   };
 
 
-  const handleStartChatPress = () => {
+  const handleStartChatPress = async () => {
+    console.log("Start chat pressed"); // Debug log
     setIsSidebarVisible(true);
+    try {
+      await fetchUsers();
+      console.log("Current users state:", users); // Debug log
+    } catch (error) {
+      console.error("Error in handleStartChatPress:", error);
+    }
   };
 
 
@@ -237,6 +253,15 @@ const Messages: React.FC = () => {
     }
     setRefreshing(false);
   }, [userId]);
+
+  // Add refresh control for users list
+  const [refreshingUsers, setRefreshingUsers] = useState(false);
+  
+  const onRefreshUsers = React.useCallback(async () => {
+    setRefreshingUsers(true);
+    await fetchUsers();
+    setRefreshingUsers(false);
+  }, []);
 
   return (
     <View style={styles.container}> 
@@ -319,6 +344,13 @@ const Messages: React.FC = () => {
             renderItem={renderUserItem}
             keyExtractor={(item) => item.id.toString()}
             contentContainerStyle={styles.userListContent}
+            refreshControl={
+              <RefreshControl
+                refreshing={refreshingUsers}
+                onRefresh={onRefreshUsers}
+                colors={['#E0BBE4']}
+              />
+            }
           />
         </View>
       )}
