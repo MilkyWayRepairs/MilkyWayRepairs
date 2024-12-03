@@ -12,6 +12,35 @@ from models import db, User, Review, Message, Vehicle, Service, Job, Log, Appoin
 import os, re, dns.resolver, requests, time, random
 from sqlalchemy.sql import func
 
+'''
+from twilio.rest import Client
+import os
+
+
+#Twilio Initalization 
+account_sid = os.environ["TWILIO_ACCOUNT_SID"]
+auth_token = os.environ["TWILIO_AUTH_TOKEN"]
+client = Client(account_sid, auth_token)
+
+
+#uncomment this block after initailization 
+'''
+
+
+''' 
+Example usage: 
+message = client.messages.create(
+    body="Join Earth's mightiest heroes. Like Kevin Bacon.",
+    from_="+15017122661",
+    to="+15558675310",
+)
+
+print(message.body)
+'''
+
+
+
+
 load_dotenv()
 
 class SingletonFlask:
@@ -787,19 +816,32 @@ def submit_log():
 @app.route('/logs', methods=['GET'])
 def get_logs():
     try:
+        print("Attempting to fetch logs...") # Debug log
         logs = Log.query.all()
-        logs_list = [{
-            'id': log.id,
-            'date': log.date,
-            'mileage': log.mileage,
-            'vin': log.vin,
-            'jobTitle': log.job_title,  # This is the job_id
-            'jobNotes': log.job_notes
-        } for log in logs]
-        return jsonify(logs_list)
+        logs_data = []
+        
+        for log in logs:
+            try:
+                print(f"Processing log: {log.id}") # Debug log
+                log_data = {
+                    'id': log.id,
+                    'date': log.date,
+                    'mileage': log.mileage,
+                    'vin': log.VIN,
+                    'job_title': log.job_title,
+                    'job_notes': log.job_notes
+                }
+                logs_data.append(log_data)
+            except Exception as e:
+                print(f"Error processing log {log.id}: {str(e)}")
+                continue
+        
+        print(f"Returning {len(logs_data)} logs") # Debug log
+        return jsonify(logs_data), 200
+        
     except Exception as e:
-        print("Error fetching logs:", str(e))
-        return jsonify({"error": "Failed to fetch logs"}), 500
+        print(f"Error in /logs endpoint: {str(e)}")
+        return jsonify({"error": str(e)}), 500
 
 @app.route('/test', methods=['GET'])
 def test():

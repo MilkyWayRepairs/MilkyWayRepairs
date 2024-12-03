@@ -49,3 +49,14 @@ $ pip install Flask flask_sqlalchemy pymysql python-dotenv flask-cors dnspython
  SENDBIRD_API_TOKEN = '535316c4d3c3642958f0a25ffc8f6e6021489437'
  SENDBIRD_APP_ID = "5D0726A7-302C-4867-867E-ED5500933EC8"
  ```
+
+ # Twilio setup Instructions
+ https://www.twilio.com/docs/messaging/quickstart/python
+
+ 1) paste the following lines to your .env, I personally sent the keys to you
+
+ TWILIO_ACCOUNT_SID = ''
+ TWILIO_AUTH_TOKEN = ''
+
+
+ 2)  pip install twilio

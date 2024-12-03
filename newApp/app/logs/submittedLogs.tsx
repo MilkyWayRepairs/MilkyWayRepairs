@@ -1,6 +1,6 @@
-import { Text, View, Image, TouchableOpacity, StyleSheet, FlatList } from "react-native";
-import { Link } from "expo-router";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState } from 'react';
+import { View, Text, StyleSheet, TouchableOpacity, Image, FlatList } from 'react-native';
+import { Link } from 'expo-router';
 import { SERVER_URL } from "@/config/config";
 
 interface Log {
@@ -8,8 +8,8 @@ interface Log {
   date: string;
   mileage: string;
   vin: string;
-  jobTitle: string;
-  jobNotes: string;
+  job_title: string;
+  job_notes: string;
 }
 
 const SubmittedLogs = () => {
@@ -17,27 +17,35 @@ const SubmittedLogs = () => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    fetch(`${SERVER_URL}/logs`, {
-      method: "GET",
-      headers: {
-        "Content-Type": "application/json",
-      },
-    })
-      .then((response) => {
-        if (!response.ok) {
-          throw new Error(`HTTP error! status: ${response.status}`);
-        }
-        return response.json();
-      })
-      .then((data) => {
-        setLogs(data);
-        setLoading(false);
-      })
-      .catch((error) => {
-        console.error("Error fetching logs:", error);
-        setLoading(false);
-      });
+    console.log("Fetching logs..."); // Debug log
+    fetchLogs();
   }, []);
+
+  const fetchLogs = async () => {
+    try {
+      const response = await fetch(`${SERVER_URL}/logs`, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        credentials: 'include'
+      });
+
+      console.log("Response status:", response.status); // Debug log
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      const data = await response.json();
+      console.log("Received logs data:", data); // Debug log
+      setLogs(data);
+      setLoading(false);
+    } catch (error) {
+      console.error("Error fetching logs:", error);
+      setLoading(false);
+    }
+  };
 
   if (loading) {
     return (
@@ -49,54 +57,25 @@ const SubmittedLogs = () => {
 
   return (
     <View style={styles.container}>
-      {/* Back Arrow and Header */}
-      <View style={styles.header}>
-        <TouchableOpacity style={styles.arrowBackContainer}>
-          <Link href="..">
-            <Image
-              source={require("../../assets/images/arrowBack.png")}
-              style={styles.arrowBack}
-            />
-          </Link>
-        </TouchableOpacity>
-        <Text style={styles.headerTitle}>Submitted Logs</Text>
-      </View>
+      <Text style={styles.title}>Submitted Logs</Text>
 
-      {/* Container for Logs */}
-      <FlatList
-        data={logs}
-        keyExtractor={(item) => item.id.toString()}
-        renderItem={({ item }) => (
-          <View style={styles.logItem}>
-            <Text style={styles.label}>Date:</Text>
-            <Text style={styles.value}>{item.date}</Text>
-            <Text style={styles.label}>Mileage:</Text>
-            <Text style={styles.value}>{item.mileage}</Text>
-            <Text style={styles.label}>VIN:</Text>
-            <Text style={styles.value}>{item.vin}</Text>
-            <Text style={styles.label}>Job Title:</Text>
-            <Text style={styles.value}>{item.jobTitle}</Text>
-            <Text style={styles.label}>Job Notes:</Text>
-            <Text style={styles.value}>{item.jobNotes}</Text>
-          </View>
-        )}
-      />
-
-      {/* Bottom Navigation Bar */}
-      <View style={styles.bottomNav}>
-        <TouchableOpacity style={styles.navButton}>
-          <Link href="/userHomePage">
-            <Image source={require("../../assets/images/homeLogo.png")} style={styles.navIcon} />
-            <Text style={styles.navText}>Home</Text>
-          </Link>
-        </TouchableOpacity>
-        <TouchableOpacity style={styles.navButton}>
-          <Link href="./account">
-            <Image source={require("../../assets/images/accountLogo.png")} style={styles.navIcon} />
-            <Text style={styles.navText}>Account</Text>
-          </Link>
-        </TouchableOpacity>
-      </View>
+      {logs.length === 0 ? (
+        <Text style={styles.noLogsText}>No logs found</Text>
+      ) : (
+        <FlatList
+          data={logs}
+          keyExtractor={(item) => item.id.toString()}
+          renderItem={({ item }) => (
+            <View style={styles.logItem}>
+              <Text style={styles.label}>Date: <Text style={styles.value}>{item.date}</Text></Text>
+              <Text style={styles.label}>Mileage: <Text style={styles.value}>{item.mileage}</Text></Text>
+              <Text style={styles.label}>VIN: <Text style={styles.value}>{item.vin}</Text></Text>
+              <Text style={styles.label}>Job Title: <Text style={styles.value}>{item.job_title}</Text></Text>
+              <Text style={styles.label}>Job Notes: <Text style={styles.value}>{item.job_notes}</Text></Text>
+            </View>
+          )}
+        />
+      )}
     </View>
   );
 };
@@ -104,60 +83,39 @@ const SubmittedLogs = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#fff",
-    justifyContent: "space-between",
+    padding: 20,
+    backgroundColor: '#ffffff',
   },
-  header: {
-    backgroundColor: "#E0BBE4",
-    paddingVertical: 15,
-    alignItems: "center",
-  },
-  headerTitle: {
+  title: {
     fontSize: 24,
-    fontWeight: "bold",
-    marginLeft: 40,
-  },
-  arrowBackContainer: {
-    position: "absolute",
-    left: 0,
-    justifyContent: "center",
-    alignItems: "center",
-  },
-  arrowBack: {
-    height: 30,
-    width: 30,
+    fontWeight: 'bold',
+    marginBottom: 20,
+    color: '#000000',
+    textAlign: 'center',
   },
   logItem: {
-    padding: 10,
-    borderBottomWidth: 1,
-    borderBottomColor: "#ddd",
+    padding: 15,
+    marginVertical: 8,
+    backgroundColor: '#f5f5f5',
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: '#ddd',
   },
   label: {
     fontSize: 16,
-    fontWeight: "bold",
-    color: "#333",
-  },
-  value: {
-    fontSize: 16,
-    color: "#666",
+    fontWeight: 'bold',
+    color: '#333',
     marginBottom: 5,
   },
-  bottomNav: {
-    flexDirection: "row",
-    justifyContent: "space-around",
-    paddingVertical: 10,
-    backgroundColor: "#f0f0f0",
+  value: {
+    fontWeight: 'normal',
+    color: '#666',
   },
-  navButton: {
-    alignItems: "center",
-  },
-  navIcon: {
-    width: 30,
-    height: 30,
-  },
-  navText: {
-    fontSize: 14,
-    color: "#000",
+  noLogsText: {
+    textAlign: 'center',
+    fontSize: 16,
+    color: '#666',
+    marginTop: 20,
   },
 });
 
