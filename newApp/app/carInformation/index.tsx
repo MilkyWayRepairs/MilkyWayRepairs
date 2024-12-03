@@ -60,10 +60,12 @@ const VehicleList = () => {
             />
         )}
         {/* Add Vehicle Button */}
-        <TouchableOpacity style={styles.addButton} onPress={() => router.push('./carInformation/add-vehicle')}>
-            <Text style={styles.addButtonText}>Add Vehicle</Text>
-        </TouchableOpacity>
+        <View style={styles.bottomContainer}>
+          <TouchableOpacity style={styles.addButton} onPress={() => router.push('./carInformation/add-vehicle')}>
+              <Text style={styles.addButtonText}>Add Vehicle</Text>
+          </TouchableOpacity>
         </View>
+      </View>
     </NewPageTemplate>
   );
 };
@@ -95,15 +97,24 @@ const styles = StyleSheet.create({
     fontSize: 16,
     marginBottom: 5,
   },
+  bottomContainer: {
+    color: "#fff",
+    flex: .22
+  },
   addButton: {
-    backgroundColor: '#007BFF',
+    backgroundColor: '#6B4F9B',
     padding: 8,
     borderRadius: 10,
     margin: 10,
     alignItems: 'center',
-    bottom: 90,
+    bottom: 120,
+    left: 10,
     width: 390,
     position: 'absolute'
+  },
+  AddVehicleContainer: {
+    backgroundColor: 'white',
+
   },
   addButtonText: {
     color: '#fff',
