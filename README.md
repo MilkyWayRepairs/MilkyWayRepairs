@@ -7,7 +7,7 @@ The project will use REACTJS, HTML, and CSS for the frontend, Java for the backe
 - Authors name - Self given title beggining -> Self given title end
 - Alex Giovannini - Alright I will take the team lead role -> integrated system operations
 - Jason Prakash - frontend / backend
-- Bahran Temesgen - Absolutley Goated 
+- Bahran Temesgen - Absolutley Goated --> nevermind
 - Kevin Lai - frontend / database
 - Lance Wakamatsu - is trying his best :)
 - Caleb Ashby - Certified Galaxy Mechanic (Trying this on my Windows machine)
