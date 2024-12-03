@@ -168,11 +168,11 @@ progressText: {
   reviewButton: {
     marginTop: 20,
     padding: 10,
-    backgroundColor: '#CEBDD1',
+    backgroundColor: '#6B4F9B',
     borderRadius: 5,
   },
   reviewButtonText: {
-    color: '#000',
+    color: 'white',
     fontSize: 16,
     textAlign: 'center',
   },
