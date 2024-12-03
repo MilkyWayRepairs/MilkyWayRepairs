@@ -30,14 +30,14 @@ const AppointmentScheduler = () => {
     return `${hour.toString().padStart(2, '0')}:00`;
   });
 
-  const handleDateChange = (event: any, date?: Date) => {
+  const handleDateChange = (event, date) => {
     setShow(false);
     if (date) {
       setSelectedDate(date);
     }
   };
 
-  const handleTimeSelect = (time: string) => {
+  const handleTimeSelect = (time) => {
     setSelectedTime(time);
   };
 
@@ -86,6 +86,31 @@ const AppointmentScheduler = () => {
       }
     } catch (err) {
       console.error('Error scheduling appointment:', err);
+      Alert.alert('Error', 'Something went wrong. Please try again.');
+    }
+  };
+
+  const handleSoonestAvailable = async () => {
+    try {
+      const response = await fetch(`${SERVER_URL}/getSoonestAppointment`, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        credentials: 'include',
+      });
+
+      if (response.ok) {
+        const result = await response.json();
+        setSelectedDate(new Date(result.date));
+        setSelectedTime(result.time);
+        Alert.alert('Success', `Soonest available appointment: ${result.date} ${result.time}`);
+      } else {
+        const error = await response.json();
+        Alert.alert('Error', error.message || 'Failed to find soonest appointment');
+      }
+    } catch (err) {
+      console.error('Error getting soonest available appointment:', err);
       Alert.alert('Error', 'Something went wrong. Please try again.');
     }
   };
@@ -182,6 +207,10 @@ const AppointmentScheduler = () => {
             </View>
           </View>
         )}
+
+        <View style={styles.buttonRow}>
+          <Button title="Soonest Available" onPress={handleSoonestAvailable} />
+        </View>
       </View>
     </NewPageTemplate>
   );
