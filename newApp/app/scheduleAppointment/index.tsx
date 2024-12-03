@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View,
   Text,
@@ -6,6 +6,8 @@ import {
   Button,
   StyleSheet,
   Alert,
+  ScrollView,
+  TouchableOpacity,
   Platform,
 } from 'react-native';
 import { Picker } from '@react-native-picker/picker';
@@ -16,16 +18,12 @@ import StepProgressBar from './StepProgressBar';
 
 const AppointmentScheduler = () => {
   const [currentStep, setCurrentStep] = useState(1);
-  const totalSteps = 4;
-
-  const [service, setService] = useState('');
-  const [date, setDate] = useState(new Date());
+  const totalSteps = 3;
+  const [name, setName] = useState('');
+  const [selectedDate, setSelectedDate] = useState(new Date());
+  const [selectedTime, setSelectedTime] = useState('');
   const [show, setShow] = useState(false);
   const [mode, setMode] = useState<'date' | 'time'>('date');
-  const [vehicle, setVehicle] = useState('');
-
-  const services = ['Oil Change', 'Tire Rotation', 'Brake Inspection'];
-  const vehicles = ['Toyota Camry', 'Honda Accord', 'Ford Explorer'];
 
   const onChange = (event: any, selectedDate?: Date) => {
     if (selectedDate) {
@@ -43,42 +41,43 @@ const AppointmentScheduler = () => {
     setShow(false); // Close the picker
   };
 
-  const showMode = (currentMode: 'date' | 'time') => {
-    setMode(currentMode); // Set the mode (date or time)
-    setShow(true); // Show the picker
+  const handleTimeSelect = (time: string) => {
+    setSelectedTime(time);
   };
 
   const handleSchedule = async () => {
-    if (!service || !date || !vehicle) {
-      Alert.alert('Error', 'Please complete all fields before confirming.');
+    if (!name.trim()) {
+      Alert.alert('Error', 'Please enter your name');
       return;
     }
 
-    const localDateTime = `${date.getFullYear()}-${(date.getMonth() + 1)
-      .toString()
-      .padStart(2, '0')}-${date
-      .getDate()
-      .toString()
-      .padStart(2, '0')}T${date
-      .getHours()
-      .toString()
-      .padStart(2, '0')}:${date
-      .getMinutes()
-      .toString()
-      .padStart(2, '0')}:00`;
-
-    const data = {
-      service,
-      appointment_date: localDateTime,
-      vehicle,
-    };
+    if (!date) {
+      Alert.alert('Error', 'Please select a date and time');
+      return;
+    }
 
     try {
+      // Format the date properly
+      const [hours, minutes] = selectedTime.split(':');
+      const appointmentDate = new Date(selectedDate);
+      appointmentDate.setHours(parseInt(hours), 0, 0, 0); // Set hours and reset minutes/seconds/ms
+      
+      // Format date as YYYY-MM-DD HH:mm:ss
+      const formattedDate = appointmentDate.toISOString().slice(0, 19).replace('T', ' ');
+
+    const data = {
+      name: name.trim(),
+      appointment_date: localDateTime,
+    };
+
+      console.log('Sending appointment data:', data); // Debug log
+
       const response = await fetch(`${SERVER_URL}/scheduleAppointment`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
+        credentials: 'include',
         body: JSON.stringify(data),
       });
 
@@ -132,52 +131,59 @@ const AppointmentScheduler = () => {
         {currentStep === 2 && (
           <View>
             <Text style={styles.title}>Step 2: Select Date and Time</Text>
-            <Button title="Pick Date" onPress={() => showMode('date')} />
-            <Button title="Pick Time" onPress={() => showMode('time')} />
+            <Button title="Select Date" onPress={() => setShow(true)} />
             {show && (
               <DateTimePicker
-                value={date}
-                mode={mode}
+                value={selectedDate}
+                mode="date"
                 display={Platform.OS === 'ios' ? 'inline' : 'default'}
-                onChange={onChange}
+                onChange={handleDateChange}
+                minimumDate={new Date()}
               />
             )}
             <Text style={styles.selectedDate}>
-              Selected Date and Time: {date.toLocaleString()}
+              Selected Date: {selectedDate.toLocaleDateString()}
             </Text>
+
+            <Text style={styles.subtitle}>Available Time Slots:</Text>
+            <ScrollView style={styles.timeSlotContainer}>
+              {timeSlots.map((time) => (
+                <TouchableOpacity
+                  key={time}
+                  style={[
+                    styles.timeSlot,
+                    selectedTime === time && styles.selectedTimeSlot,
+                  ]}
+                  onPress={() => handleTimeSelect(time)}
+                >
+                  <Text style={[
+                    styles.timeSlotText,
+                    selectedTime === time && styles.selectedTimeSlotText
+                  ]}>
+                    {time}
+                  </Text>
+                </TouchableOpacity>
+              ))}
+            </ScrollView>
+
             <View style={styles.buttonRow}>
               <Button title="Previous" onPress={prevStep} />
-              <Button title="Next" onPress={nextStep} />
+              <Button
+                title="Next"
+                onPress={nextStep}
+                disabled={!date}
+              />
             </View>
           </View>
         )}
 
         {currentStep === 3 && (
           <View>
-            <Text style={styles.title}>Step 3: Choose a Vehicle</Text>
-            <Picker
-              selectedValue={vehicle}
-              onValueChange={(itemValue) => setVehicle(itemValue)}
-              style={styles.picker}
-            >
-              <Picker.Item label="Select a vehicle" value="" />
-              {vehicles.map((v, index) => (
-                <Picker.Item key={index} label={v} value={v} />
-              ))}
-            </Picker>
-            <View style={styles.buttonRow}>
-              <Button title="Previous" onPress={prevStep} />
-              <Button title="Next" onPress={nextStep} disabled={!vehicle} />
-            </View>
-          </View>
-        )}
-
-        {currentStep === 4 && (
-          <View>
-            <Text style={styles.title}>Step 4: Confirmation</Text>
-            <Text style={styles.label}>Service: {service}</Text>
-            <Text style={styles.label}>Date and Time: {date.toLocaleString()}</Text>
-            <Text style={styles.label}>Vehicle: {vehicle}</Text>
+            <Text style={styles.title}>Step 3: Confirm Appointment</Text>
+            <Text style={styles.label}>Name: {name}</Text>
+            <Text style={styles.label}>
+              Date and Time: {date.toLocaleString()}
+            </Text>
             <View style={styles.buttonRow}>
               <Button title="Previous" onPress={prevStep} />
               <Button title="Confirm" onPress={handleSchedule} />
@@ -192,8 +198,6 @@ const AppointmentScheduler = () => {
 const styles = StyleSheet.create({
   contentContainer: {
     flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
     padding: 20,
   },
   title: {
@@ -201,19 +205,46 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     marginBottom: 20,
   },
-  picker: {
-    width: '100%',
+  input: {
+    borderWidth: 1,
+    borderColor: '#ccc',
+    borderRadius: 5,
+    padding: 10,
     marginBottom: 20,
   },
   selectedDate: {
     fontSize: 16,
-    color: 'blue',
     marginTop: 10,
+    color: '#666',
+  },
+  timeSlotContainer: {
+    maxHeight: 200,
+    marginBottom: 20,
+  },
+  timeSlot: {
+    padding: 15,
+    borderWidth: 1,
+    borderColor: '#ccc',
+    borderRadius: 5,
+    marginBottom: 10,
+    backgroundColor: '#f9f9f9',
+  },
+  selectedTimeSlot: {
+    backgroundColor: '#E0BBE4',
+    borderColor: '#957DAD',
+  },
+  timeSlotText: {
+    fontSize: 16,
+    textAlign: 'center',
+    color: '#666',
+  },
+  selectedTimeSlotText: {
+    color: '#fff',
+    fontWeight: 'bold',
   },
   buttonRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    width: '100%',
     marginTop: 20,
   },
   label: {
