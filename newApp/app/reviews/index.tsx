@@ -2,7 +2,8 @@ import { Text, View, Image, TouchableOpacity, Alert, StyleSheet, TextInput, Keyb
 import { Link, useRouter } from "expo-router";
 import React, { useState } from 'react';
 import { SERVER_URL } from "../../config/config";
-import AccountSidebar from '../accountSidebar'; // Ensure the path is correct
+//import AccountSidebar from '../accountSidebar'; // Ensure the path is correct
+import NewPageTemplate from "../newPageTemplate";
 
 const StarRating = ({ rating, setRating }: { rating: number; setRating: (rating: number) => void }) => {
   const handleStarPress = (star: number) => {
@@ -25,17 +26,13 @@ const StarRating = ({ rating, setRating }: { rating: number; setRating: (rating:
 };
 
 const Reviews = () => {
-  const [isSidebarVisible, setIsSidebarVisible] = useState(false);
   const [review, setReview] = useState("")
   const [rating, setRating] = useState(0)
   const router = useRouter()
 
   const handleAccountPress = () => {
-    setIsSidebarVisible(true); // Show the sidebar
-  };
-
-  const handleOverlayClose = () => {
-    setIsSidebarVisible(false); // Hide the sidebar
+    // Define the action for the account button press
+    router.push("/userAccountInformationPage"); // Adjust the route as necessary
   };
 
   const submitReview = async () => {
@@ -65,20 +62,8 @@ const Reviews = () => {
   };
 
   return (
+    <NewPageTemplate title='Write Your Review'>
       <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
-      <View style={styles.container}>
-        {/* Back Arrow and Header */}
-        <View style={styles.header}>
-          <TouchableOpacity style={styles.arrowBackContainer}>
-            <Link href="..">
-              <Image
-                  source={require('../../assets/images/arrowBack.png')}
-                  style={styles.arrowBack}
-              />
-            </Link>
-          </TouchableOpacity>
-          <Text style={styles.headerTitle}>Write Your Review</Text>
-        </View>
 
         {/* Container for Input Fields and Submit Button with Border */}
         <View style={styles.inputSection}>
@@ -103,25 +88,8 @@ const Reviews = () => {
               <Text style={styles.buttonText}>Submit</Text>
           </TouchableOpacity>
         </View>
-
-        {/* Bottom Navigation Bar */}
-        <View style={styles.bottomNav}>
-          <TouchableOpacity style={styles.navButton}>
-            <Link href="/userHomePage">
-              <Image source={require('../../assets/images/homeLogo.png')} style={styles.navIcon} />
-              <Text style={styles.navText}>Home</Text>
-            </Link>
-          </TouchableOpacity>
-          <TouchableOpacity style={styles.navButton} onPress={handleAccountPress}>
-            <Image source={require('../../assets/images/accountLogo.png')} style={styles.navIcon} />
-            <Text style={styles.navText}>Account</Text>
-          </TouchableOpacity>
-        </View>
-
-        {/* Account Sidebar */}
-        <AccountSidebar isVisible={isSidebarVisible} onClose={handleOverlayClose} />
-      </View>
-    </TouchableWithoutFeedback>
+      </TouchableWithoutFeedback>
+    </NewPageTemplate>
   );
 };
 
