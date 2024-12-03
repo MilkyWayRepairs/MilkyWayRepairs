@@ -4,12 +4,12 @@ The project will use REACTJS, HTML, and CSS for the frontend, Java for the backe
 
 
 💻  Authors:
-- Authors name - Self given title beggining -> Self given title end
-- Alex Giovannini - Alright I will take the team lead role -> integrated system operations
-- Jason Prakash - frontend / backend -> frontend stuff d: 
-- Bahran Temesgen - Absolutley Goated --> nevermind
-- Kevin Lai - frontend / database
-- Lance Wakamatsu - is trying his best :)
-- Caleb Ashby - Certified Galaxy Mechanic (Trying this on my Windows machine)
-- Caleb Lewis - frontend -> frontend -_-
-- Moises Robledo - Backend
+- Authors name       - Self given title beggining                -> Self given title end
+- Alex Giovannini    - Alright I will take the team lead role    -> Integrated system operations
+- Jason Prakash      - frontend / backend                        -> Frontend stuff d: 
+- Bahran Temesgen    - Absolutley Goated                         -> Nevermind
+- Kevin Lai          - frontend / database                       -> Message king
+- Lance Wakamatsu    - is trying his best :)                     -> Better at computers than he thinks
+- Caleb Ashby        - Certified Galaxy Mechanic                 -> The evaluator
+- Caleb Lewis        - frontend                                  -> Frontend -_-
+- Moises Robledo     - Backend                                   -> Backend and a little front end
