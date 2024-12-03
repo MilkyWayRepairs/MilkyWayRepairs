@@ -33,7 +33,7 @@ const newPageTemplate: React.FC<NewPageTemplateProps> = ({ title = "Template", c
   return (
     <View style={styles.container}>
       {/* Title Text and Back Arrow*/}
-      <View style={[styles.titleTextContainer, {backgroundColor: "lavenderblush"}]}>
+      <View style={[styles.titleTextContainer, {backgroundColor: "#6B4F9B"}]}>
         <Text style={styles.titleText}>
           {title}
         </Text>
@@ -178,12 +178,15 @@ const styles = StyleSheet.create({
     left: 0,
     width: '100%',
     height: 64,
+    backgroundColor: '#6B4F9B',
     justifyContent: 'center',
     alignItems: 'center',
   },
   titleText: {
-    color: 'black',
-    fontSize: 20,
+    color: 'white',
+    fontSize: 22,
+    fontFamily: 'Calibri',
+    fontWeight: 'bold',
   },
   homeButtonContainer: {
     position: 'absolute',
