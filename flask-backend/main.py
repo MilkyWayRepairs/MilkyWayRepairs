@@ -701,23 +701,6 @@ def get_employees():
         app.logger.error(f"Error fetching employees: {e}")
         return jsonify({"error": "Internal Server Error"}), 500
     
-@app.route('/display_employee_details/<employee_id>', methods=['GET'])
-def display_employee_details(employee_id):
-    try:
-        employee = User.query.filter_by(id=employee_id).first()
-        if not employee:
-            return jsonify({"error": "Employee not found"}), 404
-        
-        employee_data = {
-            "ID": employee.id,
-            "Name": employee.name
-        }
-        return jsonify(employee_data), 200
-    except Exception as e:
-        app.logger.error(f"Error fetching employee details: {e}")
-        return jsonify({"error": "Internal Server Error"}), 500
-        
-    
 @app.route('/display_vehicle_logs/<vehicle_VIN>', methods=['GET'])
 def display_logs(vehicle_VIN):
     try:
@@ -866,9 +849,10 @@ def get_conversations():
 def submit_performance_evaluation():
     try:
         data = request.get_json()
+        print(data)
         
         # Add input validation
-        if not all(key in data for key in ['employeeName', 'employeeID', 'expectedTime', 'actualTime']):
+        if not all(key in data for key in ['employeeID', 'expectedTime', 'actualTime']):
             return jsonify({"error": "Missing required fields"}), 400
 
         # Convert string inputs to appropriate types
@@ -882,9 +866,12 @@ def submit_performance_evaluation():
         # Calculate performance ratio
         performance_ratio = (actual_time / expected_time) * 100 if expected_time > 0 else 0
 
+        #Find employee with given ID
+        employee = User.query.filter_by(id=employee_id).first()
+
         # Create new evaluation
         evaluation = PerformanceEvaluation(
-            name=data['employeeName'],
+            name=employee.name,
             employee_id=employee_id,
             expected_hours=expected_time,
             actual_hours=actual_time,

@@ -21,27 +21,23 @@ const EmployeeList = () => {
     fetchEmployees();
 }, []);
 
-  const fetchEmployeeDetails = async (employee_id) => {
-    try {
-        const resp = await axios.get(`${SERVER_URL}/display_employee_details/${employee_id}`);
-        setSelectedEmployee(resp.data);
-    } catch (error) {
-        console.error('Error fetching employee information:', error);
-    }
-  };
-
   return (
     <View style={styles.container}>
       <NewPageTemplate title="Select Employee">
       </NewPageTemplate>
       <FlatList
         data={employees}
-        keyExtractor={item => item.id}
+        keyExtractor={item => item.ID}
         renderItem={({ item }) => (
-          <TouchableOpacity onPress={() => fetchEmployeeDetails(item.id)}>
-            <Text style={styles.item}>{item.name} ID# {item.ID}</Text>
-          </TouchableOpacity>
+          <Link href={`/adminPerformanceEvaluation2?ID=${item.ID}`} asChild>
+            <TouchableOpacity>
+              <Text style={styles.item}>{item.name} ID# {item.ID}</Text>
+            </TouchableOpacity>
+          </Link>
         )}
+        ListEmptyComponent={
+          <Text style={styles.emptyMessage}>No employees found</Text>
+        }
       />
     </View>
   );
@@ -71,7 +67,13 @@ const styles = StyleSheet.create({
   detailText: {
     fontSize: 16,
     marginBottom: 5,
-  }
+  },
+  emptyMessage: {
+    textAlign: 'center',
+    marginTop: 20,
+    fontSize: 18,
+    color: '#888',
+  },
 });
 
 export default EmployeeList;
