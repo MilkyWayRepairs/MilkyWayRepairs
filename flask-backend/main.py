@@ -804,19 +804,32 @@ def submit_log():
 @app.route('/logs', methods=['GET'])
 def get_logs():
     try:
+        print("Attempting to fetch logs...") # Debug log
         logs = Log.query.all()
-        logs_list = [{
-            'id': log.id,
-            'date': log.date,
-            'mileage': log.mileage,
-            'vin': log.vin,
-            'jobTitle': log.job_title,  # This is the job_id
-            'jobNotes': log.job_notes
-        } for log in logs]
-        return jsonify(logs_list)
+        logs_data = []
+        
+        for log in logs:
+            try:
+                print(f"Processing log: {log.id}") # Debug log
+                log_data = {
+                    'id': log.id,
+                    'date': log.date,
+                    'mileage': log.mileage,
+                    'vin': log.VIN,
+                    'job_title': log.job_title,
+                    'job_notes': log.job_notes
+                }
+                logs_data.append(log_data)
+            except Exception as e:
+                print(f"Error processing log {log.id}: {str(e)}")
+                continue
+        
+        print(f"Returning {len(logs_data)} logs") # Debug log
+        return jsonify(logs_data), 200
+        
     except Exception as e:
-        print("Error fetching logs:", str(e))
-        return jsonify({"error": "Failed to fetch logs"}), 500
+        print(f"Error in /logs endpoint: {str(e)}")
+        return jsonify({"error": str(e)}), 500
 
 @app.route('/test', methods=['GET'])
 def test():
