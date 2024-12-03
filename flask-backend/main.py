@@ -504,7 +504,7 @@ def storeSchedule():
     # Expecting 'id' and 'weekly_schedule' in the request body
     data = request.get_json()
 
-    # Validate the data
+    # Validate the   data
     if not data or 'id' not in data or 'weekly_schedule' not in data:
         return jsonify({"error": "Invalid input. 'id' and 'weekly_schedule' are required."}), 400
 
