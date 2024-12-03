@@ -11,20 +11,14 @@ from datetime import datetime, timedelta
 from models import db, User, Review, Message, Vehicle, Service, Job, Log, Appointments, PerformanceEvaluation
 import os, re, dns.resolver, requests, time, random
 from sqlalchemy.sql import func
-
-from twilio.rest import Client
-# from twilio.rest import Client
+#from twilio.rest import Client
 import os
-# make sure to check readme for proper dependencies 
-
-# #Twilio Initalization 
-# account_sid = os.environ["TWILIO_ACCOUNT_SID"]
-# auth_token = os.environ["TWILIO_AUTH_TOKEN"]
-# client = Client(account_sid, auth_token)
 
 
-#uncomment this block after initailization 
-
+#Twilio Initalization 
+##account_sid = os.environ["TWILIO_ACCOUNT_SID"]
+##auth_token = os.environ["TWILIO_AUTH_TOKEN"]
+##client = Client(account_sid, auth_token)
 
 
 ''' 
@@ -153,7 +147,36 @@ def validatePassword(password):
     validPassword = r'^(?=.{8,})(?=(?:[^!#$%&]*[!#$%&]){3,})(?=.*[a-zA-Z0-9])[a-zA-Z0-9!#$%&]+$'
     return re.match(validPassword, password) is not None
 
+@app.route('/user/<int:user_id>', methods=['PUT'])
+def edit_user(user_id):
+    try:
+        # Get the JSON data from the request
+        data = request.get_json()
 
+        # Validate required fields
+        if not data:
+            return jsonify({"error": "No data provided"}), 400
+
+        # Find the user by ID
+        user = User.query.get(user_id)
+        if not user:
+            return jsonify({"error": "User not found"}), 404
+
+        # Update the user fields if provided
+        if 'name' in data:
+            user.name = data['name']
+        if 'email' in data:
+            user.email = data['email']
+        if 'phone_number' in data:
+            user.phone_number = data['phone_number']
+
+        # Save changes to the database
+        db.session.commit()
+
+        return jsonify({"message": "User updated successfully"}), 200
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({"error": f"An error occurred: {str(e)}"}), 500
 
 
 @app.route('/register', methods=['POST'])
@@ -584,6 +607,34 @@ def get_user_appointments():
     except Exception as e:
         print(f"Error: {e}")  # Log the error
         return jsonify({'error': str(e)}), 500
+    
+
+@app.route('/getSoonestAppointment', methods=['GET'])
+def get_soonest_appointment():
+    try:
+        # Get current time and generate time slots from 8 AM to 5 PM
+        current_date = datetime.now().date()
+        current_time = datetime.now().time()
+        time_slots = [(8 + i) for i in range(10)]
+
+        # Search for the soonest available time
+        for day_offset in range(30):  # Check for 30 days ahead
+            appointment_date = current_date + timedelta(days=day_offset)
+            for hour in time_slots:
+                appointment_time = datetime.combine(appointment_date, datetime.min.time()) + timedelta(hours=hour)
+                if day_offset == 0 and hour < current_time.hour:
+                    continue  # Skip past times for today
+                appointment_exists = Appointments.query.filter_by(date=appointment_date, time=appointment_time.time()).first()
+                if not appointment_exists:
+                    # Found an available time
+                    return jsonify({
+                        'date': appointment_date.strftime('%Y-%m-%d'),
+                        'time': appointment_time.strftime('%H:%M:%S')
+                    }), 200
+
+        return jsonify({'message': 'No available appointments within 30 days.'}), 404
+    except Exception as e:
+        return jsonify({'message': str(e)}), 500
 
 
 

@@ -11,7 +11,7 @@ interface NewPageTemplateProps {
   children?: React.ReactNode;
 }
 
-const newPageTemplate: React.FC<NewPageTemplateProps> = ({ title = "Template", children }) => {
+const employeePageTemplate: React.FC<NewPageTemplateProps> = ({ title = "Template", children }) => {
   const translateX = useSharedValue(400); // Start off-screen
   const [isOverlayVisible, setIsOverlayVisible] = React.useState(false);
   
@@ -102,24 +102,10 @@ const newPageTemplate: React.FC<NewPageTemplateProps> = ({ title = "Template", c
             </Text>
           </Link>
         </View>
-        <View style={[styles.accountOverlayContent, styles.performanceContent]}>
-          <Link href="/carInformation">
+        <View style={[styles.accountOverlayContent, styles.performanceEvaluationContent]}>
+          <Link href="/employeePerformanceEvaluation">
             <Text style={styles.accountOverlayText}>
-              Car Information
-            </Text>
-          </Link>
-        </View>
-        <View style={[styles.accountOverlayContent, styles.upcomingAppointmentsContent]}>
-          <Link href="/upcomingAppointments">
-          <Text style={styles.accountOverlayText}>
-            Upcoming Appointments
-          </Text>
-          </Link>
-        </View>
-        <View style={[styles.accountOverlayContent, styles.accountInformationContent]}>
-          <Link href="/userAccountInformationPage">
-            <Text style={styles.accountOverlayText}>
-              Account Information
+              Performance Evaluation
             </Text>
           </Link>
         </View>
@@ -252,14 +238,8 @@ const styles = StyleSheet.create({
   logoutContent: {
     top: 10, // Adjust this value to position the first box
   },
-  performanceContent: {
-    top: 100, // Adjust this value to position the second box
-  },
-  upcomingAppointmentsContent: {
-    top: 190, //Adjust this value to position the third box
-  },
-  accountInformationContent: {
-    top: 280, //Adjust this value to position the fourth box
+  performanceEvaluationContent: {
+    top: 100,
   },
   accountOverlayText: {
     color: 'black',
@@ -290,4 +270,4 @@ const styles = StyleSheet.create({
 
 });
 
-export default newPageTemplate;
+export default employeePageTemplate;

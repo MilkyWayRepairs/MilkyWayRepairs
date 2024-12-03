@@ -12,6 +12,7 @@ import {
 import { Link } from "expo-router";
 import axios from "axios";
 import { SERVER_URL } from "@/config/config";
+import NewPageTemplate from "../newPageTemplate"
 
 type Appointment = {
   id: number;
@@ -50,69 +51,59 @@ const AppointmentPage = () => {
   }, []);
 
   return (
-    <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
-      <View style={styles.container}>
-        {/* Back Arrow and Header */}
-        <View style={styles.header}>
-          <TouchableOpacity style={styles.arrowBackContainer}>
-            <Link href="..">
-              <Image
-                source={require('../../assets/images/arrowBack.png')}
-                style={styles.arrowBack}
-              />
-            </Link>
-          </TouchableOpacity>
-          <Text style={styles.headerTitle}>Appointments</Text>
-        </View>
+    <NewPageTemplate title = 'Appointments'>
+        <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+        <View style={styles.container}>
 
-        {/* Main Content */}
-        <View style={styles.content}>
-          {/* Upcoming Appointments */}
-          <Text style={styles.sectionTitle}>Upcoming Appointments</Text>
-          <View style={styles.appointmentsContainer}>
-            {upcomingAppointments.length > 0 ? (
-              <FlatList
-                data={upcomingAppointments}
-                keyExtractor={(item) => item.id.toString()}
-                renderItem={({ item }) => (
-                  <View style={styles.appointmentCard}>
-                    <Text style={styles.appointmentDetails}>{item.name}</Text>
-                    <Text style={styles.appointmentDate}>
-                      {new Date(item.date).toLocaleDateString()} at {item.time}
-                    </Text>
-                  </View>
+            {/* Main Content */}
+            <View style={styles.content}>
+            {/* Upcoming Appointments */}
+            <Text style={styles.sectionTitle}>Upcoming Appointments</Text>
+            <View style={styles.appointmentsContainer}>
+                {upcomingAppointments.length > 0 ? (
+                <FlatList
+                    data={upcomingAppointments}
+                    keyExtractor={(item) => item.id.toString()}
+                    renderItem={({ item }) => (
+                    <View style={styles.appointmentCard}>
+                        <Text style={styles.appointmentDetails}>{item.name}</Text>
+                        <Text style={styles.appointmentDate}>
+                        {new Date(item.date).toLocaleDateString()} at {item.time}
+                        </Text>
+                    </View>
+                    )}
+                    style={styles.flatList}
+                />
+                ) : (
+                <Text>No upcoming appointments.</Text>
                 )}
-                style={styles.flatList}
-              />
-            ) : (
-              <Text>No upcoming appointments.</Text>
-            )}
-          </View>
+            </View>
 
-          {/* Past Appointments */}
-          <Text style={styles.sectionTitle}>Past Appointments</Text>
-          <View style={styles.appointmentsContainer}>
-            {pastAppointments.length > 0 ? (
-              <FlatList
-                data={pastAppointments}
-                keyExtractor={(item) => item.id.toString()}
-                renderItem={({ item }) => (
-                  <View style={styles.appointmentCard}>
-                    <Text style={styles.appointmentDetails}>{item.name}</Text>
-                    <Text style={styles.appointmentDate}>
-                      {new Date(item.date).toLocaleDateString()} at {item.time}
-                    </Text>
-                  </View>
+            {/* Past Appointments */}
+            <Text style={styles.sectionTitle}>Past Appointments</Text>
+            <View style={styles.appointmentsContainer}>
+                {pastAppointments.length > 0 ? (
+                <FlatList
+                    data={pastAppointments}
+                    keyExtractor={(item) => item.id.toString()}
+                    renderItem={({ item }) => (
+                    <View style={styles.appointmentCard}>
+                        <Text style={styles.appointmentDetails}>{item.name}</Text>
+                        <Text style={styles.appointmentDate}>
+                        {new Date(item.date).toLocaleDateString()} at {item.time}
+                        </Text>
+                    </View>
+                    )}
+                    style={styles.flatList}
+                />
+                ) : (
+                <Text>No past appointments.</Text>
                 )}
-                style={styles.flatList}
-              />
-            ) : (
-              <Text>No past appointments.</Text>
-            )}
-          </View>
+            </View>
+            </View>
         </View>
-      </View>
-    </TouchableWithoutFeedback>
+        </TouchableWithoutFeedback>
+    </NewPageTemplate>
   );
 };
 
@@ -125,23 +116,10 @@ const styles = StyleSheet.create({
     flex: 1,
     padding: 16,
   },
-  header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    padding: 16,
-    backgroundColor: 'lavenderblush',
-  },
   headerTitle: {
     fontSize: 20,
     fontWeight: 'bold',
     marginLeft: 16,
-  },
-  arrowBackContainer: {
-    padding: 8,
-  },
-  arrowBack: {
-    width: 24,
-    height: 24,
   },
   sectionTitle: {
     fontSize: 18,

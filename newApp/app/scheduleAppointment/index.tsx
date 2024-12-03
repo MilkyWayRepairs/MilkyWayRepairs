@@ -3,7 +3,6 @@ import {
   View,
   Text,
   TextInput,
-  Button,
   StyleSheet,
   Alert,
   ScrollView,
@@ -37,7 +36,7 @@ const AppointmentScheduler = () => {
     return `${hour.toString().padStart(2, '0')}:00`;
   });
 
-  const handleDateChange = (event: any, date?: Date) => {
+  const handleDateChange = (event, date) => {
     setShow(false);
     if (date) {
       setSelectedDate(date);
@@ -49,25 +48,25 @@ const AppointmentScheduler = () => {
       Alert.alert('Error', 'Please complete all steps before confirming.');
       return;
     }
-  
+
     try {
       // Format the date and time
       const [hours, minutes] = selectedTime.split(':');
       const appointmentDate = new Date(selectedDate);
       appointmentDate.setHours(parseInt(hours), parseInt(minutes), 0, 0);
-  
+
       // Format date as YYYY-MM-DD HH:mm:ss
       const formattedDate = appointmentDate.toISOString().slice(0, 19).replace('T', ' ');
-  
+
       const data = {
         name: name.trim(),
         service,
         appointment_date: formattedDate,
         vehicle,
       };
-  
+
       console.log('Sending appointment data:', data);
-  
+
       const response = await fetch(`${SERVER_URL}/scheduleAppointment`, {
         method: 'POST',
         headers: {
@@ -76,7 +75,7 @@ const AppointmentScheduler = () => {
         credentials: 'include',
         body: JSON.stringify(data),
       });
-  
+
       if (response.ok) {
         const result = await response.json();
         Alert.alert(
@@ -92,7 +91,6 @@ const AppointmentScheduler = () => {
       Alert.alert('Error', 'Something went wrong. Please try again.');
     }
   };
-  
 
   const nextStep = () => {
     if (currentStep < totalSteps) {
@@ -105,6 +103,19 @@ const AppointmentScheduler = () => {
       setCurrentStep(currentStep - 1);
     }
   };
+
+  const CustomButton = ({ title, onPress, disabled }) => (
+    <TouchableOpacity
+      onPress={onPress}
+      disabled={disabled}
+      style={[
+        styles.button,
+        disabled ? styles.buttonDisabled : styles.buttonEnabled,
+      ]}
+    >
+      <Text style={styles.buttonText}>{title}</Text>
+    </TouchableOpacity>
+  );
 
   return (
     <NewPageTemplate title="Schedule Appointment">
@@ -120,7 +131,7 @@ const AppointmentScheduler = () => {
               value={name}
               onChangeText={setName}
             />
-            <Button title="Next" onPress={nextStep} disabled={!name.trim()} />
+            <CustomButton title="Next" onPress={nextStep} disabled={!name.trim()} />
           </View>
         )}
 
@@ -138,8 +149,8 @@ const AppointmentScheduler = () => {
               ))}
             </Picker>
             <View style={styles.buttonRow}>
-              <Button title="Previous" onPress={prevStep} />
-              <Button title="Next" onPress={nextStep} disabled={!service} />
+              <CustomButton title="Previous" onPress={prevStep} />
+              <CustomButton title="Next" onPress={nextStep} disabled={!service} />
             </View>
           </View>
         )}
@@ -147,7 +158,7 @@ const AppointmentScheduler = () => {
         {currentStep === 3 && (
           <View>
             <Text style={styles.title}>Step 3: Select Date and Time</Text>
-            <Button title="Select Date" onPress={() => setShow(true)} />
+            <CustomButton title="Select Date" onPress={() => setShow(true)} />
             {show && (
               <DateTimePicker
                 value={selectedDate}
@@ -185,8 +196,8 @@ const AppointmentScheduler = () => {
             </ScrollView>
 
             <View style={styles.buttonRow}>
-              <Button title="Previous" onPress={prevStep} />
-              <Button
+              <CustomButton title="Previous" onPress={prevStep} />
+              <CustomButton
                 title="Next"
                 onPress={nextStep}
                 disabled={!selectedDate || !selectedTime}
@@ -209,8 +220,8 @@ const AppointmentScheduler = () => {
               ))}
             </Picker>
             <View style={styles.buttonRow}>
-              <Button title="Previous" onPress={prevStep} />
-              <Button title="Next" onPress={nextStep} disabled={!vehicle} />
+              <CustomButton title="Previous" onPress={prevStep} />
+              <CustomButton title="Next" onPress={nextStep} disabled={!vehicle} />
             </View>
           </View>
         )}
@@ -225,8 +236,8 @@ const AppointmentScheduler = () => {
             </Text>
             <Text style={styles.label}>Vehicle: {vehicle}</Text>
             <View style={styles.buttonRow}>
-              <Button title="Previous" onPress={prevStep} />
-              <Button title="Confirm" onPress={handleSchedule} />
+              <CustomButton title="Previous" onPress={prevStep} />
+              <CustomButton title="Confirm" onPress={handleSchedule} />
             </View>
           </View>
         )}
@@ -290,7 +301,23 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     marginTop: 20,
-    marginHorizontal: 10,
+  },
+  button: {
+    padding: 15,
+    borderRadius: 5,
+    alignItems: 'center',
+    marginHorizontal: 5,
+  },
+  buttonEnabled: {
+    backgroundColor: '#6B4F9B',
+  },
+  buttonDisabled: {
+    backgroundColor: '#ccc',
+  },
+  buttonText: {
+    color: '#fff',
+    fontSize: 16,
+    fontWeight: 'bold',
   },
   label: {
     fontSize: 16,

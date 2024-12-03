@@ -6,6 +6,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useAnimatedStyle, useSharedValue, withTiming } from "react-native-reanimated";
 import Animated from "react-native-reanimated";
 import { SERVER_URL } from '@/config/config';
+import NewPageTemplate from '../newPageTemplate'
 
 
 interface Message {
@@ -91,13 +92,22 @@ const Messages: React.FC = () => {
 
   const fetchUsers = async () => {
     try {
-      const response = await axios.get(`${SERVER_URL}/users`, {
-        params: { current_user_id: senderId },
-      });
-      console.log("Fetched users:", response.data); // Log users for debugging
-      setUsers(response.data);
+      console.log("Fetching users..."); // Debug log
+      const response = await axios.get(`${SERVER_URL}/users`);
+      console.log("Response data:", response.data); // Debug log
+      
+      if (Array.isArray(response.data)) {
+        setUsers(response.data);
+        console.log("Users state updated:", response.data); // Debug log
+      } else {
+        console.error("Invalid response format:", response.data);
+      }
     } catch (error) {
       console.error('Error fetching users:', error);
+      if (axios.isAxiosError(error)) {
+        console.error('Response:', error.response?.data);
+        console.error('Status:', error.response?.status);
+      }
     }
   };
 
@@ -218,8 +228,15 @@ const Messages: React.FC = () => {
   };
 
 
-  const handleStartChatPress = () => {
+  const handleStartChatPress = async () => {
+    console.log("Start chat pressed"); // Debug log
     setIsSidebarVisible(true);
+    try {
+      await fetchUsers();
+      console.log("Current users state:", users); // Debug log
+    } catch (error) {
+      console.error("Error in handleStartChatPress:", error);
+    }
   };
 
 
@@ -238,123 +255,59 @@ const Messages: React.FC = () => {
     setRefreshing(false);
   }, [userId]);
 
+  // Add refresh control for users list
+  const [refreshingUsers, setRefreshingUsers] = useState(false);
+  
+  const onRefreshUsers = React.useCallback(async () => {
+    setRefreshingUsers(true);
+    await fetchUsers();
+    setRefreshingUsers(false);
+  }, []);
+
   return (
-    <View style={styles.container}> 
-      {/* Header */}
-      <View style={styles.header}>
-        <Text style={styles.headerText}>Messages</Text>
-        <TouchableOpacity style={styles.arrowBack}>
-          <Link href="..">
-            <Image
-            source={require('../../assets/images/arrowBack.png')}
-            style={styles.arrowBack}/>
-          </Link>
-        </TouchableOpacity>  
-      </View>
+    <NewPageTemplate title = 'Messages'>
+      <View style={styles.container}> 
 
+        {/* Conversations List */}
+        <FlatList
+          data={messages}
+          renderItem={renderConversation}
+          keyExtractor={(item) => item.id.toString()}
+          style={styles.conversationsList}
+          contentContainerStyle={styles.conversationsContent}
+          refreshControl={
+            <RefreshControl
+              refreshing={refreshing}
+              onRefresh={onRefresh}
+              colors={['#E0BBE4']} // Match your theme color
+            />
+          }
+        />
 
-      {/* Conversations List */}
-      <FlatList
-        data={messages}
-        renderItem={renderConversation}
-        keyExtractor={(item) => item.id.toString()}
-        style={styles.conversationsList}
-        contentContainerStyle={styles.conversationsContent}
-        refreshControl={
-          <RefreshControl
-            refreshing={refreshing}
-            onRefresh={onRefresh}
-            colors={['#E0BBE4']} // Match your theme color
-          />
-        }
-      />
-
-      {/* Start Chat Button */}
-      <TouchableOpacity style={styles.startChatButton} onPress={handleStartChatPress}>
-        <Text style={styles.startChatButtonText}>Start a New Chat</Text>
-      </TouchableOpacity>
-
-
-      {/* Navigation */}
-      <View style={styles.bottomNav}>
-        <TouchableOpacity style={styles.homeButtonContainer}>
-          <Link href="/userHomePage">
-            {"  "}
-            <Image
-              source={require('../../assets/images/homeLogo.png')}
-              style={styles.navIcon}/>
-            {"\n"}
-            <Text style={styles.navText}>Home</Text>
-          </Link>
+        {/* Start Chat Button */}
+        <TouchableOpacity style={styles.startChatButton} onPress={handleStartChatPress}>
+          <Text style={styles.startChatButtonText}>Start a New Chat</Text>
         </TouchableOpacity>
 
+        <View style={styles.bottomContainer}>
+        </View>
 
-        <TouchableOpacity style={styles.accountButtonContainer} onPress={handleAccountPress}>
-          <Image source={require('../../assets/images/accountLogo.png')} style={styles.navIcon} />
-          <Text style={styles.navText}>Account</Text>
-        </TouchableOpacity>
+        {/* Sidebar for Selecting Users */}
+        {isSidebarVisible && (
+          <View style={styles.sidebarContainer}>
+            <TouchableOpacity style={styles.sidebarCloseButton} onPress={handleSidebarClose}>
+              <Text style={styles.sidebarCloseText}>Close</Text>
+            </TouchableOpacity>
+            <FlatList 
+              data={users}
+              renderItem={renderUserItem}
+              keyExtractor={(item) => item.id.toString()}
+              contentContainerStyle={styles.userListContent}
+            />
+          </View>
+        )}
       </View>
-
-
-      {/* Account Overlay */}
-      {isOverlayVisible && (
-        <TouchableOpacity style={styles.overlayBackground} activeOpacity={0} onPress={handleOverlayClose} />
-      )}
-      <Animated.View style={[styles.accountOverlayContainer, animatedStyles]}>
-        <View style={[styles.accountOverlayContent, styles.logoutContent]}>
-          <Text style={styles.accountOverlayText}>Logout</Text>
-        </View>
-        {/* Additional account options */}
-      </Animated.View>
-
-
-      {/* Sidebar for Selecting Users */}
-      {isSidebarVisible && (
-        <View style={styles.sidebarContainer}>
-          <TouchableOpacity style={styles.sidebarCloseButton} onPress={handleSidebarClose}>
-            <Text style={styles.sidebarCloseText}>Close</Text>
-          </TouchableOpacity>
-          <FlatList
-            data={users}
-            renderItem={renderUserItem}
-            keyExtractor={(item) => item.id.toString()}
-            contentContainerStyle={styles.userListContent}
-          />
-        </View>
-      )}
-            <Animated.View style={[styles.accountOverlayContainer, animatedStyles]}
-      onStartShouldSetResponder={() => true}
-        onTouchEnd={(e) => e.stopPropagation()}>
-        <View style={[styles.accountOverlayContent, styles.logoutContent]}>
-          <Link href="/login" >
-            <Text style={styles.accountOverlayText}>
-              Logout
-            </Text>
-          </Link>
-        </View>
-        <View style={[styles.accountOverlayContent, styles.performanceContent]}>
-          <Link href="/carInformation">
-          <Text style={styles.accountOverlayText}>
-            Car Information
-          </Text>
-          </Link>
-        </View>
-        <View style={[styles.accountOverlayContent, styles.upcomingAppointmentsContent]}>
-          <Link href="/upcomingAppointments">
-          <Text style={styles.accountOverlayText}>
-            Upcoming Appointments
-          </Text>
-          </Link>
-        </View>
-        <View style={[styles.accountOverlayContent, styles.accountInformationContent]}>
-          <Link href="/userAccountInformationPage">
-          <Text style={styles.accountOverlayText}>
-            Account Information
-          </Text>
-          </Link>
-        </View>
-      </Animated.View> 
-    </View>
+    </NewPageTemplate>
   );
 };
 
@@ -425,106 +378,32 @@ const styles = StyleSheet.create({
     color: '#888',
     marginTop: 8,
   },
-  bottomNav: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    paddingVertical: 10,
-    backgroundColor: '#fff', // Updated to match Figma design
-  },
-  homeButtonContainer: {
-    flex: 1,
-    backgroundColor: '#EBE4EC',
-    alignItems: 'center',
-    paddingVertical: 15,
-    borderTopLeftRadius: 50,
-    borderBottomLeftRadius: 50,
-  },
-  accountButtonContainer: {
-    flex: 1,
-    backgroundColor: '#E5ECE4',
-    alignItems: 'center',
-    paddingVertical: 15,
-    borderTopRightRadius: 50,
-    borderBottomRightRadius: 50,
-  },
-  navIcon: {
-    width: 30,
-    height: 30,
-  },
-  navText: {
-    color: 'black',
-  },
-  accountOverlayContainer: {  // Everything below is the overlay
-    position: 'absolute',
-    top: 0,
-    right: -3, // Adjusted to align with the right side of the screen
-    width: 185,
-    height: '100%',
-    backgroundColor: "#EBE4EC",
-    zIndex: 2,
-    overflow: 'visible',
-    justifyContent: 'center',
-    alignItems: 'center',
-    transform: [{ translateX: 0 }],
-    borderWidth: 3,
-    borderRadius: 20,
-    borderColor: 'black',
-  },
-  accountOverlayContent: {
-    position: 'absolute',
-    width: '100%',
-    height: 80,
-    textAlign: 'center',
-    justifyContent: 'center',
-    alignItems: 'center',
-    borderWidth: 1,
-    borderColor: 'black',
-    backgroundColor: '#CEBDD1',
-  },
   logoutContent: {
     top: 10, // Adjust this value to position the first box
   },
   performanceContent: {
     top: 100, // Adjust this value to position the second box
   },
-  accountOverlayText: {
-    color: 'black',
-  },
-  overlayBackground: {
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    width: '100%',
-    height: '100%',
-    backgroundColor: 'rgba(0, 0, 0, 0.4)',
-    zIndex: 1,
-  },
   startChatButton: {
-    backgroundColor: '#E0BBE4', // Light purple color
+    backgroundColor: '#6B4F9B',
     paddingVertical: 15,
     paddingHorizontal: 20,
     borderRadius: 10,
-    marginVertical: 10,
+    marginVertical: -100,
     alignItems: 'center',
     justifyContent: 'center',
     width: '90%', // Adjust to make it fill most of the width, centered
     alignSelf: 'center', // Center the button horizontally
   },
   startChatButtonText: {
-    color: 'black',
+    color: 'white',
     fontSize: 18,
     fontWeight: 'bold',
-  },
-  upcomingAppointmentsContent: {
-    top: 190, //Adjust this value to position the third box
-  },
-  accountInformationContent: {
-    top: 280, //Adjust this value to position the fourth box
   },
   userItem: {
     padding: 15,
     marginVertical: 8,
-    backgroundColor: '#cebdd1',
+    backgroundColor: '#6B4F9B',
     borderRadius: 10,
     width: '90%',
     alignSelf: 'center',
@@ -534,6 +413,7 @@ const styles = StyleSheet.create({
   userName: {
     fontSize: 16,
     fontWeight: 'bold',
+    color: 'white'
   },
   userEmail: {
     fontSize: 14,
@@ -553,7 +433,7 @@ const styles = StyleSheet.create({
     transform: [{ translateX: 0 }],
     borderWidth: 3,
     borderRadius: 20,
-    borderColor: 'black',
+    borderColor: 'Black',
   },
   sidebarCloseButton: {
     padding: 10,
@@ -587,17 +467,7 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     marginBottom: 5,
   },
-  arrowBack: {
-    position: 'absolute',
-    top: 8,
-    left: 0,
-    // Ensure the container has dimensions
-    width: 48,
-    height: 48,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  lastMessage: {
+    lastMessage: {
     fontSize: 14,
     color: '#666',
     marginBottom: 3,
@@ -606,6 +476,9 @@ const styles = StyleSheet.create({
     fontSize: 12,
     color: '#999',
   },
+  bottomContainer: {
+    flex: .3
+  } 
 });
 
 
