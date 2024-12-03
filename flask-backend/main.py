@@ -642,6 +642,36 @@ def get_vehicles():
         app.logger.error(f"Error fetching vehicles: {e}")
         return jsonify({"error": "Internal Server Error"}), 500
     
+@app.route('/get-employee-list', methods=['GET'])
+def get_employees():
+    try:
+        employees = User.query.filter_by(role="employee").all()
+        employee_list = [{
+            "ID": employee.id,
+            "name": employee.name,
+        } for employee in employees]
+        return jsonify(employee_list), 200
+    except Exception as e:
+        app.logger.error(f"Error fetching employees: {e}")
+        return jsonify({"error": "Internal Server Error"}), 500
+    
+@app.route('/display_employee_details/<employee_id>', methods=['GET'])
+def display_employee_details(employee_id):
+    try:
+        employee = User.query.filter_by(id=employee_id).first()
+        if not employee:
+            return jsonify({"error": "Employee not found"}), 404
+        
+        employee_data = {
+            "ID": employee.id,
+            "Name": employee.name
+        }
+        return jsonify(employee_data), 200
+    except Exception as e:
+        app.logger.error(f"Error fetching employee details: {e}")
+        return jsonify({"error": "Internal Server Error"}), 500
+        
+    
 @app.route('/display_vehicle_logs/<vehicle_VIN>', methods=['GET'])
 def display_logs(vehicle_VIN):
     try:

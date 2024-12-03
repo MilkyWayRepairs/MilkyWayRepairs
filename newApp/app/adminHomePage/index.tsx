@@ -172,7 +172,7 @@ const homeAndAdminOverlay = () => {
           </Link>
         </View>
         <View style={[styles.accountOverlayContent, styles.performanceContent]}>
-          <Link href="/adminPerformanceEvaluation">
+          <Link href="/adminPerformanceEvaluation1">
             <Text style={styles.accountOverlayText}>
               Performance Evaluation
             </Text>
