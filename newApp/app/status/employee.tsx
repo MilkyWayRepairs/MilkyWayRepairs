@@ -1,6 +1,7 @@
 import { SERVER_URL } from '@/config/config';
 import React, { useState } from 'react';
-import { View, TextInput, Button, Text, FlatList } from 'react-native';
+import { View, TextInput, TouchableOpacity, Text, FlatList, StyleSheet } from 'react-native';
+import EmployeePageTemplate from '../employeePageTemplate';
 
 const EmployeeVehicleSearch = () => {
   const [make, setMake] = useState('');
@@ -41,30 +42,76 @@ const EmployeeVehicleSearch = () => {
   };
 
   return (
-    <View>
-      <TextInput placeholder="Make" value={make} onChangeText={setMake} />
-      <TextInput placeholder="Model" value={model} onChangeText={setModel} />
-      <TextInput placeholder="Year" value={year} onChangeText={setYear} />
-      <TextInput placeholder="VIN" value={VIN} onChangeText={setVIN} />
-      <Button title="Search" onPress={searchVehicles} />
+    <EmployeePageTemplate title="Vehicle Search">
+      <View style={styles.container}>
+        <TextInput style={styles.input} placeholder="Make" value={make} onChangeText={setMake} />
+        <TextInput style={styles.input} placeholder="Model" value={model} onChangeText={setModel} />
+        <TextInput style={styles.input} placeholder="Year" value={year} onChangeText={setYear} />
+        <TextInput style={styles.input} placeholder="VIN" value={VIN} onChangeText={setVIN} />
+        
+        <TouchableOpacity 
+          style={styles.searchButton} 
+          onPress={searchVehicles}
+        >
+          <Text style={styles.buttonText}>Search</Text>
+        </TouchableOpacity>
 
-      <FlatList
-        data={vehicles}
-        keyExtractor={(item) => item.VIN.toString()}
-        renderItem={({ item }) => (
-          <View>
-            <Text>{item.make} {item.model} {item.year} {item.VIN}</Text>
-            <TextInput
-              placeholder="Update Status"
-              value={status}
-              onChangeText={setStatus}
-            />
-            <Button title="Update Status" onPress={() => updateVehicleStatus(item.VIN)} />
-          </View>
-        )}
-      />
-    </View>
+        <FlatList
+          data={vehicles}
+          keyExtractor={(item) => item.VIN.toString()}
+          renderItem={({ item }) => (
+            <View style={styles.vehicleItem}>
+              <Text>{"Make: " + item.make}{'\n'}{"Model: " + item.model}{'\n'}{"Year: " + item.year}{'\n'}{"VIN: " + item.VIN}</Text>
+              <TextInput
+                style={styles.input}
+                placeholder="Update Status"
+                value={status}
+                onChangeText={setStatus}
+              />
+              <TouchableOpacity 
+                style={styles.searchButton}
+                onPress={() => updateVehicleStatus(item.VIN)}
+              >
+                <Text style={styles.buttonText}>Update Status</Text>
+              </TouchableOpacity>
+            </View>
+          )}
+        />
+      </View>
+    </EmployeePageTemplate>
   );
 };
+
+const styles = StyleSheet.create({
+  container: {
+    padding: 20,
+  },
+  input: {
+    borderWidth: 1,
+    borderColor: '#ccc',
+    padding: 10,
+    marginBottom: 10,
+    borderRadius: 5,
+  },
+  vehicleItem: {
+    marginTop: 15,
+    padding: 10,
+    borderWidth: 1,
+    borderColor: '#ccc',
+    borderRadius: 5,
+  },
+  searchButton: {
+    backgroundColor: '#6B4F9B',
+    padding: 10,
+    borderRadius: 5,
+    marginBottom: 10,
+    alignItems: 'center',
+  },
+  buttonText: {
+    color: 'white',
+    fontSize: 16,
+    fontWeight: 'bold',
+  },
+});
 
 export default EmployeeVehicleSearch;
