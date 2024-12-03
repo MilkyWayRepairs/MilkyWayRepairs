@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View,
   Text,
@@ -8,6 +8,7 @@ import {
   ScrollView,
   TouchableOpacity,
   Platform,
+  ActivityIndicator,
 } from 'react-native';
 import { Picker } from '@react-native-picker/picker';
 import DateTimePicker from '@react-native-community/datetimepicker';
@@ -24,17 +25,48 @@ const AppointmentScheduler = () => {
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [selectedTime, setSelectedTime] = useState('');
   const [vehicle, setVehicle] = useState('');
+  const [vehicles, setVehicles] = useState([]);
+  const [isLoadingVehicles, setIsLoadingVehicles] = useState(true);
   const [show, setShow] = useState(false);
 
-  // Sample data
+  // Sample data for services
   const services = ['Oil Change', 'Tire Rotation', 'Brake Inspection'];
-  const vehicles = ['Toyota Camry', 'Honda Accord', 'Ford Explorer'];
 
   // Generate time slots from 8 AM to 5 PM
   const timeSlots = Array.from({ length: 10 }, (_, i) => {
     const hour = i + 8;
     return `${hour.toString().padStart(2, '0')}:00`;
   });
+
+  // Fetch vehicle list from backend
+  useEffect(() => {
+    const fetchVehicles = async () => {
+      try {
+        const response = await fetch(`${SERVER_URL}/get-vehicle-list`, {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          credentials: 'include', // Include session cookies if needed
+        });
+
+        if (response.ok) {
+          const vehicleData = await response.json();
+          setVehicles(vehicleData);
+        } else {
+          const error = await response.json();
+          Alert.alert('Error', error.error || 'Failed to fetch vehicle list');
+        }
+      } catch (err) {
+        console.error('Error fetching vehicle list:', err);
+        Alert.alert('Error', 'Something went wrong. Please try again.');
+      } finally {
+        setIsLoadingVehicles(false);
+      }
+    };
+
+    fetchVehicles();
+  }, []);
 
   const handleDateChange = (event, date) => {
     setShow(false);
@@ -209,16 +241,24 @@ const AppointmentScheduler = () => {
         {currentStep === 4 && (
           <View>
             <Text style={styles.title}>Step 4: Choose a Vehicle</Text>
-            <Picker
-              selectedValue={vehicle}
-              onValueChange={(itemValue) => setVehicle(itemValue)}
-              style={styles.picker}
-            >
-              <Picker.Item label="Select a vehicle" value="" />
-              {vehicles.map((v, index) => (
-                <Picker.Item key={index} label={v} value={v} />
-              ))}
-            </Picker>
+            {isLoadingVehicles ? (
+              <ActivityIndicator size="large" color="#6B4F9B" />
+            ) : (
+              <Picker
+                selectedValue={vehicle}
+                onValueChange={(itemValue) => setVehicle(itemValue)}
+                style={styles.picker}
+              >
+                <Picker.Item label="Select a vehicle" value="" />
+                {vehicles.map((v, index) => (
+                  <Picker.Item
+                    key={index}
+                    label={`${v.year} ${v.make} ${v.model} (${v.VIN})`}
+                    value={v.VIN}
+                  />
+                ))}
+              </Picker>
+            )}
             <View style={styles.buttonRow}>
               <CustomButton title="Previous" onPress={prevStep} />
               <CustomButton title="Next" onPress={nextStep} disabled={!vehicle} />
@@ -234,7 +274,7 @@ const AppointmentScheduler = () => {
             <Text style={styles.label}>
               Date and Time: {selectedDate.toLocaleDateString()} {selectedTime}
             </Text>
-            <Text style={styles.label}>Vehicle: {vehicle}</Text>
+            <Text style={styles.label}>Vehicle VIN: {vehicle}</Text>
             <View style={styles.buttonRow}>
               <CustomButton title="Previous" onPress={prevStep} />
               <CustomButton title="Confirm" onPress={handleSchedule} />
