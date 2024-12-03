@@ -11,6 +11,8 @@ from datetime import datetime, timedelta
 from models import db, User, Review, Message, Vehicle, Service, Job, Log, Appointments, PerformanceEvaluation
 import os, re, dns.resolver, requests, time, random
 from sqlalchemy.sql import func
+
+'''
 from twilio.rest import Client
 import os
 
@@ -19,6 +21,10 @@ import os
 account_sid = os.environ["TWILIO_ACCOUNT_SID"]
 auth_token = os.environ["TWILIO_AUTH_TOKEN"]
 client = Client(account_sid, auth_token)
+
+
+#uncomment this block after initailization 
+'''
 
 
 ''' 
