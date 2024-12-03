@@ -1,29 +1,30 @@
-import { Text, View, Image, TouchableOpacity, StyleSheet, TextInput } from "react-native";
-import { Link, } from "expo-router"
-import React from 'react';
-//import { rgbaColor } from "react-native-reanimated/lib/typescript/reanimated2/Colors";
-import { SlideOutRight, withDelay, withTiming } from "react-native-reanimated";
-import { useAnimatedStyle, withSpring, useSharedValue } from "react-native-reanimated";
-import Animated from "react-native-reanimated";
-
+import React, { useState, useEffect } from 'react';
+import { useRouter } from "expo-router";
+import { View, Text, FlatList, TouchableOpacity, StyleSheet } from 'react-native';
+import axios from 'axios';
+import { SERVER_URL } from '@/config/config';
+import NewPageTemplate from "../newPageTemplate";
 const employeePerformanceEvaluation = () => {
+  const [score, setScore] = useState(0);
+
+  useEffect(() => {
+    const fetchScore = async () => {
+      try{
+        const resp = await axios.get(`${SERVER_URL}/get-evaluation-score`);
+        setScore(resp.data);
+      } catch (error){
+        console.error('Error fetching performance evaluation score:', error)
+      }
+    }
+    fetchScore();
+  });
+  
   return (
     <View style={styles.container}>
-      {/* Back Arrow */}
-      <TouchableOpacity style={styles.arrowBackContainer}>
-        <Link href="..">
-          <Image 
-          source={require('../../assets/images/arrowBack.png')} 
-          style={styles.arrowBack}/>
-        </Link>
-      </TouchableOpacity>
-
-      {/* Title Text */}
-      <View style={styles.textBox}>
-        <Text style={styles.text}>Your Performance Evaluation Score</Text>
-      </View>
-
-    </View>  
+      <NewPageTemplate title="Your Performance Evaluation Score">
+        <Text style={styles.scoreText}> {score} </Text>
+      </NewPageTemplate>
+    </View>
   );
 }
 
@@ -31,35 +32,12 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     flexDirection: 'column',
-    alignItems: 'center',
-    height: 100,
     backgroundColor: '#fff',
   },
-  arrowBackContainer: {
-    position: 'absolute',
-    top: 20,
-    left: 15,
-    // Ensure the container has dimensions
-    width: 48,
-    height: 48,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  arrowBack: {
-    height: 48,
-    width: 48, 
-  },
-  textBox: {
-    top: 150,
-    left: 0,
-    width: '100%',
-    height: 150,
-  },
-  text: {
-    fontFamily: 'Robato',
-    fontSize: 24,
-    color: 'black',
-    fontWeight: 'bold',
+  scoreText: {
+    fontSize: 200,
+    left: 80,
+    top: 120,
   }
 });
 

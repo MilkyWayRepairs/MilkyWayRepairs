@@ -788,6 +788,27 @@ def get_employees():
     except Exception as e:
         app.logger.error(f"Error fetching employees: {e}")
         return jsonify({"error": "Internal Server Error"}), 500
+
+@app.route('/get-evaluation-score', methods=['GET'])
+def get_score():
+    try:
+        evaluations = PerformanceEvaluation.query.filter_by(employee_id=session.get("id")).all()
+        score = 0
+        scores = 0
+        for evaluation in evaluations:
+            app.logger.info(f"Performance Ratio: {evaluation.performance_ratio}")
+            score += evaluation.performance_ratio
+            scores += 1
+        score/scores
+        if(score >= 100):
+            score = 10
+        elif score != 0:
+            score %= 100
+            score /= 10
+        return jsonify(score), 200
+    except Exception as e:
+        app.logger.error(f"Error fetching employees: {e}")
+        return jsonify({"error": "Internal Server Error"}), 500
     
 @app.route('/display_vehicle_logs/<vehicle_VIN>', methods=['GET'])
 def display_logs(vehicle_VIN):
