@@ -1,3 +1,4 @@
+
 import { Text, View, Image, TouchableOpacity, StyleSheet, TextInput } from "react-native";
 import { Link, } from "expo-router"
 import React from 'react';
@@ -57,13 +58,13 @@ const homeAndAdminOverlay = () => {
 >
   {/* Set Employee Schedule button*/}
   <TouchableOpacity style={styles2.scrollButtonContainer}>
-  <Link href="setSchedule.tsx">  <Image
+  <Link href="newApp/app/adminHomePage/setSchedule">  <Image
       source={require('../../assets/images/ScheduleAppointment.png')}
       style={styles2.homeScreenButton}
     />
     </Link>
 
-    <Text style={styles2.homeScreenButtonText}>Set Schedule </Text>
+    <Text style={styles2.homeScreenButtonText}>Manager Controls </Text>
   </TouchableOpacity>
 
   {/* Messages Button */}

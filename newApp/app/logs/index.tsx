@@ -220,11 +220,12 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
   },
   header: {
-    backgroundColor: '#E0BBE4',
+    backgroundColor: '#6B4F9B',
     paddingVertical: 15,
     alignItems: 'center',
   },
   headerTitle: {
+    color: '#fff',
     fontSize: 24,
     fontWeight: 'bold',
     marginLeft: 40,
@@ -236,8 +237,8 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   arrowBack: {
-    height: 30,
-    width: 30,
+    height: 50,
+    width: 50,
   },
   inputSection: {
     width: '100%',
