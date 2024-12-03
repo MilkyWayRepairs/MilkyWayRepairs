@@ -4,7 +4,7 @@ import React, { act, useState } from 'react';
 import { SERVER_URL } from "../../config/config";
 import AccountSidebar from '../accountSidebar'; // Ensure the path is correct
 
-const adminPerformanceEvaluation = () => {
+const adminPerformanceEvaluation2 = () => {
   const[employeeName, setEmployeeName] = useState("");
   const[employeeID, setEmployeeID] = useState("");
   const[expectedTime, setExpectedTime] = useState("");
@@ -217,4 +217,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default adminPerformanceEvaluation
+export default adminPerformanceEvaluation2
