@@ -32,46 +32,51 @@ const VehicleList = () => {
   };
 
   return (
-    <View style={styles.container}>
-      <NewPageTemplate title="Vehicle Information" />
-      <FlatList
-        data={vehicles}
-        keyExtractor={(item) => item.VIN}
-        renderItem={({ item }) => (
+
+    <NewPageTemplate title="Vehicle Information">
+      <View style={styles.container}>
+        <FlatList
+          data={vehicles}
+          keyExtractor={(item) => item.VIN}
+          renderItem={({ item }) => (
           <TouchableOpacity onPress={() => fetchVehicleDetails(item.VIN)}>
             <Text style={styles.item}>{item.year} {item.make} {item.model}</Text>
           </TouchableOpacity>
-        )}
-        ListEmptyComponent={
-          <Text style={styles.emptyMessage}>No vehicle found</Text>
-        }
-      />
-      {selectedVehicle && (
-        <FlatList
-          data={Object.entries(selectedVehicle).sort(([keyA], [keyB]) => {
-            const order = ['VIN', 'year', 'make', 'model', 'logs'];
-            return order.indexOf(keyA) - order.indexOf(keyB);
-          })}
-          keyExtractor={([key]) => key.toString()}
-          renderItem={({ item: [key, value] }) => (
-            <Text style={styles.detailText}>{key.charAt(0).toUpperCase() + key.slice(1)}: {value}</Text>
           )}
-          style={styles.details}
+          ListEmptyComponent={
+         <Text style={styles.emptyMessage}>No vehicle found</Text>
+         }
+         style={styles.vehicleList}
         />
-      )}
-      {/* Add Vehicle Button */}
-      <TouchableOpacity style={styles.addButton} onPress={() => router.push('./carInformation/add-vehicle')}>
-        <Text style={styles.addButtonText}>Add Vehicle</Text>
-      </TouchableOpacity>
-    </View>
+        {selectedVehicle && (
+            <FlatList
+            data={Object.entries(selectedVehicle).sort(([keyA], [keyB]) => {
+                const order = ['VIN', 'year', 'make', 'model', 'logs'];
+                return order.indexOf(keyA) - order.indexOf(keyB);
+            })}
+            keyExtractor={([key]) => key.toString()}
+            renderItem={({ item: [key, value] }) => (
+                <Text style={styles.detailText}>{key.charAt(0).toUpperCase() + key.slice(1)}: {value}</Text>
+            )}
+            style={styles.details}
+            />
+        )}
+        {/* Add Vehicle Button */}
+        <TouchableOpacity style={styles.addButton} onPress={() => router.push('./carInformation/add-vehicle')}>
+            <Text style={styles.addButtonText}>Add Vehicle</Text>
+        </TouchableOpacity>
+        </View>
+    </NewPageTemplate>
   );
 };
 
 const styles = StyleSheet.create({
   contentContainer: {
     flex: 1,
-    marginTop: 80,
-    paddingHorizontal: 10,
+    justifyContent: 'space-between'
+  },
+  VehicleList: {
+    flexGrow: 0
   },
   item: { 
     fontSize: 18,
@@ -98,7 +103,7 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     margin: 10,
     alignItems: 'center',
-    bottom: 100,
+    bottom: -90,
   },
   addButtonText: {
     color: '#fff',
