@@ -3,6 +3,7 @@ import { Link } from "expo-router";
 import React, { useEffect, useState } from 'react';
 import { SERVER_URL } from "@/config/config";
 import { FlatList } from "react-native";
+import NewPageTemplate from "../newPageTemplate"
 
 const Reviews = () => {
     const [reviews, setReviews] = useState([]);
@@ -40,50 +41,25 @@ const Reviews = () => {
   }
 
     return (
+      <NewPageTemplate title="Review">
         <View style={styles.container}>
-        {/* Back Arrow and Header */}
-            <View style={styles.header}>
-                <TouchableOpacity style={styles.arrowBackContainer}>
-                    <Link href="..">
-                        <Image
-                        source={require('../../assets/images/arrowBack.png')}
-                        style={styles.arrowBack}
-                        />
-                    </Link>
-                </TouchableOpacity>
-            <Text style={styles.headerTitle}>Reviews</Text>
-        </View>
-
-        {/* Container for Submitted Reviews */}
-        <FlatList
-            data={reviews}
-            keyExtractor={(item) => item.id.toString()}
-            renderItem={({ item }) => (
+            {/* Container for Submitted Reviews */}
+            <FlatList
+              data={reviews}
+              keyExtractor={(item) => item.id.toString()}
+              renderItem={({ item }) => (
             <View style={styles.reviewItem}>
                 <Text style={styles.text}>{item.text}</Text>
                 <Text style={styles.stars}>⭐ {item.stars}</Text>
                 <Text style={styles.date}>{new Date(item.created_at).toLocaleDateString()}</Text>
             </View>
             )}
-            style={{ flex: 1 }}
-        />
-
-        {/* Bottom Navigation Bar */}
-        <View style={styles.bottomNav}>
-            <TouchableOpacity style={styles.navButton}>
-                <Link href="/userHomePage">
-                    <Image source={require('../../assets/images/homeLogo.png')} style={styles.navIcon} />
-                    <Text style={styles.navText}>Home</Text>
-                </Link>
-            </TouchableOpacity>
-            <TouchableOpacity style={styles.navButton}>
-                <Link href="./account">
-                    <Image source={require('../../assets/images/accountLogo.png')} style={styles.navIcon} />
-                    <Text style={styles.navText}>Account</Text>
-                </Link>
-            </TouchableOpacity>
+          style={{ flex: 1 }}
+          />
         </View>
+        <View style={styles.bottomContainer}> 
         </View>
+      </NewPageTemplate>
     )};
 
 const styles = StyleSheet.create({
@@ -100,6 +76,10 @@ const styles = StyleSheet.create({
         backgroundColor: '#E0BBE4', // Light purple color (match with Figma)
         paddingVertical: 15,
         alignItems: 'center',
+    },
+    bottomContainer: {
+        color: "#fff",
+        flex: .22
     },
     headerTitle: {
         fontSize: 24,
