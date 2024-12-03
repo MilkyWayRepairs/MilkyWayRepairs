@@ -15,10 +15,12 @@ import DateTimePicker from '@react-native-community/datetimepicker';
 import NewPageTemplate from '../newPageTemplate';
 import StepProgressBar from './StepProgressBar';
 import { SERVER_URL } from '@/config/config';
+import { Linking } from 'react-native';
+
 
 const AppointmentScheduler = () => {
   const [currentStep, setCurrentStep] = useState(1);
-  const totalSteps = 5;
+  const totalSteps = 6;
 
   const [name, setName] = useState('');
   const [service, setService] = useState('');
@@ -29,16 +31,14 @@ const AppointmentScheduler = () => {
   const [isLoadingVehicles, setIsLoadingVehicles] = useState(true);
   const [show, setShow] = useState(false);
 
-  // Sample data for services
+
   const services = ['Oil Change', 'Tire Rotation', 'Brake Inspection'];
 
-  // Generate time slots from 8 AM to 5 PM
   const timeSlots = Array.from({ length: 10 }, (_, i) => {
     const hour = i + 8;
     return `${hour.toString().padStart(2, '0')}:00`;
   });
 
-  // Fetch vehicle list from backend
   useEffect(() => {
     const fetchVehicles = async () => {
       try {
@@ -47,7 +47,7 @@ const AppointmentScheduler = () => {
           headers: {
             'Content-Type': 'application/json',
           },
-          credentials: 'include', // Include session cookies if needed
+          credentials: 'include',
         });
 
         if (response.ok) {
@@ -82,12 +82,10 @@ const AppointmentScheduler = () => {
     }
 
     try {
-      // Format the date and time
       const [hours, minutes] = selectedTime.split(':');
       const appointmentDate = new Date(selectedDate);
       appointmentDate.setHours(parseInt(hours), parseInt(minutes), 0, 0);
 
-      // Format date as YYYY-MM-DD HH:mm:ss
       const formattedDate = appointmentDate.toISOString().slice(0, 19).replace('T', ' ');
 
       const data = {
@@ -96,8 +94,6 @@ const AppointmentScheduler = () => {
         appointment_date: formattedDate,
         vehicle,
       };
-
-      console.log('Sending appointment data:', data);
 
       const response = await fetch(`${SERVER_URL}/scheduleAppointment`, {
         method: 'POST',
@@ -109,11 +105,7 @@ const AppointmentScheduler = () => {
       });
 
       if (response.ok) {
-        const result = await response.json();
-        Alert.alert(
-          'Success',
-          `Appointment scheduled:\n\nName: ${name}\nService: ${service}\nDate: ${appointmentDate.toLocaleDateString()}\nTime: ${selectedTime}\nVehicle: ${vehicle}\n\nMessage: ${result.message}`
-        );
+        setCurrentStep(6); // Proceed to Step 6 on successful submission
       } else {
         const error = await response.json();
         Alert.alert('Error', error.message || 'Failed to schedule appointment');
@@ -274,11 +266,23 @@ const AppointmentScheduler = () => {
             <Text style={styles.label}>
               Date and Time: {selectedDate.toLocaleDateString()} {selectedTime}
             </Text>
-            <Text style={styles.label}>Vehicle VIN: {vehicle}</Text>
+            <Text style={styles.label}>Vehicle: {vehicle}</Text>
             <View style={styles.buttonRow}>
               <CustomButton title="Previous" onPress={prevStep} />
               <CustomButton title="Confirm" onPress={handleSchedule} />
             </View>
+          </View>
+        )}
+
+        {currentStep === 6 && (
+          <View>
+            <Text style={styles.title}>Thank You! 😊</Text>
+            <Text style={styles.description}>
+              Your appointment has been successfully scheduled! You can check
+              its status by clicking "Status" on the Home page of the app.
+            </Text>
+            <CustomButton title="Finish" onPress={() => Linking.openURL('/userHomePage')}/>
+
           </View>
         )}
       </View>
@@ -362,6 +366,11 @@ const styles = StyleSheet.create({
   label: {
     fontSize: 16,
     marginBottom: 10,
+  },
+  description: {
+    fontSize: 16,
+    marginTop: 10,
+    textAlign: 'center',
   },
 });
 
