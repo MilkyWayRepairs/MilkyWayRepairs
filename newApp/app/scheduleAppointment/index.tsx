@@ -238,6 +238,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     marginTop: 20,
+    marginHorizontal: 10,
   },
   label: {
     fontSize: 16,
