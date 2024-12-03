@@ -1,7 +1,10 @@
-
 import React from 'react';
-import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
+import { View, Text, TextInput, TouchableOpacity, StyleSheet } from 'react-native';
+import axios from 'axios';
+import { SERVER_URL } from '@/config/config'; // Ensure this alias is set up in your project configuration
 import { useRouter } from "expo-router";
+import { Ionicons } from '@expo/vector-icons'; // Import for back arrow icon
+import NewPageTemplate from "../newPageTemplate";
 
 const ManagerSettings = () => {
   const router = useRouter();
@@ -11,46 +14,48 @@ const ManagerSettings = () => {
   };
 
   return (
-    <View style={styles.container}>
-      <Text style={styles.title}>Manager Settings</Text>
-
-      <TouchableOpacity
-        style={styles.button}
-        onPress={() => navigateTo('/manageEmployees')}
+    <NewPageTemplate title="Manager Settings">
+      <View style={styles.container}>
+      
+        <TouchableOpacity
+        style={styles.container}
+        onPress={() => navigateTo('/addEmployee')}
       >
-        <Text style={styles.buttonText}>Manage Employees</Text>
+        <Text style={styles.containerText}>Onboard Employee</Text>
       </TouchableOpacity>
 
       <TouchableOpacity
-        style={styles.button}
-        onPress={() => navigateTo('/hoursOfOperation')}
+        style={styles.container}
+        onPress={() => navigateTo('/fireEmployee')}
       >
-        <Text style={styles.buttonText}>Hours Of Operation</Text>
+        <Text style={styles.containerText}>Fire Employee</Text>
       </TouchableOpacity>
 
       <TouchableOpacity
-        style={styles.button}
-        onPress={() => navigateTo('/itemPricing')}
+        style={styles.container}
+        onPress={() => navigateTo('/misc')}
       >
-        <Text style={styles.buttonText}>Item Pricing</Text>
+        <Text style={styles.containerText}>Misc (Edit Wages, Write up, etc..)</Text>
       </TouchableOpacity>
 
       <TouchableOpacity
-        style={styles.button}
-        onPress={() => navigateTo('/otherSettings')}
+        style={styles.container}
+        onPress={() => navigateTo('/setSchedule')}
       >
-        <Text style={styles.buttonText}>Other</Text>
+        <Text style={styles.navText}>Set Employee Schedule</Text>
       </TouchableOpacity>
 
-      <View style={styles.navbar}>
-        <TouchableOpacity onPress={() => navigateTo('/home')} style={styles.navItem}>
-          <Text style={styles.navText}>Home</Text>
-        </TouchableOpacity>
-        <TouchableOpacity onPress={() => navigateTo('/account')} style={styles.navItem}>
-          <Text style={styles.navText}>Account</Text>
-        </TouchableOpacity>
+
+        <View style={styles.navbar}>
+          <TouchableOpacity onPress={() => navigateTo('/home')} style={styles.navItem}>
+            <Text style={styles.navText}>Home</Text>
+          </TouchableOpacity>
+          <TouchableOpacity onPress={() => navigateTo('/account')} style={styles.navItem}>
+            <Text style={styles.navText}>Account</Text>
+          </TouchableOpacity>
+        </View>
       </View>
-    </View>
+    </NewPageTemplate>
   );
 };
 
@@ -66,14 +71,14 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     marginBottom: 30,
   },
-  button: {
+  container: {
     backgroundColor: '#e0e0e0',
     paddingVertical: 15,
     paddingHorizontal: 20,
     borderRadius: 8,
     marginBottom: 15,
   },
-  buttonText: {
+  containerText: {
     fontSize: 16,
     color: '#000',
     textAlign: 'center',

@@ -1,41 +1,72 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View,
   Text,
   TextInput,
-  Button,
   StyleSheet,
   Alert,
   ScrollView,
   TouchableOpacity,
   Platform,
+  ActivityIndicator,
 } from 'react-native';
 import { Picker } from '@react-native-picker/picker';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import NewPageTemplate from '../newPageTemplate';
 import StepProgressBar from './StepProgressBar';
 import { SERVER_URL } from '@/config/config';
+import { Linking } from 'react-native';
+
 
 const AppointmentScheduler = () => {
   const [currentStep, setCurrentStep] = useState(1);
-  const totalSteps = 5;
+  const totalSteps = 6;
 
   const [name, setName] = useState('');
   const [service, setService] = useState('');
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [selectedTime, setSelectedTime] = useState('');
   const [vehicle, setVehicle] = useState('');
+  const [vehicles, setVehicles] = useState([]);
+  const [isLoadingVehicles, setIsLoadingVehicles] = useState(true);
   const [show, setShow] = useState(false);
 
-  // Sample data
-  const services = ['Oil Change', 'Tire Rotation', 'Brake Inspection'];
-  const vehicles = ['Toyota Camry', 'Honda Accord', 'Ford Explorer'];
 
-  // Generate time slots from 8 AM to 5 PM
+  const services = ['Oil Change', 'Tire Rotation', 'Brake Inspection'];
+
   const timeSlots = Array.from({ length: 10 }, (_, i) => {
     const hour = i + 8;
     return `${hour.toString().padStart(2, '0')}:00`;
   });
+
+  useEffect(() => {
+    const fetchVehicles = async () => {
+      try {
+        const response = await fetch(`${SERVER_URL}/get-vehicle-list`, {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          credentials: 'include',
+        });
+
+        if (response.ok) {
+          const vehicleData = await response.json();
+          setVehicles(vehicleData);
+        } else {
+          const error = await response.json();
+          Alert.alert('Error', error.error || 'Failed to fetch vehicle list');
+        }
+      } catch (err) {
+        console.error('Error fetching vehicle list:', err);
+        Alert.alert('Error', 'Something went wrong. Please try again.');
+      } finally {
+        setIsLoadingVehicles(false);
+      }
+    };
+
+    fetchVehicles();
+  }, []);
 
   const handleDateChange = (event, date) => {
     setShow(false);
@@ -44,34 +75,26 @@ const AppointmentScheduler = () => {
     }
   };
 
-  const handleTimeSelect = (time) => {
-    setSelectedTime(time);
-  };
-
   const handleSchedule = async () => {
     if (!name || !service || !selectedDate || !selectedTime || !vehicle) {
       Alert.alert('Error', 'Please complete all steps before confirming.');
       return;
     }
-  
+
     try {
-      // Format the date and time
       const [hours, minutes] = selectedTime.split(':');
       const appointmentDate = new Date(selectedDate);
       appointmentDate.setHours(parseInt(hours), parseInt(minutes), 0, 0);
-  
-      // Format date as YYYY-MM-DD HH:mm:ss
+
       const formattedDate = appointmentDate.toISOString().slice(0, 19).replace('T', ' ');
-  
+
       const data = {
         name: name.trim(),
         service,
         appointment_date: formattedDate,
         vehicle,
       };
-  
-      console.log('Sending appointment data:', data);
-  
+
       const response = await fetch(`${SERVER_URL}/scheduleAppointment`, {
         method: 'POST',
         headers: {
@@ -80,44 +103,15 @@ const AppointmentScheduler = () => {
         credentials: 'include',
         body: JSON.stringify(data),
       });
-  
+
       if (response.ok) {
-        const result = await response.json();
-        Alert.alert(
-          'Success',
-          `Appointment scheduled:\n\nName: ${name}\nService: ${service}\nDate: ${appointmentDate.toLocaleDateString()}\nTime: ${selectedTime}\nVehicle: ${vehicle}\n\nMessage: ${result.message}`
-        );
+        setCurrentStep(6); // Proceed to Step 6 on successful submission
       } else {
         const error = await response.json();
         Alert.alert('Error', error.message || 'Failed to schedule appointment');
       }
     } catch (err) {
       console.error('Error scheduling appointment:', err);
-      Alert.alert('Error', 'Something went wrong. Please try again.');
-    }
-  };
-
-  const handleSoonestAvailable = async () => {
-    try {
-      const response = await fetch(`${SERVER_URL}/getSoonestAppointment`, {
-        method: 'GET',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        credentials: 'include',
-      });
-
-      if (response.ok) {
-        const result = await response.json();
-        setSelectedDate(new Date(result.date));
-        setSelectedTime(result.time);
-        Alert.alert('Success', `Soonest available appointment: ${result.date} ${result.time}`);
-      } else {
-        const error = await response.json();
-        Alert.alert('Error', error.message || 'Failed to find soonest appointment');
-      }
-    } catch (err) {
-      console.error('Error getting soonest available appointment:', err);
       Alert.alert('Error', 'Something went wrong. Please try again.');
     }
   };
@@ -134,6 +128,19 @@ const AppointmentScheduler = () => {
     }
   };
 
+  const CustomButton = ({ title, onPress, disabled }) => (
+    <TouchableOpacity
+      onPress={onPress}
+      disabled={disabled}
+      style={[
+        styles.button,
+        disabled ? styles.buttonDisabled : styles.buttonEnabled,
+      ]}
+    >
+      <Text style={styles.buttonText}>{title}</Text>
+    </TouchableOpacity>
+  );
+
   return (
     <NewPageTemplate title="Schedule Appointment">
       <StepProgressBar currentStep={currentStep} totalSteps={totalSteps} />
@@ -148,7 +155,7 @@ const AppointmentScheduler = () => {
               value={name}
               onChangeText={setName}
             />
-            <Button title="Next" onPress={nextStep} disabled={!name.trim()} />
+            <CustomButton title="Next" onPress={nextStep} disabled={!name.trim()} />
           </View>
         )}
 
@@ -166,8 +173,8 @@ const AppointmentScheduler = () => {
               ))}
             </Picker>
             <View style={styles.buttonRow}>
-              <Button title="Previous" onPress={prevStep} />
-              <Button title="Next" onPress={nextStep} disabled={!service} />
+              <CustomButton title="Previous" onPress={prevStep} />
+              <CustomButton title="Next" onPress={nextStep} disabled={!service} />
             </View>
           </View>
         )}
@@ -175,7 +182,16 @@ const AppointmentScheduler = () => {
         {currentStep === 3 && (
           <View>
             <Text style={styles.title}>Step 3: Select Date and Time</Text>
-            <Button title="Soonest Available" onPress={handleSoonestAvailable} />
+            <CustomButton title="Select Date" onPress={() => setShow(true)} />
+            {show && (
+              <DateTimePicker
+                value={selectedDate}
+                mode="date"
+                display={Platform.OS === 'ios' ? 'spinner' : 'default'}
+                onChange={handleDateChange}
+                minimumDate={new Date()}
+              />
+            )}
             <Text style={styles.selectedDate}>
               Selected Date: {selectedDate.toLocaleDateString()}
             </Text>
@@ -204,8 +220,8 @@ const AppointmentScheduler = () => {
             </ScrollView>
 
             <View style={styles.buttonRow}>
-              <Button title="Previous" onPress={prevStep} />
-              <Button
+              <CustomButton title="Previous" onPress={prevStep} />
+              <CustomButton
                 title="Next"
                 onPress={nextStep}
                 disabled={!selectedDate || !selectedTime}
@@ -217,19 +233,27 @@ const AppointmentScheduler = () => {
         {currentStep === 4 && (
           <View>
             <Text style={styles.title}>Step 4: Choose a Vehicle</Text>
-            <Picker
-              selectedValue={vehicle}
-              onValueChange={(itemValue) => setVehicle(itemValue)}
-              style={styles.picker}
-            >
-              <Picker.Item label="Select a vehicle" value="" />
-              {vehicles.map((v, index) => (
-                <Picker.Item key={index} label={v} value={v} />
-              ))}
-            </Picker>
+            {isLoadingVehicles ? (
+              <ActivityIndicator size="large" color="#6B4F9B" />
+            ) : (
+              <Picker
+                selectedValue={vehicle}
+                onValueChange={(itemValue) => setVehicle(itemValue)}
+                style={styles.picker}
+              >
+                <Picker.Item label="Select a vehicle" value="" />
+                {vehicles.map((v, index) => (
+                  <Picker.Item
+                    key={index}
+                    label={`${v.year} ${v.make} ${v.model} (${v.VIN})`}
+                    value={v.VIN}
+                  />
+                ))}
+              </Picker>
+            )}
             <View style={styles.buttonRow}>
-              <Button title="Previous" onPress={prevStep} />
-              <Button title="Next" onPress={nextStep} disabled={!vehicle} />
+              <CustomButton title="Previous" onPress={prevStep} />
+              <CustomButton title="Next" onPress={nextStep} disabled={!vehicle} />
             </View>
           </View>
         )}
@@ -244,9 +268,21 @@ const AppointmentScheduler = () => {
             </Text>
             <Text style={styles.label}>Vehicle: {vehicle}</Text>
             <View style={styles.buttonRow}>
-              <Button title="Previous" onPress={prevStep} />
-              <Button title="Confirm" onPress={handleSchedule} />
+              <CustomButton title="Previous" onPress={prevStep} />
+              <CustomButton title="Confirm" onPress={handleSchedule} />
             </View>
+          </View>
+        )}
+
+        {currentStep === 6 && (
+          <View>
+            <Text style={styles.title}>Thank You! 😊</Text>
+            <Text style={styles.description}>
+              Your appointment has been successfully scheduled! You can check
+              its status by clicking "Status" on the Home page of the app.
+            </Text>
+            <CustomButton title="Finish" onPress={() => Linking.openURL('/userHomePage')}/>
+
           </View>
         )}
       </View>
@@ -309,11 +345,32 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     marginTop: 20,
-    marginHorizontal: 10,
+  },
+  button: {
+    padding: 15,
+    borderRadius: 5,
+    alignItems: 'center',
+    marginHorizontal: 5,
+  },
+  buttonEnabled: {
+    backgroundColor: '#6B4F9B',
+  },
+  buttonDisabled: {
+    backgroundColor: '#ccc',
+  },
+  buttonText: {
+    color: '#fff',
+    fontSize: 16,
+    fontWeight: 'bold',
   },
   label: {
     fontSize: 16,
     marginBottom: 10,
+  },
+  description: {
+    fontSize: 16,
+    marginTop: 10,
+    textAlign: 'center',
   },
 });
 

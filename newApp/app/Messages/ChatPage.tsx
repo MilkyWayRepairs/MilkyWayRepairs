@@ -5,6 +5,7 @@ import axios from 'axios';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { SERVER_URL } from '@/config/config';
 import SendBird from 'sendbird';
+import NewPageTemplate from '../newPageTemplate';
 
 
 
@@ -158,24 +159,13 @@ const ChatPage: React.FC = () => {
   };
 
   return (
+    <NewPageTemplate title = {receiverName}>
     <KeyboardAvoidingView 
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
       style={styles.container}
       keyboardVerticalOffset={Platform.OS === 'ios' ? 90 : 0}
     >
-<View style={styles.header}>
-  {/* Back Arrow */}
-  <TouchableOpacity style={styles.arrowBack} onPress={() => router.back()}>
-    <Image
-      source={require('../../assets/images/arrowBack.png')} // Ensure the correct path to your arrow image
-      style={styles.arrowIcon} // Style for the arrow icon
-    />
-  </TouchableOpacity>
-
-  {/* Header Title */}
-  <Text style={styles.headerText}>{receiverName}</Text>
-</View>
-      
+     
       <View style={styles.messagesWrapper}>
         <FlatList
           data={messages}
@@ -209,6 +199,7 @@ const ChatPage: React.FC = () => {
         </View>
       </View>
     </KeyboardAvoidingView>
+    </NewPageTemplate>
   );
 };
 
@@ -273,12 +264,12 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     paddingHorizontal: 20,
-    paddingVertical: 25,
+    paddingVertical: 10,
     borderTopWidth: 1,
     borderColor: '#ddd',
     backgroundColor: '#E5ECE4',
     position: 'absolute',
-    bottom:55,
+    bottom: 100,
     width: '100%',
   },
   input: {
@@ -287,7 +278,7 @@ const styles = StyleSheet.create({
     borderColor: '#c4cec3',
     borderRadius: 20,
     paddingHorizontal: 15,
-    paddingVertical: 8,
+    paddingVertical: 20,
     marginRight: 10,
     maxHeight: 100,
     minHeight: 40,
@@ -307,16 +298,6 @@ const styles = StyleSheet.create({
   sendButtonText: {
     color: '#fff',
     fontWeight: 'bold',
-  },
-  arrowBack: {
-    position: 'absolute',
-    left: 15, // Position the arrow to the left
-    zIndex: 1,
-  },
-  arrowIcon: {
-    width: 24, // Adjust size
-    height: 24, // Adjust size
-    tintColor: '#333', // Optional: adjust color if the icon supports tinting
   },
 });
 
