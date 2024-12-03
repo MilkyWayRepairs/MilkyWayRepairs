@@ -95,7 +95,7 @@ export default function App() {
     };
 
     // Submit the schedule to the server
-    fetch(`${SERVER_URL}/employee/schedule`, {
+    fetch(`${SERVER_URL}set-employee-schedule`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
