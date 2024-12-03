@@ -175,16 +175,7 @@ const AppointmentScheduler = () => {
         {currentStep === 3 && (
           <View>
             <Text style={styles.title}>Step 3: Select Date and Time</Text>
-            <Button title="Select Date" onPress={() => setShow(true)} />
-            {show && (
-              <DateTimePicker
-                value={selectedDate}
-                mode="date"
-                display={Platform.OS === 'ios' ? 'spinner' : 'default'}
-                onChange={handleDateChange}
-                minimumDate={new Date()}
-              />
-            )}
+            <Button title="Soonest Available" onPress={handleSoonestAvailable} />
             <Text style={styles.selectedDate}>
               Selected Date: {selectedDate.toLocaleDateString()}
             </Text>
@@ -258,10 +249,6 @@ const AppointmentScheduler = () => {
             </View>
           </View>
         )}
-
-        <View style={styles.buttonRow}>
-          <Button title="Soonest Available" onPress={handleSoonestAvailable} />
-        </View>
       </View>
     </NewPageTemplate>
   );
