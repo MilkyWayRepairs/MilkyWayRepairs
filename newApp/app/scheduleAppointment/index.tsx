@@ -275,14 +275,13 @@ const AppointmentScheduler = () => {
         )}
 
         {currentStep === 6 && (
-          <View>
-            <Text style={styles.title}>Thank You! 😊</Text>
-            <Text style={styles.description}>
+          <View style={[styles.centeredContainer]}>
+            <Text style={[styles.title, styles.centeredText]}>Thank You! 😊</Text>
+            <Text style={[styles.description, styles.centeredText]}>
               Your appointment has been successfully scheduled! You can check
               its status by clicking "Status" on the Home page of the app.
             </Text>
-            <CustomButton title="Finish" onPress={() => Linking.openURL('/userHomePage')}/>
-
+            <CustomButton title="Finish" onPress={() => Linking.openURL('/userHomePage')} />
           </View>
         )}
       </View>
@@ -291,6 +290,16 @@ const AppointmentScheduler = () => {
 };
 
 const styles = StyleSheet.create({
+  centeredContainer: {
+    flex: 1,
+    justifyContent: 'center', // Centers content vertically
+    alignItems: 'center',     // Centers content horizontally
+    padding: 20,              // Maintains padding for consistency
+  },
+  
+  centeredText: {
+    textAlign: 'center',      // Ensures text alignment is centered
+  },
   contentContainer: {
     flex: 1,
     padding: 20,

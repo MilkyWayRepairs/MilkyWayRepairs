@@ -61,6 +61,7 @@ const Register = () => {
         <TextInput
           style={styles.input}
           placeholder="Email"
+          placeholderTextColor="#dfdfdf"
           keyboardType="email-address"
           value={email}
           onChangeText={setEmail}
@@ -68,6 +69,7 @@ const Register = () => {
         <TextInput
           style={styles.input}
           placeholder="Password"
+          placeholderTextColor="#dfdfdf"
           secureTextEntry={true}
           value={password}
           onChangeText={setPassword}
