@@ -12,10 +12,9 @@ from models import db, User, Review, Message, Vehicle, Service, Job, Log, Appoin
 import os, re, dns.resolver, requests, time, random
 from sqlalchemy.sql import func
 
-'''
 from twilio.rest import Client
 import os
-
+# make sure to check readme for proper dependencies 
 
 #Twilio Initalization 
 account_sid = os.environ["TWILIO_ACCOUNT_SID"]
@@ -24,7 +23,7 @@ client = Client(account_sid, auth_token)
 
 
 #uncomment this block after initailization 
-'''
+
 
 
 ''' 
@@ -125,6 +124,14 @@ def doesEmailExists(email):
     print("email not in use")
     return False
 
+def sendText(content, number): 
+
+    message = client.messages.create(
+    body= content,
+    from_="+18777804236",
+    to= number
+    )
+    return message.sid
 
 def validateEmail(email):
     # Extract the domain part from the email
