@@ -14,13 +14,14 @@ from sqlalchemy.sql import func
 
 '''
 from twilio.rest import Client
+# from twilio.rest import Client
 import os
 
 
-#Twilio Initalization 
-account_sid = os.environ["TWILIO_ACCOUNT_SID"]
-auth_token = os.environ["TWILIO_AUTH_TOKEN"]
-client = Client(account_sid, auth_token)
+# #Twilio Initalization 
+# account_sid = os.environ["TWILIO_ACCOUNT_SID"]
+# auth_token = os.environ["TWILIO_AUTH_TOKEN"]
+# client = Client(account_sid, auth_token)
 
 
 #uncomment this block after initailization 
