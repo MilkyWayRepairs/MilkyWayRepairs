@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View,
   Text,
@@ -6,6 +6,8 @@ import {
   Button,
   StyleSheet,
   Alert,
+  ScrollView,
+  TouchableOpacity,
   Platform,
 } from 'react-native';
 import DateTimePicker from '@react-native-community/datetimepicker';
@@ -16,31 +18,32 @@ import StepProgressBar from './StepProgressBar';
 const AppointmentScheduler = () => {
   const [currentStep, setCurrentStep] = useState(1);
   const totalSteps = 3;
-
   const [name, setName] = useState('');
-  const [date, setDate] = useState(new Date());
+  const [selectedDate, setSelectedDate] = useState(new Date());
+  const [selectedTime, setSelectedTime] = useState('');
   const [show, setShow] = useState(false);
-  const [mode, setMode] = useState<'date' | 'time'>('date');
 
-  const onChange = (event: any, selectedDate?: Date) => {
-    if (selectedDate) {
-      if (mode === 'date') {
-        // Update the full date (date + time)
-        setDate(selectedDate);
-      } else if (mode === 'time') {
-        // Only update the time, keeping the existing date
-        const newDate = new Date(date);
-        newDate.setHours(selectedDate.getHours());
-        newDate.setMinutes(selectedDate.getMinutes());
-        setDate(newDate);
-      }
+  // Generate time slots from 8 AM to 5 PM
+  const generateTimeSlots = () => {
+    const slots = [];
+    for (let hour = 8; hour <= 17; hour++) {
+      const timeString = `${hour.toString().padStart(2, '0')}:00`;
+      slots.push(timeString);
     }
-    setShow(false); // Close the picker
+    return slots;
   };
 
-  const showMode = (currentMode: 'date' | 'time') => {
-    setMode(currentMode); // Set the mode (date or time)
-    setShow(true); // Show the picker
+  const timeSlots = generateTimeSlots();
+
+  const handleDateChange = (event: any, date?: Date) => {
+    setShow(false);
+    if (date) {
+      setSelectedDate(date);
+    }
+  };
+
+  const handleTimeSelect = (time: string) => {
+    setSelectedTime(time);
   };
 
   const handleSchedule = async () => {
@@ -49,35 +52,33 @@ const AppointmentScheduler = () => {
       return;
     }
 
-    if (!date) {
-      Alert.alert('Error', 'Please select a date and time');
+    if (!selectedDate || !selectedTime) {
+      Alert.alert('Error', 'Please select both date and time');
       return;
     }
 
-    const localDateTime = `${date.getFullYear()}-${(date.getMonth() + 1)
-      .toString()
-      .padStart(2, '0')}-${date
-      .getDate()
-      .toString()
-      .padStart(2, '0')}T${date
-      .getHours()
-      .toString()
-      .padStart(2, '0')}:${date
-      .getMinutes()
-      .toString()
-      .padStart(2, '0')}:00`;
-
-    const data = {
-      name: name.trim(),
-      appointment_date: localDateTime,
-    };
-
     try {
+      // Format the date properly
+      const [hours, minutes] = selectedTime.split(':');
+      const appointmentDate = new Date(selectedDate);
+      appointmentDate.setHours(parseInt(hours), 0, 0, 0); // Set hours and reset minutes/seconds/ms
+      
+      // Format date as YYYY-MM-DD HH:mm:ss
+      const formattedDate = appointmentDate.toISOString().slice(0, 19).replace('T', ' ');
+
+      const data = {
+        name: name.trim(),
+        appointment_date: formattedDate
+      };
+
+      console.log('Sending appointment data:', data); // Debug log
+
       const response = await fetch(`${SERVER_URL}/scheduleAppointment`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
+        credentials: 'include',
         body: JSON.stringify(data),
       });
 
@@ -127,25 +128,47 @@ const AppointmentScheduler = () => {
         {currentStep === 2 && (
           <View>
             <Text style={styles.title}>Step 2: Select Date and Time</Text>
-            <Button title="Pick Date" onPress={() => showMode('date')} />
-            <Button title="Pick Time" onPress={() => showMode('time')} />
+            <Button title="Select Date" onPress={() => setShow(true)} />
             {show && (
               <DateTimePicker
-                value={date}
-                mode={mode}
+                value={selectedDate}
+                mode="date"
                 display={Platform.OS === 'ios' ? 'inline' : 'default'}
-                onChange={onChange}
+                onChange={handleDateChange}
+                minimumDate={new Date()}
               />
             )}
             <Text style={styles.selectedDate}>
-              Selected Date and Time: {date.toLocaleString()}
+              Selected Date: {selectedDate.toLocaleDateString()}
             </Text>
+
+            <Text style={styles.subtitle}>Available Time Slots:</Text>
+            <ScrollView style={styles.timeSlotContainer}>
+              {timeSlots.map((time) => (
+                <TouchableOpacity
+                  key={time}
+                  style={[
+                    styles.timeSlot,
+                    selectedTime === time && styles.selectedTimeSlot,
+                  ]}
+                  onPress={() => handleTimeSelect(time)}
+                >
+                  <Text style={[
+                    styles.timeSlotText,
+                    selectedTime === time && styles.selectedTimeSlotText
+                  ]}>
+                    {time}
+                  </Text>
+                </TouchableOpacity>
+              ))}
+            </ScrollView>
+
             <View style={styles.buttonRow}>
               <Button title="Previous" onPress={prevStep} />
               <Button
                 title="Next"
                 onPress={nextStep}
-                disabled={!date}
+                disabled={!selectedDate || !selectedTime}
               />
             </View>
           </View>
@@ -156,14 +179,12 @@ const AppointmentScheduler = () => {
             <Text style={styles.title}>Step 3: Confirm Appointment</Text>
             <Text style={styles.label}>Name: {name}</Text>
             <Text style={styles.label}>
-              Date and Time: {date.toLocaleString()}
+              Date: {selectedDate.toLocaleDateString()}
             </Text>
+            <Text style={styles.label}>Time: {selectedTime}</Text>
             <View style={styles.buttonRow}>
               <Button title="Previous" onPress={prevStep} />
-              <Button
-                title="Confirm"
-                onPress={handleSchedule}
-              />
+              <Button title="Confirm" onPress={handleSchedule} />
             </View>
           </View>
         )}
@@ -175,8 +196,6 @@ const AppointmentScheduler = () => {
 const styles = StyleSheet.create({
   contentContainer: {
     flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
     padding: 20,
   },
   title: {
@@ -184,23 +203,52 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     marginBottom: 20,
   },
+  subtitle: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    marginTop: 20,
+    marginBottom: 10,
+  },
   input: {
     borderWidth: 1,
     borderColor: '#ccc',
     borderRadius: 5,
     padding: 10,
     marginBottom: 20,
-    width: '100%',
   },
   selectedDate: {
     fontSize: 16,
-    color: 'blue',
     marginTop: 10,
+    color: '#666',
+  },
+  timeSlotContainer: {
+    maxHeight: 200,
+    marginBottom: 20,
+  },
+  timeSlot: {
+    padding: 15,
+    borderWidth: 1,
+    borderColor: '#ccc',
+    borderRadius: 5,
+    marginBottom: 10,
+    backgroundColor: '#f9f9f9',
+  },
+  selectedTimeSlot: {
+    backgroundColor: '#E0BBE4',
+    borderColor: '#957DAD',
+  },
+  timeSlotText: {
+    fontSize: 16,
+    textAlign: 'center',
+    color: '#666',
+  },
+  selectedTimeSlotText: {
+    color: '#fff',
+    fontWeight: 'bold',
   },
   buttonRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    width: '100%',
     marginTop: 20,
   },
   label: {
