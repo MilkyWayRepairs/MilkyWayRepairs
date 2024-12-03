@@ -147,7 +147,36 @@ def validatePassword(password):
     validPassword = r'^(?=.{8,})(?=(?:[^!#$%&]*[!#$%&]){3,})(?=.*[a-zA-Z0-9])[a-zA-Z0-9!#$%&]+$'
     return re.match(validPassword, password) is not None
 
+@app.route('/user/<int:user_id>', methods=['PUT'])
+def edit_user(user_id):
+    try:
+        # Get the JSON data from the request
+        data = request.get_json()
 
+        # Validate required fields
+        if not data:
+            return jsonify({"error": "No data provided"}), 400
+
+        # Find the user by ID
+        user = User.query.get(user_id)
+        if not user:
+            return jsonify({"error": "User not found"}), 404
+
+        # Update the user fields if provided
+        if 'name' in data:
+            user.name = data['name']
+        if 'email' in data:
+            user.email = data['email']
+        if 'phone_number' in data:
+            user.phone_number = data['phone_number']
+
+        # Save changes to the database
+        db.session.commit()
+
+        return jsonify({"message": "User updated successfully"}), 200
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({"error": f"An error occurred: {str(e)}"}), 500
 
 
 @app.route('/register', methods=['POST'])
