@@ -388,7 +388,7 @@ def get_messages():
 def get_users():
     try:
         # Fetch all users except the current logged-in user
-        users = User.query
+        users = User.query.filter(User.role != "user").all()
 
 
         # Serialize user data
@@ -431,6 +431,47 @@ def get_status():
     except Exception as e:
         app.logger.error(f"Error retrieving vehicle status: {e}")
         return jsonify({"error": "Internal Server Error"}), 500
+
+@app.route('/add-vehicle', methods=['POST'])
+def add_vehicle():
+    if not session.get("id"):  # Ensure the user is authenticated
+        return jsonify({"error": "Unauthorized"}), 401
+
+    data = request.json
+    try:
+        # Validate that the required fields are present
+        required_fields = ['VIN', 'make', 'model', 'year']
+        for field in required_fields:
+            if field not in data or not data[field]:
+                return jsonify({"error": f"Missing field: {field}"}), 400
+
+        # Check if the VIN already exists in the database
+        existing_vehicle = Vehicle.query.get(data['VIN'])
+        if existing_vehicle:
+            return jsonify({"error": "A vehicle with this VIN already exists"}), 400
+
+        # Create a new vehicle object
+        new_vehicle = Vehicle(
+            VIN=data['VIN'],
+            make=data['make'],
+            model=data['model'],
+            year=data['year'],
+            status=0,  # Default status is set to 0
+            user_id=session.get("id")  # Link the vehicle to the logged-in user
+        )
+
+        # Add and commit the new vehicle to the database
+        db.session.add(new_vehicle)
+        db.session.commit()
+
+        return jsonify({"message": "Vehicle added successfully"}), 200
+
+    except Exception as e:
+        db.session.rollback()
+        print("Error:", str(e))
+        return jsonify({"error": str(e)}), 500
+
+    
         
 @app.route('/scheduleAppointment', methods=['POST'])
 def schedule_appointment():

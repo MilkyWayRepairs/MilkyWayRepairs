@@ -23,13 +23,11 @@ interface Chat {
   timestamp: string; // Timestamp of the last message
 }
 
-
 interface User {
   id: number;
   name: string;
   email: string;
 }
-
 
 const Messages: React.FC = () => {
   const [messages, setMessages] = useState<Message[]>([]);
