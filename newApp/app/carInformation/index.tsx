@@ -68,10 +68,10 @@ const VehicleList = () => {
 };
 
 const styles = StyleSheet.create({
-  container: {
+  contentContainer: {
     flex: 1,
-    flexDirection: 'column',
-    backgroundColor: '#fff',
+    marginTop: 80,
+    paddingHorizontal: 10,
   },
   item: { 
     fontSize: 18,

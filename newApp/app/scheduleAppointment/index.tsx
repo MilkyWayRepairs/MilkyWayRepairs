@@ -10,6 +10,7 @@ import {
   TouchableOpacity,
   Platform,
 } from 'react-native';
+import { Picker } from '@react-native-picker/picker';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import { SERVER_URL } from '@/config/config';
 import NewPageTemplate from '../newPageTemplate';
@@ -24,16 +25,10 @@ const AppointmentScheduler = () => {
   const [show, setShow] = useState(false);
 
   // Generate time slots from 8 AM to 5 PM
-  const generateTimeSlots = () => {
-    const slots = [];
-    for (let hour = 8; hour <= 17; hour++) {
-      const timeString = `${hour.toString().padStart(2, '0')}:00`;
-      slots.push(timeString);
-    }
-    return slots;
-  };
-
-  const timeSlots = generateTimeSlots();
+  const timeSlots = Array.from({ length: 10 }, (_, i) => {
+    const hour = i + 8;
+    return `${hour.toString().padStart(2, '0')}:00`;
+  });
 
   const handleDateChange = (event: any, date?: Date) => {
     setShow(false);
@@ -61,7 +56,7 @@ const AppointmentScheduler = () => {
       // Format the date properly
       const [hours, minutes] = selectedTime.split(':');
       const appointmentDate = new Date(selectedDate);
-      appointmentDate.setHours(parseInt(hours), 0, 0, 0); // Set hours and reset minutes/seconds/ms
+      appointmentDate.setHours(parseInt(hours), 0, 0, 0);
       
       // Format date as YYYY-MM-DD HH:mm:ss
       const formattedDate = appointmentDate.toISOString().slice(0, 19).replace('T', ' ');
@@ -71,7 +66,7 @@ const AppointmentScheduler = () => {
         appointment_date: formattedDate
       };
 
-      console.log('Sending appointment data:', data); // Debug log
+      console.log('Sending appointment data:', data);
 
       const response = await fetch(`${SERVER_URL}/scheduleAppointment`, {
         method: 'POST',
@@ -133,7 +128,7 @@ const AppointmentScheduler = () => {
               <DateTimePicker
                 value={selectedDate}
                 mode="date"
-                display={Platform.OS === 'ios' ? 'inline' : 'default'}
+                display={Platform.OS === 'ios' ? 'spinner' : 'default'}
                 onChange={handleDateChange}
                 minimumDate={new Date()}
               />
@@ -179,9 +174,8 @@ const AppointmentScheduler = () => {
             <Text style={styles.title}>Step 3: Confirm Appointment</Text>
             <Text style={styles.label}>Name: {name}</Text>
             <Text style={styles.label}>
-              Date: {selectedDate.toLocaleDateString()}
+              Date and Time: {selectedDate.toLocaleString()} {selectedTime}
             </Text>
-            <Text style={styles.label}>Time: {selectedTime}</Text>
             <View style={styles.buttonRow}>
               <Button title="Previous" onPress={prevStep} />
               <Button title="Confirm" onPress={handleSchedule} />
@@ -202,12 +196,6 @@ const styles = StyleSheet.create({
     fontSize: 20,
     fontWeight: 'bold',
     marginBottom: 20,
-  },
-  subtitle: {
-    fontSize: 16,
-    fontWeight: 'bold',
-    marginTop: 20,
-    marginBottom: 10,
   },
   input: {
     borderWidth: 1,
