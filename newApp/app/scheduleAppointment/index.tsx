@@ -8,6 +8,7 @@ import {
   Alert,
   Platform,
 } from 'react-native';
+import { Picker } from '@react-native-picker/picker';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import { SERVER_URL } from '@/config/config';
 import NewPageTemplate from '../newPageTemplate';
@@ -15,12 +16,16 @@ import StepProgressBar from './StepProgressBar';
 
 const AppointmentScheduler = () => {
   const [currentStep, setCurrentStep] = useState(1);
-  const totalSteps = 3;
+  const totalSteps = 4;
 
-  const [name, setName] = useState('');
+  const [service, setService] = useState('');
   const [date, setDate] = useState(new Date());
   const [show, setShow] = useState(false);
   const [mode, setMode] = useState<'date' | 'time'>('date');
+  const [vehicle, setVehicle] = useState('');
+
+  const services = ['Oil Change', 'Tire Rotation', 'Brake Inspection'];
+  const vehicles = ['Toyota Camry', 'Honda Accord', 'Ford Explorer'];
 
   const onChange = (event: any, selectedDate?: Date) => {
     if (selectedDate) {
@@ -44,13 +49,8 @@ const AppointmentScheduler = () => {
   };
 
   const handleSchedule = async () => {
-    if (!name.trim()) {
-      Alert.alert('Error', 'Please enter your name');
-      return;
-    }
-
-    if (!date) {
-      Alert.alert('Error', 'Please select a date and time');
+    if (!service || !date || !vehicle) {
+      Alert.alert('Error', 'Please complete all fields before confirming.');
       return;
     }
 
@@ -68,8 +68,9 @@ const AppointmentScheduler = () => {
       .padStart(2, '0')}:00`;
 
     const data = {
-      name: name.trim(),
+      service,
       appointment_date: localDateTime,
+      vehicle,
     };
 
     try {
@@ -113,14 +114,18 @@ const AppointmentScheduler = () => {
       <View style={styles.contentContainer}>
         {currentStep === 1 && (
           <View>
-            <Text style={styles.title}>Step 1: Enter Your Name</Text>
-            <TextInput
-              style={styles.input}
-              placeholder="Enter your name"
-              value={name}
-              onChangeText={setName}
-            />
-            <Button title="Next" onPress={nextStep} disabled={!name.trim()} />
+            <Text style={styles.title}>Step 1: Choose a Service</Text>
+            <Picker
+              selectedValue={service}
+              onValueChange={(itemValue) => setService(itemValue)}
+              style={styles.picker}
+            >
+              <Picker.Item label="Select a service" value="" />
+              {services.map((s, index) => (
+                <Picker.Item key={index} label={s} value={s} />
+              ))}
+            </Picker>
+            <Button title="Next" onPress={nextStep} disabled={!service} />
           </View>
         )}
 
@@ -142,28 +147,40 @@ const AppointmentScheduler = () => {
             </Text>
             <View style={styles.buttonRow}>
               <Button title="Previous" onPress={prevStep} />
-              <Button
-                title="Next"
-                onPress={nextStep}
-                disabled={!date}
-              />
+              <Button title="Next" onPress={nextStep} />
             </View>
           </View>
         )}
 
         {currentStep === 3 && (
           <View>
-            <Text style={styles.title}>Step 3: Confirm Appointment</Text>
-            <Text style={styles.label}>Name: {name}</Text>
-            <Text style={styles.label}>
-              Date and Time: {date.toLocaleString()}
-            </Text>
+            <Text style={styles.title}>Step 3: Choose a Vehicle</Text>
+            <Picker
+              selectedValue={vehicle}
+              onValueChange={(itemValue) => setVehicle(itemValue)}
+              style={styles.picker}
+            >
+              <Picker.Item label="Select a vehicle" value="" />
+              {vehicles.map((v, index) => (
+                <Picker.Item key={index} label={v} value={v} />
+              ))}
+            </Picker>
             <View style={styles.buttonRow}>
               <Button title="Previous" onPress={prevStep} />
-              <Button
-                title="Confirm"
-                onPress={handleSchedule}
-              />
+              <Button title="Next" onPress={nextStep} disabled={!vehicle} />
+            </View>
+          </View>
+        )}
+
+        {currentStep === 4 && (
+          <View>
+            <Text style={styles.title}>Step 4: Confirmation</Text>
+            <Text style={styles.label}>Service: {service}</Text>
+            <Text style={styles.label}>Date and Time: {date.toLocaleString()}</Text>
+            <Text style={styles.label}>Vehicle: {vehicle}</Text>
+            <View style={styles.buttonRow}>
+              <Button title="Previous" onPress={prevStep} />
+              <Button title="Confirm" onPress={handleSchedule} />
             </View>
           </View>
         )}
@@ -184,13 +201,9 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     marginBottom: 20,
   },
-  input: {
-    borderWidth: 1,
-    borderColor: '#ccc',
-    borderRadius: 5,
-    padding: 10,
-    marginBottom: 20,
+  picker: {
     width: '100%',
+    marginBottom: 20,
   },
   selectedDate: {
     fontSize: 16,
