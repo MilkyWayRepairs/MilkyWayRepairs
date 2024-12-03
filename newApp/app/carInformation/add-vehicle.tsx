@@ -4,6 +4,7 @@ import axios from 'axios';
 import { SERVER_URL } from '@/config/config';
 import { useRouter } from "expo-router";
 import { Ionicons } from '@expo/vector-icons'; // Import for back arrow icon
+import NewPageTemplate from "../newPageTemplate";
 
 const AddVehicle = () => {
   const [formData, setFormData] = useState({
@@ -25,7 +26,7 @@ const AddVehicle = () => {
         status: 0, // Default status
       });
       alert('Vehicle added successfully!');
-      router.push('/carInformation'); // Navigate back to the vehicle information page
+      router.push('..'); // Navigate back to the vehicle information page
     } catch (error) {
       console.error('Error adding vehicle:', error);
       alert('Failed to add vehicle.');
@@ -33,44 +34,40 @@ const AddVehicle = () => {
   };
 
   return (
-    <View style={styles.container}>
-      {/* Header with Back Arrow and Title */}
-      <View style={styles.header}>
-        <TouchableOpacity onPress={() => router.push('/carInformation')} style={styles.backButton}>
-          <Ionicons name="arrow-back" size={24} color="black" />
+    <NewPageTemplate title='Add Vehicle'>
+      <View style={styles.container}>
+        
+        {/* Form */}
+        <TextInput
+          style={styles.input}
+          placeholder="VIN"
+          value={formData.VIN}
+          onChangeText={(value) => handleInputChange('VIN', value)}
+        />
+        <TextInput
+          style={styles.input}
+          placeholder="Make"
+          value={formData.make}
+          onChangeText={(value) => handleInputChange('make', value)}
+        />
+        <TextInput
+          style={styles.input}
+          placeholder="Model"
+          value={formData.model}
+          onChangeText={(value) => handleInputChange('model', value)}
+        />
+        <TextInput
+          style={styles.input}
+          placeholder="Year"
+          keyboardType="numeric"
+          value={formData.year}
+          onChangeText={(value) => handleInputChange('year', value)}
+        />
+        <TouchableOpacity style={styles.addButton} onPress={handleAddVehicle}>
+          <Text style={styles.addButtonText}>Submit</Text>
         </TouchableOpacity>
-        <Text style={styles.title}>Add Vehicle</Text>
       </View>
-      {/* Form */}
-      <TextInput
-        style={styles.input}
-        placeholder="VIN"
-        value={formData.VIN}
-        onChangeText={(value) => handleInputChange('VIN', value)}
-      />
-      <TextInput
-        style={styles.input}
-        placeholder="Make"
-        value={formData.make}
-        onChangeText={(value) => handleInputChange('make', value)}
-      />
-      <TextInput
-        style={styles.input}
-        placeholder="Model"
-        value={formData.model}
-        onChangeText={(value) => handleInputChange('model', value)}
-      />
-      <TextInput
-        style={styles.input}
-        placeholder="Year"
-        keyboardType="numeric"
-        value={formData.year}
-        onChangeText={(value) => handleInputChange('year', value)}
-      />
-      <TouchableOpacity style={styles.addButton} onPress={handleAddVehicle}>
-        <Text style={styles.addButtonText}>Submit</Text>
-      </TouchableOpacity>
-    </View>
+    </NewPageTemplate>
   );
 };
 
@@ -79,18 +76,6 @@ const styles = StyleSheet.create({
     flex: 1,
     padding: 20,
     backgroundColor: '#fff',
-  },
-  header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: 20,
-  },
-  backButton: {
-    marginRight: 10,
-  },
-  title: {
-    fontSize: 24,
-    fontWeight: 'bold',
   },
   input: {
     borderWidth: 1,
