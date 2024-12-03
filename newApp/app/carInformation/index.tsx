@@ -32,9 +32,8 @@ const VehicleList = () => {
   };
 
   return (
-
     <NewPageTemplate title="Vehicle Information">
-      <View style={styles.container}>
+      <View style={styles.contentContainer}>
         <FlatList
           data={vehicles}
           keyExtractor={(item) => item.VIN}
@@ -46,7 +45,6 @@ const VehicleList = () => {
           ListEmptyComponent={
          <Text style={styles.emptyMessage}>No vehicle found</Text>
          }
-         style={styles.vehicleList}
         />
         {selectedVehicle && (
             <FlatList
@@ -88,10 +86,10 @@ const styles = StyleSheet.create({
   details: {
     marginTop: 5,
     padding: 0,
-    backgroundColor: '#f9f9f9',
+    backgroundColor: '#ffffff',
     borderRadius: 10,
     bottom: 150,
-    maxHeight: 300,
+    maxHeight: 350,
   },
   detailText: {
     fontSize: 16,
@@ -103,7 +101,9 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     margin: 10,
     alignItems: 'center',
-    bottom: -90,
+    bottom: 90,
+    width: 390,
+    position: 'absolute'
   },
   addButtonText: {
     color: '#fff',
