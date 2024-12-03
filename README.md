@@ -1,7 +1,6 @@
 "MilkyWayRepairs" 🚀
-MilkyWayRepairs is a fictitious car repair company that has one large location and wants to streamline their business before adding more locations.
-The project will use REACTJS, HTML, and CSS for the frontend, Java for the backend, and MySQL for the database.
-
+is a fictitious car repair company that has one large location and wants to streamline their business before adding more locations.
+The project will use React-Natvive, HTML, CSS, and Expo for the frontend, PYTHON and Flask for the backend, and MySQL for the database.
 
 💻  Authors:
 - Authors name       - Self given title beggining                -> Self given title end
