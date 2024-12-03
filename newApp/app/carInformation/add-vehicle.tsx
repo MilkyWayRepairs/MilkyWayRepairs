@@ -41,24 +41,28 @@ const AddVehicle = () => {
         <TextInput
           style={styles.input}
           placeholder="VIN"
+          placeholderTextColor="#dfdfdf"
           value={formData.VIN}
           onChangeText={(value) => handleInputChange('VIN', value)}
         />
         <TextInput
           style={styles.input}
           placeholder="Make"
+          placeholderTextColor="#dfdfdf"
           value={formData.make}
           onChangeText={(value) => handleInputChange('make', value)}
         />
         <TextInput
           style={styles.input}
           placeholder="Model"
+          placeholderTextColor="#dfdfdf"
           value={formData.model}
           onChangeText={(value) => handleInputChange('model', value)}
         />
         <TextInput
           style={styles.input}
           placeholder="Year"
+          placeholderTextColor="#dfdfdf"
           keyboardType="numeric"
           value={formData.year}
           onChangeText={(value) => handleInputChange('year', value)}
@@ -86,7 +90,7 @@ const styles = StyleSheet.create({
     fontSize: 16,
   },
   addButton: {
-    backgroundColor: '#007BFF',
+    backgroundColor: '#6B4F9B',
     padding: 15,
     borderRadius: 10,
     alignItems: 'center',
