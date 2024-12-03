@@ -3,10 +3,12 @@ import { View, Text, FlatList, TouchableOpacity, StyleSheet } from 'react-native
 import axios from 'axios';
 import { SERVER_URL } from '@/config/config';
 import NewPageTemplate from "../newPageTemplate"
+import { Link, useNavigation } from 'expo-router';
 
 const VehicleList = () => {
   const [vehicles, setVehicles] = useState([]);
   const [selectedVehicle, setSelectedVehicle] = useState(null);
+  const navigation = useNavigation();
 
   useEffect(() => {
     const fetchVehicles = async () => {
@@ -20,29 +22,22 @@ const VehicleList = () => {
     fetchVehicles();
 }, []);
 
-  const goToVehicleStatus = async (vehicle_VIN) => {
-    try {
-        const resp = await axios.get(`${SERVER_URL}/display_vehicle_satus/${vehicle_VIN}`);
-        setSelectedVehicle(resp.data);
-    } catch (error) {
-        console.error('Error fetching vehicle information:', error);
-    }
-  };
-
   return (
-    <View style={styles.container}>
-      <NewPageTemplate title="Status">
-      </NewPageTemplate>
-      <FlatList
-        data={vehicles}
-        keyExtractor={item => item.VIN}
-        renderItem={({ item }) => (
-          <TouchableOpacity onPress={() => goToVehicleStatus(item.VIN)}>
-            <Text style={styles.item}>{item.year} {item.make} {item.model}</Text>
-          </TouchableOpacity>
-        )}
-      />
-    </View>
+    <NewPageTemplate title="Select a Vehicle">
+        <View style={styles.container}>
+        <FlatList
+            data={vehicles}
+            keyExtractor={item => item.VIN}
+            renderItem={({ item }) => (
+              <Link href={`/status/customer?VIN=${item.VIN}`} asChild>
+                <TouchableOpacity>
+                    <Text style={styles.item}>{item.year} {item.make} {item.model}</Text>
+                </TouchableOpacity>
+              </Link>
+            )}
+        />
+        </View>
+    </NewPageTemplate>
   );
 };
 

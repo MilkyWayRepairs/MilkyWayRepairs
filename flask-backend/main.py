@@ -11,6 +11,29 @@ from datetime import datetime, timedelta
 from models import db, User, Review, Message, Vehicle, Service, Job, Log, Appointments, PerformanceEvaluation
 import os, re, dns.resolver, requests, time, random
 from sqlalchemy.sql import func
+from twilio.rest import Client
+import os
+
+
+#Twilio Initalization 
+account_sid = os.environ["TWILIO_ACCOUNT_SID"]
+auth_token = os.environ["TWILIO_AUTH_TOKEN"]
+client = Client(account_sid, auth_token)
+
+
+''' 
+Example usage: 
+message = client.messages.create(
+    body="Join Earth's mightiest heroes. Like Kevin Bacon.",
+    from_="+15017122661",
+    to="+15558675310",
+)
+
+print(message.body)
+'''
+
+
+
 
 load_dotenv()
 
@@ -406,15 +429,20 @@ def logout_user():
     return "200"
 
 
-@app.route('/get-vehicle-status', methods=['POST', 'GET'])
+@app.route('/get-vehicle-status/', methods=['GET'])
 def get_status():
     user_id = session.get("id")
 
     if not user_id:
         return jsonify({"error": "Unauthorized"}), 401
+
+    vehicle_vin = request.args.get('VIN')
+
+    if not vehicle_vin:
+        return jsonify({"error": "VIN is required"}), 400
     
     try:
-        vehicle = Vehicle.query.filter_by(user_id=user_id).first()
+        vehicle = Vehicle.query.filter_by(VIN=vehicle_vin).first()
 
         if not vehicle:
             return jsonify({"error:" "No vehicle found for this user"}), 401
@@ -431,6 +459,47 @@ def get_status():
     except Exception as e:
         app.logger.error(f"Error retrieving vehicle status: {e}")
         return jsonify({"error": "Internal Server Error"}), 500
+
+@app.route('/add-vehicle', methods=['POST'])
+def add_vehicle():
+    if not session.get("id"):  # Ensure the user is authenticated
+        return jsonify({"error": "Unauthorized"}), 401
+
+    data = request.json
+    try:
+        # Validate that the required fields are present
+        required_fields = ['VIN', 'make', 'model', 'year']
+        for field in required_fields:
+            if field not in data or not data[field]:
+                return jsonify({"error": f"Missing field: {field}"}), 400
+
+        # Check if the VIN already exists in the database
+        existing_vehicle = Vehicle.query.get(data['VIN'])
+        if existing_vehicle:
+            return jsonify({"error": "A vehicle with this VIN already exists"}), 400
+
+        # Create a new vehicle object
+        new_vehicle = Vehicle(
+            VIN=data['VIN'],
+            make=data['make'],
+            model=data['model'],
+            year=data['year'],
+            status=0,  # Default status is set to 0
+            user_id=session.get("id")  # Link the vehicle to the logged-in user
+        )
+
+        # Add and commit the new vehicle to the database
+        db.session.add(new_vehicle)
+        db.session.commit()
+
+        return jsonify({"message": "Vehicle added successfully"}), 200
+
+    except Exception as e:
+        db.session.rollback()
+        print("Error:", str(e))
+        return jsonify({"error": str(e)}), 500
+
+    
         
 @app.route('/scheduleAppointment', methods=['POST'])
 def schedule_appointment():
@@ -642,6 +711,36 @@ def get_vehicles():
         app.logger.error(f"Error fetching vehicles: {e}")
         return jsonify({"error": "Internal Server Error"}), 500
     
+@app.route('/get-employee-list', methods=['GET'])
+def get_employees():
+    try:
+        employees = User.query.filter_by(role="employee").all()
+        employee_list = [{
+            "ID": employee.id,
+            "name": employee.name,
+        } for employee in employees]
+        return jsonify(employee_list), 200
+    except Exception as e:
+        app.logger.error(f"Error fetching employees: {e}")
+        return jsonify({"error": "Internal Server Error"}), 500
+    
+@app.route('/display_employee_details/<employee_id>', methods=['GET'])
+def display_employee_details(employee_id):
+    try:
+        employee = User.query.filter_by(id=employee_id).first()
+        if not employee:
+            return jsonify({"error": "Employee not found"}), 404
+        
+        employee_data = {
+            "ID": employee.id,
+            "Name": employee.name
+        }
+        return jsonify(employee_data), 200
+    except Exception as e:
+        app.logger.error(f"Error fetching employee details: {e}")
+        return jsonify({"error": "Internal Server Error"}), 500
+        
+    
 @app.route('/display_vehicle_logs/<vehicle_VIN>', methods=['GET'])
 def display_logs(vehicle_VIN):
     try:
@@ -728,19 +827,32 @@ def submit_log():
 @app.route('/logs', methods=['GET'])
 def get_logs():
     try:
+        print("Attempting to fetch logs...") # Debug log
         logs = Log.query.all()
-        logs_list = [{
-            'id': log.id,
-            'date': log.date,
-            'mileage': log.mileage,
-            'vin': log.vin,
-            'jobTitle': log.job_title,  # This is the job_id
-            'jobNotes': log.job_notes
-        } for log in logs]
-        return jsonify(logs_list)
+        logs_data = []
+        
+        for log in logs:
+            try:
+                print(f"Processing log: {log.id}") # Debug log
+                log_data = {
+                    'id': log.id,
+                    'date': log.date,
+                    'mileage': log.mileage,
+                    'vin': log.VIN,
+                    'job_title': log.job_title,
+                    'job_notes': log.job_notes
+                }
+                logs_data.append(log_data)
+            except Exception as e:
+                print(f"Error processing log {log.id}: {str(e)}")
+                continue
+        
+        print(f"Returning {len(logs_data)} logs") # Debug log
+        return jsonify(logs_data), 200
+        
     except Exception as e:
-        print("Error fetching logs:", str(e))
-        return jsonify({"error": "Failed to fetch logs"}), 500
+        print(f"Error in /logs endpoint: {str(e)}")
+        return jsonify({"error": str(e)}), 500
 
 @app.route('/test', methods=['GET'])
 def test():

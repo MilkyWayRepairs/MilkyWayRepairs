@@ -112,12 +112,13 @@ const homeAndAdminOverlay = () => {
 
   {/* Manager Button */}
   <TouchableOpacity style={styles2.scrollButtonContainer}>
+    <Link href="/adminControls">
     <Image
       source={require('../../assets/images/Manager.png')}
       style={styles2.homeScreenButton}
     />
+    </Link>
     <Text style={styles2.homeScreenButtonText}>Manager</Text>
-
   </TouchableOpacity>
   
       </ScrollView>
@@ -172,7 +173,7 @@ const homeAndAdminOverlay = () => {
           </Link>
         </View>
         <View style={[styles.accountOverlayContent, styles.performanceContent]}>
-          <Link href="/adminPerformanceEvaluation">
+          <Link href="/adminPerformanceEvaluation1">
             <Text style={styles.accountOverlayText}>
               Performance Evaluation
             </Text>

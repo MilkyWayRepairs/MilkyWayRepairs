@@ -1,12 +1,27 @@
-import React, { useState } from 'react';
-import { View, Text, TextInput, Button, StyleSheet, Alert, Platform } from 'react-native';
+import React, { useState, useEffect } from 'react';
+import {
+  View,
+  Text,
+  TextInput,
+  Button,
+  StyleSheet,
+  Alert,
+  ScrollView,
+  TouchableOpacity,
+  Platform,
+} from 'react-native';
+import { Picker } from '@react-native-picker/picker';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import { SERVER_URL } from '@/config/config';
 import NewPageTemplate from '../newPageTemplate';
+import StepProgressBar from './StepProgressBar';
 
 const AppointmentScheduler = () => {
+  const [currentStep, setCurrentStep] = useState(1);
+  const totalSteps = 3;
   const [name, setName] = useState('');
-  const [date, setDate] = useState(new Date());
+  const [selectedDate, setSelectedDate] = useState(new Date());
+  const [selectedTime, setSelectedTime] = useState('');
   const [show, setShow] = useState(false);
   const [mode, setMode] = useState<'date' | 'time'>('date');
 
@@ -26,9 +41,8 @@ const AppointmentScheduler = () => {
     setShow(false); // Close the picker
   };
 
-  const showMode = (currentMode: 'date' | 'time') => {
-    setMode(currentMode); // Set the mode (date or time)
-    setShow(true); // Show the picker
+  const handleTimeSelect = (time: string) => {
+    setSelectedTime(time);
   };
 
   const handleSchedule = async () => {
@@ -38,93 +52,144 @@ const AppointmentScheduler = () => {
     }
 
     if (!date) {
-      Alert.alert('Error', 'please select a date and time');
+      Alert.alert('Error', 'Please select a date and time');
       return;
     }
 
-    const localDateTime = `${date.getFullYear()}-${(date.getMonth() + 1)
-      .toString()
-      .padStart(2, '0')}-${date
-      .getDate()
-      .toString()
-      .padStart(2, '0')}T${date
-      .getHours()
-      .toString()
-      .padStart(2, '0')}:${date
-      .getMinutes()
-      .toString()
-      .padStart(2, '0')}:00`;
+    try {
+      // Format the date properly
+      const [hours, minutes] = selectedTime.split(':');
+      const appointmentDate = new Date(selectedDate);
+      appointmentDate.setHours(parseInt(hours), 0, 0, 0); // Set hours and reset minutes/seconds/ms
+      
+      // Format date as YYYY-MM-DD HH:mm:ss
+      const formattedDate = appointmentDate.toISOString().slice(0, 19).replace('T', ' ');
 
     const data = {
-      name: name.trim(), 
+      name: name.trim(),
       appointment_date: localDateTime,
-    }
+    };
 
-    try {
+      console.log('Sending appointment data:', data); // Debug log
+
       const response = await fetch(`${SERVER_URL}/scheduleAppointment`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
+        credentials: 'include',
         body: JSON.stringify(data),
-      })
+      });
 
       if (response.ok) {
-        const result = await response.json()
-        Alert.alert('Success', `Appointment schedualed: ${result.message}`)
+        const result = await response.json();
+        Alert.alert('Success', `Appointment scheduled: ${result.message}`);
       } else {
-        const error = await response.json()
-        Alert.alert('Error', error.message || 'Failed to schedule appointment')
+        const error = await response.json();
+        Alert.alert('Error', error.message || 'Failed to schedule appointment');
       }
     } catch (err) {
-      console.error('Error scheduling appointment:', err)
-      Alert.alert('Error', 'somthing went wrong. Please try again.')
+      console.error('Error scheduling appointment:', err);
+      Alert.alert('Error', 'Something went wrong. Please try again.');
+    }
+  };
+
+  const nextStep = () => {
+    if (currentStep < totalSteps) {
+      setCurrentStep(currentStep + 1);
+    }
+  };
+
+  const prevStep = () => {
+    if (currentStep > 1) {
+      setCurrentStep(currentStep - 1);
     }
   };
 
   return (
-    <NewPageTemplate title= 'Schedule Appointment'>
+    <NewPageTemplate title="Schedule Appointment">
+      <StepProgressBar currentStep={currentStep} totalSteps={totalSteps} />
+
       <View style={styles.contentContainer}>
-
-
-        <Text style={styles.title}>Schedule an Appointment</Text>
-
-        <Text style={styles.label}>Your Name</Text>
-        <TextInput
-          style={styles.input}
-          placeholder="Enter your name"
-          value={name}
-          onChangeText={setName}
-        />
-
-        <Text style={styles.label}>Select Date and Time</Text>
-
-        {/* Button to Pick Date */}
-        <View style={styles.button}>
-          <Button title="Pick Date" onPress={() => showMode('date')} />
-        </View>
-
-        {/* Button to Pick Time */}
-        <View style={styles.button}>
-          <Button title="Pick Time" onPress={() => showMode('time')} />
-        </View>
-
-        {/* DateTimePicker */}
-        {show && (
-          <DateTimePicker
-            value={date}
-            mode={mode}
-            display={Platform.OS === 'ios' ? 'inline' : 'default'}
-            onChange={onChange}
-          />
+        {currentStep === 1 && (
+          <View>
+            <Text style={styles.title}>Step 1: Choose a Service</Text>
+            <Picker
+              selectedValue={service}
+              onValueChange={(itemValue) => setService(itemValue)}
+              style={styles.picker}
+            >
+              <Picker.Item label="Select a service" value="" />
+              {services.map((s, index) => (
+                <Picker.Item key={index} label={s} value={s} />
+              ))}
+            </Picker>
+            <Button title="Next" onPress={nextStep} disabled={!service} />
+          </View>
         )}
 
-        <Text style={styles.label}>Selected Date and Time:</Text>
-        <Text style={styles.selectedDate}>{date.toLocaleString()}</Text>
+        {currentStep === 2 && (
+          <View>
+            <Text style={styles.title}>Step 2: Select Date and Time</Text>
+            <Button title="Select Date" onPress={() => setShow(true)} />
+            {show && (
+              <DateTimePicker
+                value={selectedDate}
+                mode="date"
+                display={Platform.OS === 'ios' ? 'inline' : 'default'}
+                onChange={handleDateChange}
+                minimumDate={new Date()}
+              />
+            )}
+            <Text style={styles.selectedDate}>
+              Selected Date: {selectedDate.toLocaleDateString()}
+            </Text>
 
-        <View style={styles.button}>
-          <Button title="Schedule Appointment" onPress={handleSchedule} />
-        </View>
+            <Text style={styles.subtitle}>Available Time Slots:</Text>
+            <ScrollView style={styles.timeSlotContainer}>
+              {timeSlots.map((time) => (
+                <TouchableOpacity
+                  key={time}
+                  style={[
+                    styles.timeSlot,
+                    selectedTime === time && styles.selectedTimeSlot,
+                  ]}
+                  onPress={() => handleTimeSelect(time)}
+                >
+                  <Text style={[
+                    styles.timeSlotText,
+                    selectedTime === time && styles.selectedTimeSlotText
+                  ]}>
+                    {time}
+                  </Text>
+                </TouchableOpacity>
+              ))}
+            </ScrollView>
+
+            <View style={styles.buttonRow}>
+              <Button title="Previous" onPress={prevStep} />
+              <Button
+                title="Next"
+                onPress={nextStep}
+                disabled={!date}
+              />
+            </View>
+          </View>
+        )}
+
+        {currentStep === 3 && (
+          <View>
+            <Text style={styles.title}>Step 3: Confirm Appointment</Text>
+            <Text style={styles.label}>Name: {name}</Text>
+            <Text style={styles.label}>
+              Date and Time: {date.toLocaleString()}
+            </Text>
+            <View style={styles.buttonRow}>
+              <Button title="Previous" onPress={prevStep} />
+              <Button title="Confirm" onPress={handleSchedule} />
+            </View>
+          </View>
+        )}
       </View>
     </NewPageTemplate>
   );
@@ -133,46 +198,12 @@ const AppointmentScheduler = () => {
 const styles = StyleSheet.create({
   contentContainer: {
     flex: 1,
-    marginLeft: 5,
-    marginTop: 0,
-    backgroundColor: 'white',
-    justifyContent: 'center',
-    alignItems: 'center',
-    width: '100%',
+    padding: 20,
   },
   title: {
-    fontSize: 24,
+    fontSize: 20,
     fontWeight: 'bold',
     marginBottom: 20,
-    textAlign: 'center',
-    top: -50,
-  },
-  button: {
-    width: 150,
-    padding: 10,
-    marginTop: 20,
-    marginBottom: 20,
-    resizeMode: 'contain',
-    backgroundColor: '#6B4F9B', // Purple color
-    borderColor: '#333',
-    borderWidth: 1,
-    borderRadius: 20,
-    fontFamily: 'Calibri',
-    fontSize: 23,
-    //fontWeight: 'bold',
-    cursor: 'pointer',
-    top: -40,
-  },
-  label: {
-    fontSize: 16,
-    marginBottom: 5,
-    top: -40,
-  },
-  selectedDate: {
-    fontSize: 16,
-    color: 'blue',
-    marginTop: 10,
-    top: -40,
   },
   input: {
     borderWidth: 1,
@@ -180,25 +211,45 @@ const styles = StyleSheet.create({
     borderRadius: 5,
     padding: 10,
     marginBottom: 20,
-    top: -35,
-    width: 300,
   },
-  fetchButtonText: {
-  color: '#fff',
-  fontWeight: 'bold',
+  selectedDate: {
+    fontSize: 16,
+    marginTop: 10,
+    color: '#666',
   },
-  timeList: {
-  paddingBottom: 20,
+  timeSlotContainer: {
+    maxHeight: 200,
+    marginBottom: 20,
   },
   timeSlot: {
-  backgroundColor: '#f0f0f0',
-  padding: 15,
-  borderRadius: 5,
-  marginBottom: 10,
+    padding: 15,
+    borderWidth: 1,
+    borderColor: '#ccc',
+    borderRadius: 5,
+    marginBottom: 10,
+    backgroundColor: '#f9f9f9',
   },
-  timeText: {
-  fontSize: 16,
-  textAlign: 'center',
+  selectedTimeSlot: {
+    backgroundColor: '#E0BBE4',
+    borderColor: '#957DAD',
+  },
+  timeSlotText: {
+    fontSize: 16,
+    textAlign: 'center',
+    color: '#666',
+  },
+  selectedTimeSlotText: {
+    color: '#fff',
+    fontWeight: 'bold',
+  },
+  buttonRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginTop: 20,
+  },
+  label: {
+    fontSize: 16,
+    marginBottom: 10,
   },
 });
 
