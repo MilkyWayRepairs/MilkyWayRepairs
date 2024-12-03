@@ -11,7 +11,7 @@ interface NewPageTemplateProps {
   children?: React.ReactNode;
 }
 
-const newPageTemplate: React.FC<NewPageTemplateProps> = ({ title = "Template", children }) => {
+const employeePageTemplate: React.FC<NewPageTemplateProps> = ({ title = "Template", children }) => {
   const translateX = useSharedValue(400); // Start off-screen
   const [isOverlayVisible, setIsOverlayVisible] = React.useState(false);
   
@@ -239,7 +239,7 @@ const styles = StyleSheet.create({
     top: 10, // Adjust this value to position the first box
   },
   performanceEvaluationContent: {
-    top: 10,
+    top: 100,
   },
   accountOverlayText: {
     color: 'black',
@@ -270,4 +270,4 @@ const styles = StyleSheet.create({
 
 });
 
-export default newPageTemplate;
+export default employeePageTemplate;
