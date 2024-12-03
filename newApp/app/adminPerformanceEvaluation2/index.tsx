@@ -3,15 +3,16 @@ import { Link, } from "expo-router"
 import React, { act, useState } from 'react';
 import { SERVER_URL } from "../../config/config";
 import AccountSidebar from '../accountSidebar'; // Ensure the path is correct
+import { useSearchParams } from "expo-router/build/hooks";
 
 const adminPerformanceEvaluation2 = () => {
-  const[employeeName, setEmployeeName] = useState("");
-  const[employeeID, setEmployeeID] = useState("");
+  const searchParams = useSearchParams();
+  const employeeID = searchParams.get('ID');
   const[expectedTime, setExpectedTime] = useState("");
   const[actualTime, setActualTime] = useState("");
   
   const handleCalculate = async () => {
-    if (!employeeName.trim() || !employeeID.trim() || !expectedTime.trim() || !actualTime.trim()) {
+    if (!expectedTime.trim() || !actualTime.trim()) {
         alert("All fields are required!");
         return;
     }
@@ -29,7 +30,6 @@ const adminPerformanceEvaluation2 = () => {
                 "Content-Type": "application/json",
             },
             body: JSON.stringify({
-                employeeName,
                 employeeID,
                 expectedTime: parseFloat(expectedTime),
                 actualTime: parseFloat(actualTime),
@@ -41,8 +41,6 @@ const adminPerformanceEvaluation2 = () => {
         if (response.ok) {
             alert(`Evaluation submitted successfully!\nPerformance Ratio: ${data.performance_ratio.toFixed(2)}%`);
             // Clear form
-            setEmployeeName("");
-            setEmployeeID("");
             setExpectedTime("");
             setActualTime("");
         } else {
@@ -65,16 +63,6 @@ const adminPerformanceEvaluation2 = () => {
         </Link>
       </TouchableOpacity>
 
-      {/* Employee Name Header*/}
-      <Text style={[styles.performanceEvaluationScreenText, styles.employeeNameText]}>
-        Employee Name:
-      </Text>
-
-      {/* Employee ID Header */}
-      <Text style={[styles.performanceEvaluationScreenText, styles.employeeIDText]}>
-        Employee ID:
-      </Text>
-
       {/* Excpected Time Header */}
       <Text style={[styles.performanceEvaluationScreenText, styles.expectedTimeText]}>
         Expected Time Spent on Task:
@@ -86,20 +74,6 @@ const adminPerformanceEvaluation2 = () => {
       </Text>
 
       {/* Input Fields */}
-      <TextInput
-        style={[styles.input, styles.employeeNameInput]}
-        placeholder="Name"
-        keyboardType="default"
-        value={employeeName}
-        onChangeText={setEmployeeName}
-      />
-      <TextInput
-        style={[styles.input, styles.employeeIDInput]}
-        placeholder="ID#"
-        keyboardType="number-pad"
-        value={employeeID}
-        onChangeText={setEmployeeID}
-      />
       <TextInput
         style={[styles.input, styles.expectedTimeInput]}
         placeholder="Hours"
@@ -157,20 +131,12 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     position: 'absolute',
   },
-  employeeNameText: {
-    top: 50,
-    left: 115,
-  },
-  employeeIDText: {
-    top: 170,
-    left: 135, 
-  },
   expectedTimeText: {
-    top: 290,
+    top: 100,
     left: 60,
   },
   actualTimeText: {
-    top: 410,
+    top: 220,
     left: 70,
   },
   input: {
@@ -182,14 +148,6 @@ const styles = StyleSheet.create({
     paddingHorizontal: 10,
     marginVertical: 20,
   },
-  employeeNameInput: {
-    top: 80,
-    left: 0,
-  },
-  employeeIDInput: {
-    top: 100,
-    left: 0,
-  },
   expectedTimeInput: {
     top: 120,
     left: 0,
@@ -199,7 +157,7 @@ const styles = StyleSheet.create({
     left: 0,
   },
   button: {
-    top: 170,
+    top: 150,
     width: 150,
     padding: 10,
     backgroundColor: '#6B4F9B',
