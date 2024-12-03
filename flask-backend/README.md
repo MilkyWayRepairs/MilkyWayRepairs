@@ -53,10 +53,10 @@ $ pip install Flask flask_sqlalchemy pymysql python-dotenv flask-cors dnspython
  # Twilio setup Instructions
  https://www.twilio.com/docs/messaging/quickstart/python
 
- 1) add the following lines to your .env
+ 1) paste the following lines to your .env, I personally sent the keys to you
 
- TWILIO_ACCOUNT_SID = 'AC3a0c2cdd8522abaac2ab4887479e0587'
- TWILIO_AUTH_TOKEN = '56a53b18df3596b0cda0b2327e68f257'
+ TWILIO_ACCOUNT_SID = ''
+ TWILIO_AUTH_TOKEN = ''
 
 
  2)  pip install twilio
