@@ -36,6 +36,7 @@ const styles = StyleSheet.create({
   stepContainer: {
     flexDirection: 'row',
     alignItems: 'center',
+    color: '#6B4F9B',
   },
   circle: {
     width: 40,
