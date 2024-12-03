@@ -23,22 +23,18 @@ const AppointmentScheduler = () => {
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [selectedTime, setSelectedTime] = useState('');
   const [show, setShow] = useState(false);
-  const [mode, setMode] = useState<'date' | 'time'>('date');
 
-  const onChange = (event: any, selectedDate?: Date) => {
-    if (selectedDate) {
-      if (mode === 'date') {
-        // Update the full date (date + time)
-        setDate(selectedDate);
-      } else if (mode === 'time') {
-        // Only update the time, keeping the existing date
-        const newDate = new Date(date);
-        newDate.setHours(selectedDate.getHours());
-        newDate.setMinutes(selectedDate.getMinutes());
-        setDate(newDate);
-      }
+  // Generate time slots from 8 AM to 5 PM
+  const timeSlots = Array.from({ length: 10 }, (_, i) => {
+    const hour = i + 8;
+    return `${hour.toString().padStart(2, '0')}:00`;
+  });
+
+  const handleDateChange = (event: any, date?: Date) => {
+    setShow(false);
+    if (date) {
+      setSelectedDate(date);
     }
-    setShow(false); // Close the picker
   };
 
   const handleTimeSelect = (time: string) => {
@@ -51,8 +47,8 @@ const AppointmentScheduler = () => {
       return;
     }
 
-    if (!date) {
-      Alert.alert('Error', 'Please select a date and time');
+    if (!selectedDate || !selectedTime) {
+      Alert.alert('Error', 'Please select both date and time');
       return;
     }
 
@@ -60,17 +56,17 @@ const AppointmentScheduler = () => {
       // Format the date properly
       const [hours, minutes] = selectedTime.split(':');
       const appointmentDate = new Date(selectedDate);
-      appointmentDate.setHours(parseInt(hours), 0, 0, 0); // Set hours and reset minutes/seconds/ms
+      appointmentDate.setHours(parseInt(hours), 0, 0, 0);
       
       // Format date as YYYY-MM-DD HH:mm:ss
       const formattedDate = appointmentDate.toISOString().slice(0, 19).replace('T', ' ');
 
-    const data = {
-      name: name.trim(),
-      appointment_date: localDateTime,
-    };
+      const data = {
+        name: name.trim(),
+        appointment_date: formattedDate
+      };
 
-      console.log('Sending appointment data:', data); // Debug log
+      console.log('Sending appointment data:', data);
 
       const response = await fetch(`${SERVER_URL}/scheduleAppointment`, {
         method: 'POST',
@@ -113,18 +109,14 @@ const AppointmentScheduler = () => {
       <View style={styles.contentContainer}>
         {currentStep === 1 && (
           <View>
-            <Text style={styles.title}>Step 1: Choose a Service</Text>
-            <Picker
-              selectedValue={service}
-              onValueChange={(itemValue) => setService(itemValue)}
-              style={styles.picker}
-            >
-              <Picker.Item label="Select a service" value="" />
-              {services.map((s, index) => (
-                <Picker.Item key={index} label={s} value={s} />
-              ))}
-            </Picker>
-            <Button title="Next" onPress={nextStep} disabled={!service} />
+            <Text style={styles.title}>Step 1: Enter Your Name</Text>
+            <TextInput
+              style={styles.input}
+              placeholder="Enter your name"
+              value={name}
+              onChangeText={setName}
+            />
+            <Button title="Next" onPress={nextStep} disabled={!name.trim()} />
           </View>
         )}
 
@@ -136,7 +128,7 @@ const AppointmentScheduler = () => {
               <DateTimePicker
                 value={selectedDate}
                 mode="date"
-                display={Platform.OS === 'ios' ? 'inline' : 'default'}
+                display={Platform.OS === 'ios' ? 'spinner' : 'default'}
                 onChange={handleDateChange}
                 minimumDate={new Date()}
               />
@@ -171,7 +163,7 @@ const AppointmentScheduler = () => {
               <Button
                 title="Next"
                 onPress={nextStep}
-                disabled={!date}
+                disabled={!selectedDate || !selectedTime}
               />
             </View>
           </View>
@@ -182,7 +174,7 @@ const AppointmentScheduler = () => {
             <Text style={styles.title}>Step 3: Confirm Appointment</Text>
             <Text style={styles.label}>Name: {name}</Text>
             <Text style={styles.label}>
-              Date and Time: {date.toLocaleString()}
+              Date and Time: {selectedDate.toLocaleString()} {selectedTime}
             </Text>
             <View style={styles.buttonRow}>
               <Button title="Previous" onPress={prevStep} />
