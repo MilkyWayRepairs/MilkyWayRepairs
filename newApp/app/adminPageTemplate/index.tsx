@@ -11,7 +11,7 @@ interface NewPageTemplateProps {
   children?: React.ReactNode;
 }
 
-const employeePageTemplate: React.FC<NewPageTemplateProps> = ({ title = "Template", children }) => {
+const newPageTemplate: React.FC<NewPageTemplateProps> = ({ title = "Template", children }) => {
   const translateX = useSharedValue(400); // Start off-screen
   const [isOverlayVisible, setIsOverlayVisible] = React.useState(false);
   
@@ -72,7 +72,7 @@ const employeePageTemplate: React.FC<NewPageTemplateProps> = ({ title = "Templat
     
       {/* Home Button */}
       <TouchableOpacity style={styles.homeButtonContainer}>
-        <Link href="/employeeHomePage">
+        <Link href="/adminHomePage">
           {"  "}
           <Image
           source={require('../../assets/images/homeLogo.png')}
@@ -103,7 +103,7 @@ const employeePageTemplate: React.FC<NewPageTemplateProps> = ({ title = "Templat
           </Link>
         </View>
         <View style={[styles.accountOverlayContent, styles.performanceEvaluationContent]}>
-          <Link href="/employeePerformanceEvaluation">
+          <Link href="/adminPerformanceEvaluation1">
             <Text style={styles.accountOverlayText}>
               Performance Evaluation
             </Text>
@@ -239,7 +239,7 @@ const styles = StyleSheet.create({
     top: 10, // Adjust this value to position the first box
   },
   performanceEvaluationContent: {
-    top: 100,
+    top: 100, // Adjust this value to position the second box
   },
   accountOverlayText: {
     color: 'black',
@@ -270,4 +270,4 @@ const styles = StyleSheet.create({
 
 });
 
-export default employeePageTemplate;
+export default newPageTemplate;
