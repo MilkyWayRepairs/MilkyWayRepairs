@@ -1,8 +1,10 @@
 import { Text, View, Image, TouchableOpacity, StyleSheet } from "react-native";
-import { Link, router } from "expo-router";
+import NewPageTemplate from "../newPageTemplate";
+import { Link, useRouter } from "expo-router";
 import React, { useEffect, useState } from "react";
 import Svg, { Circle } from 'react-native-svg'
 import { SERVER_URL } from "@/config/config";
+import { useSearchParams } from "expo-router/build/hooks";
 
 const CircularProgress = ({ progress, color }: { progress: number, color: string } ) => {
   const logoRadius = 185;
@@ -54,13 +56,16 @@ const vehicleStatuses: Record<number, VehicleStatus> = {
 };
 
 const customerStatusPage = () => {
+  const searchParams = useSearchParams();
+  const vehicle_VIN = searchParams.get('VIN');
   const [currentStatus, setCurrentStatus] = useState<VehicleStatus | null>(null);
+  const [vehicleDetails, setVehicleDetails] = useState<any | null>(null);
 
   useEffect(() => {
     // Function to fetch vehicle status from the API
     const fetchVehicleStatus = async () => {
       try {
-        const response = await fetch(`${SERVER_URL}/get-vehicle-status`);
+        const response = await fetch(`${SERVER_URL}/get-vehicle-status?VIN=${vehicle_VIN}`);
         const data = await response.json();
         console.log(data)
 
@@ -69,6 +74,7 @@ const customerStatusPage = () => {
 
         if (status) {
           setCurrentStatus(status)
+          setVehicleDetails(data.vehicleDetails);
         } else {
           console.error('Invalid status received:', statusInt)
         }
@@ -78,48 +84,41 @@ const customerStatusPage = () => {
     };
 
     fetchVehicleStatus();
-  }, []);
+  }, [vehicle_VIN]);
 
   if (!currentStatus) {
     return <Text>Loading...</Text>; // Show a loading state while fetching data
   }
 
   return (
-    <View style={styles.container}>
-      {/* Logo */}
-      <Image 
-      source={require('../../assets/images/MilkyWayRepair.png')} 
-      style={styles.logo}
-      />
+    <NewPageTemplate title = "Vehicle Status">
+      <View style={styles.container}>
+        {/* Logo */}
+        <Image 
+        source={require('../../assets/images/MilkyWayRepair.png')} 
+        style={styles.logo}
+        />
 
-      {/* Top text */}
-      <Text style={styles.topText}>Your vehicle's status:</Text>
+        {/* Top text */}
+        <Text style={styles.topText}>Your vehicle's status:</Text>
 
-      {/* Back Arrow */}
-      <TouchableOpacity style={styles.arrowBackContainer}>
-        <Link href="..">
-          <Image 
-          source={require('../../assets/images/arrowBack.png')} 
-          style={styles.arrowBack}/>
-        </Link>
-      </TouchableOpacity>
+        {/* Status Text */}
+        <Text style={styles.progressText}>{currentStatus.text}</Text>
 
-      {/* Status Text */}
-      <Text style={styles.progressText}>{currentStatus.text}</Text>
-
-      {/* Circular Progress */}
-      <View style={styles.progressContainer}>
-        <CircularProgress progress={currentStatus.progress} color={currentStatus.color} />
+        {/* Circular Progress */}
+        <View style={styles.progressContainer}>
+          <CircularProgress progress={currentStatus.progress} color={currentStatus.color} />
+        </View>
+              {/* Review Button */}
+              {currentStatus.progress === 100 && (
+          <TouchableOpacity style={styles.reviewButton}>
+          <Link href={'/reviews'}>
+            <Text style={styles.reviewButtonText}>Please leave us a review!</Text>
+            </Link>
+          </TouchableOpacity>
+        )}
       </View>
-            {/* Review Button */}
-            {currentStatus.progress === 100 && (
-        <TouchableOpacity style={styles.reviewButton}>
-        <Link href={'/reviews'}>
-          <Text style={styles.reviewButtonText}>Please leave us a review!</Text>
-          </Link>
-        </TouchableOpacity>
-      )}
-    </View>
+    </NewPageTemplate>
   );
 };
 
@@ -137,6 +136,7 @@ progressContainer: {
     alignItems: 'center',
     position: 'absolute',
     paddingBottom: 50,
+    top: 100
   },
 CircularProgress: {
     position: 'absolute',
@@ -148,23 +148,10 @@ logo: {
     height: 300,
     position: 'absolute',
     resizeMode: 'contain',
-    top: 240,
-  },
-    arrowBackContainer: {
-    position: 'absolute',
-    top: 50,
-    left: 21,
-    width: 53,
-    height: 50,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-arrowBack: {
-    height: 50,
-    width: 53, 
+    top: 150,
   },
 progressText: {
-    marginTop: 460, // Adjust to position the text below the progress bar
+    marginTop: 350, // Adjust to position the text below the progress bar
     fontSize: 20,
     color: '#333',
     textAlign: 'center',
@@ -172,7 +159,8 @@ progressText: {
     lineHeight: 24,
   },
   topText: {
-    top: -20,
+    position: 'absolute',
+    top: 50,
     fontSize: 20,
     color: '#333',
     textAlign: 'center',

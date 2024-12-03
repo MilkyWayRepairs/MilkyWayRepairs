@@ -406,15 +406,20 @@ def logout_user():
     return "200"
 
 
-@app.route('/get-vehicle-status', methods=['POST', 'GET'])
+@app.route('/get-vehicle-status/', methods=['GET'])
 def get_status():
     user_id = session.get("id")
 
     if not user_id:
         return jsonify({"error": "Unauthorized"}), 401
+
+    vehicle_vin = request.args.get('VIN')
+
+    if not vehicle_vin:
+        return jsonify({"error": "VIN is required"}), 400
     
     try:
-        vehicle = Vehicle.query.filter_by(user_id=user_id).first()
+        vehicle = Vehicle.query.filter_by(VIN=vehicle_vin).first()
 
         if not vehicle:
             return jsonify({"error:" "No vehicle found for this user"}), 401
