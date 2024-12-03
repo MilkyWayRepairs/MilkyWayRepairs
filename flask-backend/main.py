@@ -8,7 +8,7 @@ from sqlalchemy import func
 from config import ApplicationConfig
 from flask_bcrypt import Bcrypt
 from datetime import datetime, timedelta
-from models import db, User, Review, Message, Vehicle, Service, Job, Log, Appointments, PerformanceEvaluation
+from models import db, User, Review, Message, Vehicle, Service, Job, Log, Appointments, PerformanceEvaluation,Employee
 import os, re, dns.resolver, requests, time, random
 from sqlalchemy.sql import func
 #from twilio.rest import Client
@@ -497,6 +497,40 @@ def get_status():
         app.logger.error(f"Error retrieving vehicle status: {e}")
         return jsonify({"error": "Internal Server Error"}), 500
 
+
+@app.route('/set-employee-schedule', methods=['POST'])
+def storeSchedule():
+    # Receive JSON object containing weekly schedules
+    # Expecting 'id' and 'weekly_schedule' in the request body
+    data = request.get_json()
+
+    # Validate the data
+    if not data or 'id' not in data or 'weekly_schedule' not in data:
+        return jsonify({"error": "Invalid input. 'id' and 'weekly_schedule' are required."}), 400
+
+    # Extract employee ID and weekly schedule from the JSON payload
+    employee_id = data['id']
+    weekly_schedule = data['weekly_schedule']
+
+    try:
+        # Query the database for the employee
+        employee = Employee.query.filter_by(employee_id=employee_id).first()
+
+        if not employee:
+            return jsonify({"error": f"Employee with ID {employee_id} not found."}), 404
+
+        # Update the weekly schedule
+        employee.weekly_schedule = weekly_schedule
+        db.session.commit()
+
+        return jsonify({"message": "Weekly schedule updated successfully."}), 200
+
+    except Exception as e:
+        # Handle unexpected errors
+        db.session.rollback()
+        return jsonify({"error": str(e)}), 500
+
+
 @app.route('/add-vehicle', methods=['POST'])
 def add_vehicle():
     if not session.get("id"):  # Ensure the user is authenticated
@@ -730,11 +764,6 @@ def get_available_times():
     except Exception as e:
         app.logger.error(f"Error fetching available times: {e}")
         return jsonify({"error": "An error occurred", "details": str(e)}), 500
-
-
-
-
-
 
     
 @app.route('/update-vehicle-status', methods=['POST'])

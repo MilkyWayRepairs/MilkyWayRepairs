@@ -38,6 +38,23 @@ class Message(db.Model):
     content = db.Column(db.Text, nullable=False)
     timestamp = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc))
 
+class Employee(db.Model):
+    __tablename__ = 'employee'
+
+    employee_id = db.Column(db.Integer, primary_key=True)
+    hourly_pay = db.Column(db.Numeric(10, 2), nullable=False)
+    weekly_schedule = db.Column(db.JSON)
+    manager_id = db.Column(db.Integer, db.ForeignKey('employee.employee_id'), nullable=True)
+    
+  '''
+    # Establish self-referential relationship for managers
+    manager = db.relationship('Employee', remote_side=[employee_id], backref='subordinates')
+
+    # Link the employee to the user table
+    user = db.relationship('User', backref=db.backref('employee', uselist=False))
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), unique=True, nullable=False)
+   '''
+
 class Vehicle(db.Model):
     __tablename__ = 'vehicle'
 
