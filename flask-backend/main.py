@@ -496,6 +496,33 @@ def get_status():
     except Exception as e:
         app.logger.error(f"Error retrieving vehicle status: {e}")
         return jsonify({"error": "Internal Server Error"}), 500
+    
+@app.route('/getSoonestAppointment', methods=['GET'])
+def get_soonest_appointment():
+    try:
+        # Get current time and generate time slots from 8 AM to 5 PM
+        current_date = datetime.now().date()
+        current_time = datetime.now().time()
+        time_slots = [(8 + i) for i in range(10)]
+
+        # Search for the soonest available time
+        for day_offset in range(30):  # Check for 30 days ahead
+            appointment_date = current_date + timedelta(days=day_offset)
+            for hour in time_slots:
+                appointment_time = datetime.combine(appointment_date, datetime.min.time()) + timedelta(hours=hour)
+                if day_offset == 0 and hour < current_time.hour:
+                    continue  # Skip past times for today
+                appointment_exists = Appointments.query.filter_by(date=appointment_date, time=appointment_time.time()).first()
+                if not appointment_exists:
+                    # Found an available time
+                    return jsonify({
+                        'date': appointment_date.strftime('%Y-%m-%d'),
+                        'time': appointment_time.strftime('%H:%M:%S')
+                    }), 200
+
+        return jsonify({'message': 'No available appointments within 30 days.'}), 404
+    except Exception as e:
+        return jsonify({'message': str(e)}), 500
 
 
 @app.route('/set-employee-schedule', methods=['POST'])
