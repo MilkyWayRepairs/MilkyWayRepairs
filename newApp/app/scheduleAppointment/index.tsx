@@ -75,6 +75,32 @@ const AppointmentScheduler = () => {
     }
   };
 
+  const handleSoonestAvailable = async () => {
+    try {
+      const response = await fetch(`${SERVER_URL}/getSoonestAppointment`, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        credentials: 'include',
+      });
+  
+      if (response.ok) {
+        const result = await response.json();
+        setSelectedDate(new Date(result.date));
+        setSelectedTime(result.time);
+        Alert.alert('Success', `Soonest available appointment: ${result.date} ${result.time}`);
+      } else {
+        const error = await response.json();
+        Alert.alert('Error', error.message || 'Failed to find soonest appointment');
+      }
+    } catch (err) {
+      console.error('Error getting soonest available appointment:', err);
+      Alert.alert('Error', 'Something went wrong. Please try again.');
+    }
+  };
+  
+
   const handleSchedule = async () => {
     if (!name || !service || !selectedDate || !selectedTime || !vehicle) {
       Alert.alert('Error', 'Please complete all steps before confirming.');
@@ -182,7 +208,7 @@ const AppointmentScheduler = () => {
         {currentStep === 3 && (
           <View>
             <Text style={styles.title}>Step 3: Select Date and Time</Text>
-            <CustomButton title="Select Date" onPress={() => setShow(true)} />
+            <CustomButton title="Soonest Available" onPress={handleSoonestAvailable} />
             {show && (
               <DateTimePicker
                 value={selectedDate}

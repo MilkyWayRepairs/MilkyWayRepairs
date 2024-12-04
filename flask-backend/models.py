@@ -46,7 +46,7 @@ class Employee(db.Model):
     weekly_schedule = db.Column(db.JSON)
     manager_id = db.Column(db.Integer, db.ForeignKey('employee.employee_id'), nullable=True)
     
-  '''
+'''
     # Establish self-referential relationship for managers
     manager = db.relationship('Employee', remote_side=[employee_id], backref='subordinates')
 
