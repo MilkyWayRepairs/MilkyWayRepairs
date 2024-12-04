@@ -520,7 +520,7 @@ def get_soonest_appointment():
                         'time': appointment_time.strftime('%H:%M:%S')
                     }), 200
 
-        return jsonify({'message': 'No available appointments within 30 days.'}), 404
+        return jsonify({'message': 'No available appointments within 30 days.'}), 406
     except Exception as e:
         return jsonify({'message': str(e)}), 500
 
@@ -671,7 +671,7 @@ def get_user_appointments():
     
 
 @app.route('/getSoonestAppointment', methods=['GET'])
-def get_soonest_appointment():
+def get_soonest_appointment_v2():  # Updated function name to make it unique
     try:
         # Get current time and generate time slots from 8 AM to 5 PM
         current_date = datetime.now().date()

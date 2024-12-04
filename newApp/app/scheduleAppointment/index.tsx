@@ -208,7 +208,7 @@ const AppointmentScheduler = () => {
         {currentStep === 3 && (
           <View>
             <Text style={styles.title}>Step 3: Select Date and Time</Text>
-            <CustomButton title="Soonest Available" onPress={handleSoonestAvailable} />
+            <CustomButton title="Select Date" onPress={() => setShow(true)} />
             {show && (
               <DateTimePicker
                 value={selectedDate}
@@ -221,6 +221,7 @@ const AppointmentScheduler = () => {
             <Text style={styles.selectedDate}>
               Selected Date: {selectedDate.toLocaleDateString()}
             </Text>
+    
 
             <Text style={styles.subtitle}>Available Time Slots:</Text>
             <ScrollView style={styles.timeSlotContainer}>
@@ -247,6 +248,8 @@ const AppointmentScheduler = () => {
 
             <View style={styles.buttonRow}>
               <CustomButton title="Previous" onPress={prevStep} />
+              <CustomButton title="Soonest Available"
+              onPress={handleSoonestAvailable} disabled={undefined} />
               <CustomButton
                 title="Next"
                 onPress={nextStep}
